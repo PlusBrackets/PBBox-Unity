@@ -1,0 +1,16 @@
+{
+    "name": "PBBox.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d666fd041486fdb48b45346c17fdabf9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
