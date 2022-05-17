@@ -4,27 +4,32 @@
   "version": "0.22.5",
   "description": "Some base scripts and tools for game",
   "author": "plusBrackets",
-  "contributors": [{
-  "name": "plusBrackets",
-  "twitter": "@Plusbrackets"
-}],
+  "contributors": [
+    {
+      "name": "plusBrackets",
+      "twitter": "@Plusbrackets"
+    }
+  ],
   "unity": "2019.4",
   "repository": {
-  "type": "git",
-  "url": "git+https://github.com/PlusBrackets/PBBoxForUntiy-Package.git"
-},
+    "type": "git",
+    "url": "git+https://github.com/PlusBrackets/PBBoxForUntiy-Package.git"
+  },
   "bugs": {
-  "url": "https://github.com/PlusBrackets/PBBoxForUntiy-Package/issues"
-},
+    "url": "https://github.com/PlusBrackets/PBBoxForUntiy-Package/issues"
+  },
   "keywords": [
-  "PBBox",
-  "Black Fish"
-],
+    "PBBox",
+    "Black Fish"
+  ],
   "samples": [
     {
       "displayName": "PBBox Samples",
       "description": "Samples",
       "path": "Samples~"
     }
-]
+  ],
+  "dependencies": {
+    "com.unity.addressable": "1.2.1"
+  }
 }
