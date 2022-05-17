@@ -22,14 +22,14 @@
     "PBBox",
     "Black Fish"
   ],
+  "dependencies": {
+    "com.unity.addressable": "1.2.1"
+  },
   "samples": [
     {
       "displayName": "PBBox Samples",
       "description": "Samples",
       "path": "Samples~"
     }
-  ],
-  "dependencies": {
-    "com.unity.addressable": "1.2.1"
-  }
+  ]
 }
