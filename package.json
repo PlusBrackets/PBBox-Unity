@@ -1,21 +1,30 @@
 {
-    "name": "com.blackfish.pbbox",
-    "version": "0.22.5",
-    "displayName": "PBBox",
-    "description": "一个基础工具包",
-    "unity": "2019.1",
-    "unityRelease": "0b5",
-    // "documentationUrl": "https://example.com/",
-    // "changelogUrl": "https://example.com/changelog.html",
-    // "licensesUrl": "https://example.com/licensing.html",
-    "dependencies": {
-      "com.unity.addressables": "1.0.0"
-   },
-   "keywords": [
-      "PBBox"
-    ],
-    "author": {
-      "name": "Plusbrackets",
-      "url": "https://twitter.com/Plusbrackets"
+  "name": "com.blackfish.pbbox",
+  "displayName": "PBBox",
+  "version": "0.22.5",
+  "description": "Some base scripts and tools for game",
+  "author": "plusBrackets",
+  "contributors": [{
+  "name": "plusBrackets",
+  "twitter": "@Plusbrackets"
+}],
+  "unity": "2019.4",
+  "repository": {
+  "type": "git",
+  "url": "git+https://github.com/PlusBrackets/PBBoxForUntiy-Package.git"
+},
+  "bugs": {
+  "url": "https://github.com/PlusBrackets/PBBoxForUntiy-Package/issues"
+},
+  "keywords": [
+  "PBBox",
+  "Black Fish"
+],
+  "samples": [
+    {
+      "displayName": "PBBox Samples",
+      "description": "Samples",
+      "path": "Samples~"
     }
-  }
+]
+}
