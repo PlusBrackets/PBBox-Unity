@@ -23,7 +23,7 @@
     "Black Fish"
   ],
   "dependencies": {
-    "com.unity.addressable": "1.0.0"
+    "com.unity.addressables": "1.0.0"
   },
   "samples": [
     {
