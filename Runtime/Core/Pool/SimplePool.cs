@@ -14,7 +14,7 @@ namespace PBBox
         void OnSpawned(object[] datas);
         void OnDespawned();
     }
-
+    
     internal static class IPoolObjectExtensions
     {
         internal static void _Spawn(this IPoolObject target, SimplePool pool, object[] datas)
@@ -43,9 +43,9 @@ namespace PBBox
                 GameObject.Destroy(obj);
             }
         }
-
     }
 
+    //TODO 等待优化,让其可支持普通类，Monobehaviour，GameObject
     public sealed class SimplePool
     {
 

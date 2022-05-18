@@ -109,8 +109,8 @@ namespace PBBox
                         {
                             if (!autoDestroy)
                                 DontDestroyOnLoad(_instance);
-                            if(!hideInHierarchy)
-                                hideFlags |= HideFlags.HideInHierarchy;
+                            if(hideInHierarchy)
+                                _instance.gameObject.hideFlags |= HideFlags.HideInHierarchy;
                             _instance.Init();
                         }
                     }

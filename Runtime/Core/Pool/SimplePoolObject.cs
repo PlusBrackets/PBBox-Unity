@@ -26,6 +26,13 @@ namespace PBBox
                 m_LifeTime = value;
                 if (lifeTimer.state == GameTimer.State.Started)
                     lifeTimer.duration = value;
+                else
+                {
+                    if (m_LifeTime > 0f)
+                    {
+                        lifeTimer.Start(m_LifeTime);
+                    }
+                }
             }
         }
         public float recycleDelay = 0f;

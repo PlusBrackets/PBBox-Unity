@@ -50,15 +50,15 @@ namespace PBBox
         /// <summary>
         /// 当场景加载开始时调用
         /// </summary>
-        public event Action onLoadStarted;
+        public event Action<string> onLoadStarted;
         /// <summary>
         /// 当场景加载完成时调用
         /// </summary>
-        public event Action onLoadFinish;
+        public event Action<string> onLoadFinish;
         /// <summary>
         /// 当被加载的场景激活完成后调用
         /// </summary>
-        public event Action onLoadedSceneActived;
+        public event Action<string> onLoadedSceneActived;
 
         /// <summary>
         /// 单线切换场景
@@ -130,7 +130,7 @@ namespace PBBox
         IEnumerator StartLoadScene(string sceneName)
         {
             yield return null;
-            onLoadStarted?.Invoke();
+            onLoadStarted?.Invoke(sceneName);
             if (Application.CanStreamedLevelBeLoaded(sceneName))
             {
                 m_LoadOpera = SceneManager.LoadSceneAsync(sceneName);
@@ -140,7 +140,7 @@ namespace PBBox
                     yield return null;
                     loadingProgress = m_LoadOpera.progress;
                 }
-                onLoadFinish?.Invoke();
+                onLoadFinish?.Invoke(sceneName);
                 while (!m_LoadOpera.isDone)
                 {
                     m_LoadOpera.allowSceneActivation = m_IsAutoActiveAfterLoaded;
@@ -156,7 +156,7 @@ namespace PBBox
                     yield return null;
                     loadingProgress = Mathf.Clamp(m_AddressableLoadOpera.PercentComplete, 0f, 0.9f);
                 }
-                onLoadFinish?.Invoke();
+                onLoadFinish?.Invoke(sceneName);
                 AsyncOperation tempOpera = m_AddressableLoadOpera.Result.ActivateAsync();
                 while (!tempOpera.isDone)
                 {
@@ -169,7 +169,7 @@ namespace PBBox
             m_AddressableLoadOpera = default;
             isLoadingScene = false;
             loadingProgress = 1f;
-            onLoadedSceneActived?.Invoke();
+            onLoadedSceneActived?.Invoke(sceneName);
         }
 
     }

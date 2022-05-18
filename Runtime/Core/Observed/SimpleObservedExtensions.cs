@@ -28,9 +28,9 @@ namespace PBBox
         /// <param name="target"></param>
         /// <param name="onNext"></param>
         /// <returns></returns>
-        public static SimpleObservable<object>.Subscription ObservedDestroy(this GameObject target, Action<object> onNext)
+        public static SimpleObservable<GameObject>.Subscription ObservedDestroy(this GameObject target, Action<GameObject> onNext)
         {
-            return GetOrAddComponent<ObjectDestroyObserved>(target).GetObserved().Subscribe(onNext);
+            return target.GetOrAddComponent<ObjectDestroyObserved>().GetObserved().Subscribe(onNext);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace PBBox
         /// <param name="target"></param>
         /// <param name="onNext"></param>
         /// <returns></returns>
-        public static SimpleObservable<object>.Subscription ObservedDestroy(this Component target, Action<object> onNext)
+        public static SimpleObservable<GameObject>.Subscription ObservedDestroy(this Component target, Action<GameObject> onNext)
         {
             return target.gameObject.ObservedDestroy(onNext);
         }
@@ -53,18 +53,8 @@ namespace PBBox
         /// <returns></returns>
         public static SimpleObservable<T>.Subscription DisposeWhenObjectDestroy<T>(this SimpleObservable<T>.Subscription target, GameObject obj)
         {
-            GetOrAddComponent<ObjectDestroyObserved>(obj).AddDisposableOnDestroy(target);
+            obj.GetOrAddComponent<ObjectDestroyObserved>().AddDisposableOnDestroy(target);
             return target;
-        }
-
-        static T GetOrAddComponent<T>(GameObject gameObject) where T : Component
-        {
-            var component = gameObject.GetComponent<T>();
-            if (component == null)
-            {
-                component = gameObject.AddComponent<T>();
-            }
-            return component;
         }
     }
 }

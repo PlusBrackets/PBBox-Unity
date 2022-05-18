@@ -9,6 +9,24 @@ using System;
 
 namespace PBBox.UI
 {
+    public abstract class BaseUIViewModel : IUIViewModel
+    {
+        private event Action<IUIViewModel> m_OnRefresh, m_OnDispose;
+        public Action<IUIViewModel> onRefresh => m_OnRefresh;
+        public Action<IUIViewModel> onDispose => m_OnDispose;
+        public bool isDisposed { get; private set; }
+
+        protected virtual void OnDispose() { }
+
+        public void Dispose()
+        {
+            if (isDisposed)
+                return;
+            isDisposed = true;
+            OnDispose();
+        }
+    }
+
     /// <summary>
     /// UIViewCtrl 基类,需要添加[BindUIView(uiid)]特性来绑定UIView
     /// </summary>

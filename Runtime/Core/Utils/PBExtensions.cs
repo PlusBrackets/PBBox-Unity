@@ -13,6 +13,20 @@ namespace PBBox
     {
         #region Unity
 
+        public static T GetOrAddComponent<T>(this Component component) where T : Component
+        {
+            return component.gameObject.GetOrAddComponent<T>();
+        }
+
+        public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
+        {
+            var component = gameObject.GetComponent<T>();
+            if (component == null)
+            {
+                component = gameObject.AddComponent<T>();
+            }
+            return component;
+        }
         /// <summary>
         /// [x,y]
         /// </summary>

@@ -14,13 +14,13 @@ namespace PBBox
     [AddComponentMenu("")]
     public class ObjectDestroyObserved : MonoBehaviour
     {
-        SimpleObservable<object> m_Subject;
+        SimpleObservable<GameObject> m_Subject;
         HashSet<IDisposable> m_Disposables;
         bool isDestroyed = false;
 
-        public SimpleObservable<object> GetObserved()
+        public SimpleObservable<GameObject> GetObserved()
         {
-            return m_Subject ?? (m_Subject = new SimpleObservable<object>());
+            return m_Subject ?? (m_Subject = new SimpleObservable<GameObject>());
         }
 
         public void AddDisposableOnDestroy(IDisposable disposable)
@@ -47,7 +47,7 @@ namespace PBBox
                 }
             }
             m_Disposables = null;
-            m_Subject?.OnNext(null);
+            m_Subject?.OnNext(gameObject);
             m_Subject?.OnCompleted();
         }
 

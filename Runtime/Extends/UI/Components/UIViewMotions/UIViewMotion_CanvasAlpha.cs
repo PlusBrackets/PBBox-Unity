@@ -39,12 +39,12 @@ namespace PBBox.UI
         public MotionSetting showMotion = new MotionSetting() { duration = 0.16f, from = 0f, to = 1f, lerpCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f) };
         [InlineProperty, HideLabel, FoldoutGroup("On Hide")]
         public MotionSetting hideMotion = new MotionSetting() { duration = 0.24f, from = -1f, to = 0f, lerpCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f) };
-        [InlineProperty, HideLabel, FoldoutGroup("On Resume")]
-        public MotionSetting resumeMotion;
-        [InlineProperty, HideLabel, FoldoutGroup("On Pause")]
-        public MotionSetting pauseMotion;
+        // [InlineProperty, HideLabel, FoldoutGroup("On Resume")]
+        // public MotionSetting resumeMotion;
+        // [InlineProperty, HideLabel, FoldoutGroup("On Pause")]
+        // public MotionSetting pauseMotion;
 #else
-        public MotionSetting showMotion, hideMotion, resumeMotion, pauseMotion;
+        public MotionSetting showMotion, hideMotion;//, resumeMotion, pauseMotion;
 #endif
 
         CanvasGroup m_CanvasGroup;
@@ -79,10 +79,10 @@ namespace PBBox.UI
                     return showMotion;
                 case UIViewState.Hide:
                     return hideMotion;
-                case UIViewState.Resume:
-                    return resumeMotion;
-                case UIViewState.Pause:
-                    return pauseMotion;
+                // case UIViewState.Resume:
+                //     return resumeMotion;
+                // case UIViewState.Pause:
+                //     return pauseMotion;
                 default:
                     return MotionSetting.EMPTY;
             }

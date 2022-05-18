@@ -34,6 +34,7 @@ namespace PBBox.UI
         {
             m_ViewCtrlBindMap = new Dictionary<string, BindTypeInfo>();
             m_ViewCtrls = new Dictionary<string, IUIViewController>();
+            m_ViewModels = new Dictionary<string, IUIViewModel>();
 
             var types = ReflectionUtils.GetAllChildClass<IUIViewController>();
             if (types == null || types.Length == 0)
