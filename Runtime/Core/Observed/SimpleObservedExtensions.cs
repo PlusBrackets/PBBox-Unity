@@ -17,9 +17,9 @@ namespace PBBox
         /// <param name="onNext"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static SimpleObservable<T>.Subscription Subscribe<T>(this SimpleObservable<T> target, Action<T> onNext)
+        public static SimpleObservable<T>.Subscription Subscribe<T>(this SimpleObservable<T> target, Action<T> onNext, Action onComplete = null, Action<Exception> onError = null)
         {
-            return target.Subscribe(new SimpleObserver<T>(onNext, null, null));
+            return target.Subscribe(new SimpleObserver<T>(onNext, onComplete, onError));
         }
 
         /// <summary>
@@ -34,14 +34,27 @@ namespace PBBox
         }
 
         /// <summary>
-        /// 观察Destroy,当GameObejct Destroy时触发回调
+        /// 观察Enable
         /// </summary>
         /// <param name="target"></param>
         /// <param name="onNext"></param>
+        /// <param name="onComplete"></param>
         /// <returns></returns>
-        public static SimpleObservable<GameObject>.Subscription ObservedDestroy(this Component target, Action<GameObject> onNext)
+        public static SimpleObservable<GameObject>.Subscription ObservedEnable(this GameObject target, Action<GameObject> onNext, Action onComplete = null)
         {
-            return target.gameObject.ObservedDestroy(onNext);
+            return target.GetOrAddComponent<ObjectEnableObserved>().GetEnableObserved().Subscribe(onNext, onComplete);
+        }
+
+        /// <summary>
+        /// 观察Disable
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="onNext"></param>
+        /// <param name="onComplete"></param>
+        /// <returns></returns>
+        public static SimpleObservable<GameObject>.Subscription ObservedDisable(this GameObject target, Action<GameObject> onNext, Action onComplete = null)
+        {
+            return target.GetOrAddComponent<ObjectEnableObserved>().GetDisableObserved().Subscribe(onNext, onComplete);
         }
 
         /// <summary>

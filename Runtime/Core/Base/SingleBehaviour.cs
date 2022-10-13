@@ -39,6 +39,26 @@ namespace PBBox
 
     }
 
+    // /// <summary>
+    // /// 用Global能访问到一个全局范围的脚本，不影响场景中GameObject上的其他同脚本的使用
+    // /// 用于特殊情况时方便利用GameObject的生命周期处理逻辑
+    // /// </summary>
+    // /// <typeparam name="T"></typeparam>
+    // public abstract class GlobalBehaviour<T> : MonoBehaviour where T : GlobalBehaviour<T>{
+    //     private static T _global = null;
+    //     private static object _lock = new object();
+    //     public static T Global{
+    //         get{
+    //             if(_global == null){
+    //                 Create();
+    //             }
+    //             return _global;
+    //         }
+    //     }
+
+        
+    // }
+
     /// <summary>
     /// 单例脚本
     /// </summary>
@@ -67,6 +87,8 @@ namespace PBBox
                 return _instance != null;
             }
         }
+
+        public bool isInstance => _instance == this;
 
         /// <summary>
         /// 在重复的时候删除gameObject,若false则仅删除脚本
@@ -111,7 +133,7 @@ namespace PBBox
                                 DontDestroyOnLoad(_instance);
                             if(hideInHierarchy)
                                 _instance.gameObject.hideFlags |= HideFlags.HideInHierarchy;
-                            _instance.Init();
+                            _instance.InitAsInstance();
                         }
                     }
                 }
@@ -134,7 +156,7 @@ namespace PBBox
                 _instance = null;
         }
 
-        protected virtual void Init()
+        protected virtual void InitAsInstance()
         {
 
         }

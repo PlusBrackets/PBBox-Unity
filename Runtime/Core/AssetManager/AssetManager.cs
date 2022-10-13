@@ -14,8 +14,6 @@ namespace PBBox
         System.Lazy<Dictionary<GameObject, ObjectLoader>> m_LookUp = new System.Lazy<Dictionary<GameObject, ObjectLoader>>();
         Dictionary<GameObject, ObjectLoader> lookUp => m_LookUp.Value;
 
-        AssetManager() { }
-
         ObjectLoader GetLoader(string key)
         {
             if (!loaders.TryGetValue(key, out ObjectLoader loader))
@@ -26,11 +24,72 @@ namespace PBBox
             return loader;
         }
 
-        public static T LoadAsset<T>(string key) where T : Object
+        /// <summary>
+        /// 同步加载资源
+        /// </summary>
+        /// <param name="key"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static T LoadAssetSync<T>(string key) where T : Object
         {
             return Instance.GetLoader(key).Load<T>();
         }
 
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="callBack"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static async void LoadAssets<T>(string key, System.Action<T[]> callBack = null, System.Action<T> callBackEvery = null) where T : Object
+        {
+            await LoadAssetsAsync<T>(key, callBack, callBackEvery);
+        }
+
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="callBack"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static async Task<T[]> LoadAssetsAsync<T>(string key, System.Action<T[]> callBack = null, System.Action<T> callBackEvery = null) where T : Object
+        {
+            var assets = await Instance.GetLoader(key).LoadsAsync<T>(callBackEvery);
+            callBack?.Invoke(assets);
+            return assets;
+        }
+        /// <summary>
+        /// 同步加载资源
+        /// </summary>
+        /// <param name="key"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static T[] LoadAssetsSync<T>(string key, System.Action<T> callBackEvery = null) where T : Object
+        {
+            return Instance.GetLoader(key).Loads<T>(callBackEvery);
+        }
+
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="callBack"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static async void LoadAsset<T>(string key, System.Action<T> callBack = null) where T : Object
+        {
+            await LoadAssetAsync<T>(key, callBack);
+        }
+
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="callBack"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static async Task<T> LoadAssetAsync<T>(string key, System.Action<T> callBack = null) where T : Object
         {
             var asset = await Instance.GetLoader(key).LoadAsync<T>();
@@ -57,7 +116,7 @@ namespace PBBox
             return param;
         }
 
-        public static GameObject Instantiate(string key, Transform parent = null, Vector3? pos = null, Quaternion? rot = null, bool inWorldSpace = false)
+        public static GameObject InstantiateSync(string key, Transform parent = null, Vector3? pos = null, Quaternion? rot = null, bool inWorldSpace = false)
         {
             InstantiationParameters param = GetInstantiationParam(parent, pos, rot, inWorldSpace);
             var loader = Instance.GetLoader(key);
@@ -67,6 +126,12 @@ namespace PBBox
                 Instance.lookUp.Add(obj, loader);
             }
             return obj;
+        }
+
+        public static async void Instantiate(string key, Transform parent = null, Vector3? pos = null, Quaternion? rot = null, bool inWorldSpace = false,
+        System.Action<GameObject> callBack = null)
+        {
+            await InstantiateAsync(key, parent, pos, rot, inWorldSpace, callBack);
         }
 
         public static async Task<GameObject> InstantiateAsync(string key, Transform parent = null, Vector3? pos = null, Quaternion? rot = null, bool inWorldSpace = false,

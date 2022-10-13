@@ -294,9 +294,9 @@ namespace PBBox.Network
         /// </summary>
         private bool m_IsQueueRequesting = false;
         
-        protected override void Init()
+        protected override void InitAsInstance()
         {
-            base.Init();
+            base.InitAsInstance();
             m_DictRequestInfo = new Dictionary<long, RequestInfo>();
             m_ListRequestWaiting = new List<long>();
             m_ListRequestSending = new List<long>();

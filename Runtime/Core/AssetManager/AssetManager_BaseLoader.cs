@@ -11,21 +11,25 @@ namespace PBBox
     public sealed partial class AssetManager : SingleClass<AssetManager>
     {
 
-        internal abstract class ObjectLoader : System.IDisposable
+        internal abstract class ObjectLoader
         {
             public string key { get; protected set; } = null;
-            public Object asset { get; protected set; } = null;
+            public virtual Object asset { get; protected set; } = null;
+            public virtual Object[] assets{get;protected set;} = null;
             public int assetRefCount { get; protected set; } = 0;
-            public bool isDisposed { get; private set; } = false;
 
             public ObjectLoader(string key)
             {
                 this.key = key;
             }
 
+            public virtual bool IsValid(){
+                return asset != null || assets != null;
+            }
+
             public T Load<T>() where T : Object
             {
-                if (asset == null)
+                if (!IsValid())
                 {
                     asset = DoLoad<T>();
                 }
@@ -38,7 +42,7 @@ namespace PBBox
 
             public async Task<T> LoadAsync<T>() where T : Object
             {
-                if (asset == null)
+                if (!IsValid())
                 {
                     asset = await DoLoadAsync<T>();
                 }
@@ -48,6 +52,34 @@ namespace PBBox
                 }
                 return asset as T;
             }
+
+            public T[] Loads<T>(System.Action<T> callBack) where T : Object
+            {
+                if (!IsValid())
+                {
+                    assets = DoLoads<T>(callBack);
+                }
+                if (assets != null)
+                {
+                    assetRefCount++;
+                }
+                return assets as T[];
+            }
+
+            public async Task<T[]> LoadsAsync<T>(System.Action<T> callBack) where T : Object
+            {
+                if (!IsValid())
+                {
+                    assets = await DoLoadsAsync<T>(callBack);
+                }
+                if (assets != null)
+                {
+                    assetRefCount++;
+                }
+                return assets as T[];
+            }
+
+            
 
             public void ReleaseAsset()
             {
@@ -61,6 +93,8 @@ namespace PBBox
 
             protected abstract T DoLoad<T>() where T : Object;
             protected abstract Task<T> DoLoadAsync<T>() where T : Object;
+            protected abstract T[] DoLoads<T>(System.Action<T> callBack) where T : Object;
+            protected abstract Task<T[]> DoLoadsAsync<T>(System.Action<T> callBack) where T : Object;
             protected abstract void OnReleaseAsset();
 
 
@@ -68,17 +102,6 @@ namespace PBBox
             public abstract Task<GameObject> InstantiateAsync(InstantiationParameters param);
             public abstract bool ReleaseInstance(GameObject obj);
 
-
-            public void Dispose()
-            {
-                if (!isDisposed)
-                {
-                    isDisposed = true;
-                    OnDispose();
-                }
-            }
-
-            protected abstract void OnDispose();
         }
     }
 }

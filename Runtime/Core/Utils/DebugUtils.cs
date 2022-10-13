@@ -71,6 +71,25 @@ namespace PBBox
             public static void InfoError<T>(object message) { } 
 #endif
         }
+
+        public static class Test
+        {
+#if GAME_TEST
+            public static Action<object> Log = Debug.Log;
+            public static Action<object> LogWarning = Debug.LogWarning;
+            public static Action<object> LogError = Debug.LogError;
+            public static void Info<T>(object message) => DebugUtils.Log($"[{typeof(T).FullName}] {message}");
+            public static void InfoWarning<T>(object message) => DebugUtils.LogWarning($"[{typeof(T).FullName}] {message}");
+            public static void InfoError<T>(object message) => DebugUtils.LogError($"[{typeof(T).FullName}] {message}");
+#else
+            public static void Log(object message) { }
+            public static void LogWarning(object message) { }
+            public static void LogError(object message) { }
+            public static void Info<T>(object message) { }
+            public static void InfoWarning<T>(object message) { }
+            public static void InfoError<T>(object message) { }
+#endif
+        }
     }
 
     public static partial class PBExtensions

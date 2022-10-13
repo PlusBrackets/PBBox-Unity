@@ -6,14 +6,14 @@
 #if (ODIN_INSPECTOR || ODIN_INSPECTOR_3) && UNITY_EDITOR
 #define USE_ODIN
 #endif
+#if USE_ODIN
+using Sirenix.OdinInspector;
+#endif
 using UnityEngine;
 using UnityEngine.Events;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-#if USE_ODIN
-using Sirenix.OdinInspector;
-#endif
 
 namespace PBBox.UI
 {
@@ -74,7 +74,13 @@ namespace PBBox.UI
             }
         }
         #endregion
+        string IUIView.uniqueID { get; set; }
 
+        public string GetUniqueID()
+        {
+            return (this as IUIView).uniqueID;
+        }
+        
         public abstract string GetUIID();
 
         GameObject IUIView.GetGameObject() { return gameObject; }
@@ -112,7 +118,7 @@ namespace PBBox.UI
 
         protected virtual void OnViewHide()
         {
-            if (GetHideEndDelay() <= 0f)
+            if (GetHideEndDelay() <= Mathf.Epsilon)
             {
                 m_WaitHideEndCoroutine.Stop();
                 gameObject.SetActive(false);

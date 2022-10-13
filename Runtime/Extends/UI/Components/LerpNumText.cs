@@ -1,3 +1,8 @@
+/*--------------------------------------------------------
+ *Copyright (c) 2022 PlusBrackets
+ *@update: 2022.05.21
+ *@author: PlusBrackets
+ --------------------------------------------------------*/
 using System.Net.Mime;
 using System.Text;
 using System.Collections;

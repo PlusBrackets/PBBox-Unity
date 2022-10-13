@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace PBBox
 {
-    public static class PBMath
+    public static partial class PBMath
     {
         #region Lines
         /// <summary>
@@ -49,16 +49,21 @@ namespace PBBox
 
         #endregion
 
-        public static float Remap(float value, float srcMin, float srcMax, float dstMin, float dstMax)
+        public static float Remap(this float value, float srcMin, float srcMax, float dstMin, float dstMax)
         {
-            float v = value / (srcMax - srcMin) * (dstMax - dstMin);
+            float v = (value - srcMin) / (srcMax - srcMin) * (dstMax - dstMin) + dstMin;
             return v;
         }
         
-        public static float RemapClamp(float value, float srcMin, float srcMax, float dstMin, float dstMax)
+        public static float RemapClamp(this float value, float srcMin, float srcMax, float dstMin, float dstMax)
         {
-            float v = value / (srcMax - srcMin) * (dstMax - dstMin);
+            float v = (value - srcMin) / (srcMax - srcMin) * (dstMax - dstMin) + dstMin;
             return Mathf.Clamp(v, dstMin, dstMax);
+        }
+
+        public static bool IsAlmostEqual(this float a, float b, float deviation = 0.00001f)//float.Epsilon)
+        {
+            return Mathf.Abs(a - b) <= deviation;
         }
     }
 }

@@ -28,7 +28,8 @@ namespace PBBox
         /// </summary>
         /// <value></value>
         public string loadingSceneName { get; set; } = "GameLoadingScene";
-        public float loadingProgress { get; private set; } = 1f;
+        public BindableValue<float> bindableLoadingProgress { get; private set; } = new BindableValue<float>(1f);
+        public float loadingProgress { get => bindableLoadingProgress.Value; private set => bindableLoadingProgress.Value = value; }
 
         // List<AsyncOperationHandle<SceneInstance>> m_LoadedAddressableScenes = new List<AsyncOperationHandle<SceneInstance>>();
         /// <summary>

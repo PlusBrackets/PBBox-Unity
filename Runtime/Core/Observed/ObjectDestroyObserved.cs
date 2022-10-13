@@ -11,7 +11,7 @@ using UnityEngine;
 namespace PBBox
 {
     [DisallowMultipleComponent]
-    [AddComponentMenu("")]
+    [AddComponentMenu("PBBox/Observed/Object Destroy Observerd")]
     public class ObjectDestroyObserved : MonoBehaviour
     {
         SimpleObservable<GameObject> m_Subject;

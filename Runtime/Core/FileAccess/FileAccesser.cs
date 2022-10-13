@@ -107,16 +107,17 @@ namespace PBBox
         private _FA_Binary m_FA_Binary;
         private _FA_Text m_FA_Text;
 
-        private FileAccesser()
+        protected override void Init()
         {
+            base.Init();
             m_Semaphroes = new Dictionary<string, SemaphoreSlim>();
             m_FA_Binary = new _FA_Binary();
             m_FA_Text = new _FA_Text();
         }
 
-        protected override void OnDispose()
+        protected override void OnDestroy()
         {
-            base.OnDispose();
+            base.OnDestroy();
         }
 
         #region private func

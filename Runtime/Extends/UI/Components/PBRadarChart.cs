@@ -204,10 +204,7 @@ namespace PBBox.UI
         public void SetRatios(IEnumerable<float> values)
         {
             m_Ratios.Clear();
-            foreach (var r in values)
-            {
-                m_Ratios.Add(r);
-            }
+            m_Ratios.AddRange(values);
             SetVerticesDirty();
         }
 
@@ -216,6 +213,16 @@ namespace PBBox.UI
             if (index >= ratios.Count)
                 return;
             ratios[index] = Mathf.Max(0f, value);
+            SetVerticesDirty();
+        }
+
+        public void SetRatiosSame(int count, float value)
+        {
+            m_Ratios.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                m_Ratios.Add(value);
+            }
             SetVerticesDirty();
         }
 
@@ -270,11 +277,12 @@ namespace PBBox.UI
             }
         }
 
-        UIVertex GetUIVertex(Vector3 pos, Color color)
+        UIVertex GetUIVertex(Vector3 pos, Color color,float uvx = 0, float uvy = 0)
         {
             UIVertex vertex = new UIVertex();
             vertex.position = pos;
             vertex.color = color;
+            vertex.uv0 = new Vector4(uvx, uvy);
             return vertex;
         }
 
@@ -282,7 +290,7 @@ namespace PBBox.UI
         {
             //计算中心
             var posCenter = GetRadarCenter();
-            vh.AddVert(GetUIVertex(posCenter, color));
+            vh.AddVert(GetUIVertex(posCenter, color,0.5f,0.5f));
 
             //计算各顶点,顺序为从最上方，按顺时针方向
             int splitCount = m_Ratios.Count;
@@ -294,7 +302,7 @@ namespace PBBox.UI
             {
                 float r = (ratioOffset + (m_Ratios[i] * (1 - ratioOffset))) * radius;
                 Vector3 posOffset = r * new Vector3(Mathf.Sin(curRad), Mathf.Cos(curRad));
-                vh.AddVert(GetUIVertex(posCenter + posOffset, _vcolor));
+                vh.AddVert(GetUIVertex(posCenter + posOffset, _vcolor,1f,0.5f));
                 curRad += deltaRad;
             }
 

@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace PBBox.UI
 {
-    [AddComponentMenu("PBBox/UI/Framework/UIView Motions/Motion - Canvas Group Alpha")]
+    [AddComponentMenu("PBBox/UI/Framework/UIView Motions/UIMotion - Canvas Group Alpha")]
     [RequireComponent(typeof(CanvasGroup))]
     public class UIViewMotion_CanvasAlpha : BaseUIViewMotion
     {

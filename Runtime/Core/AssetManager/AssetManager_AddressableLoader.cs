@@ -13,10 +13,23 @@ namespace PBBox
 
         internal sealed class ObjectLoader_Addressable : ObjectLoader
         {
-            AssetReference a;
+            // AssetReference a;
             AsyncOperationHandle handler;
             System.Lazy<Dictionary<int, AsyncOperationHandle<GameObject>>> m_References = new System.Lazy<Dictionary<int, AsyncOperationHandle<GameObject>>>();
             Dictionary<int, AsyncOperationHandle<GameObject>> references => m_References.Value;
+            //暂不做处理，外部使用时避免更改数组
+            // public override Object[] assets
+            // {
+            //     get
+            //     {
+            //         return m_Assets?.Clone() as Object[];
+            //     }
+            //     protected set
+            //     {
+            //         m_Assets = value;
+            //     }
+            // }
+            // Object[] m_Assets;
 
             public ObjectLoader_Addressable(string key) : base(key)
             {
@@ -42,11 +55,33 @@ namespace PBBox
                 return await handler.Task as T;
             }
 
+            protected override T[] DoLoads<T>(System.Action<T> callBack)
+            {
+                List<T> _assets = null;
+                if (!handler.IsValid())
+                {
+                    handler = Addressables.LoadAssetsAsync<T>(key, callBack);
+                }
+                _assets = handler.Convert<IList<T>>().WaitForCompletion() as List<T>;
+                return _assets?.ToArray();
+            }
+
+            protected async override Task<T[]> DoLoadsAsync<T>(System.Action<T> callBack)
+            {
+                if (!handler.IsValid())
+                {
+                    handler = Addressables.LoadAssetsAsync<T>(key, callBack);
+                }
+                var _asset = await handler.Convert<IList<T>>().Task;
+                return (_asset as List<T>)?.ToArray();
+            }
+
             protected override void OnReleaseAsset()
             {
                 if (handler.IsValid())
                 {
                     asset = null;
+                    assets = null;
                     Addressables.Release(handler);
                     handler = default;
                 }
@@ -95,9 +130,6 @@ namespace PBBox
                 }
             }
 
-            protected override void OnDispose()
-            {
-            }
         }
     }
 }

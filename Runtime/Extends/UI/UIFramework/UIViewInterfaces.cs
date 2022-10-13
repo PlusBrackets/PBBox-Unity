@@ -13,16 +13,16 @@ namespace PBBox.UI
     {
         None,
         Show = 1,
-        Resume = 1<<2,
-        Pause = 1<<3,
-        Hide = 1<<4
+        Resume = 1 << 2,
+        Pause = 1 << 3,
+        Hide = 1 << 4
     }
 
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
     public sealed class BindUIViewAttribute : Attribute
     {
         public string uiid;
-        public bool dontAutoDispose = false;
+        // public bool dontAutoDispose = false;
 
         /// <summary>
         /// 对ViewCtrl进行绑定,可以绑定多个uiid
@@ -32,27 +32,35 @@ namespace PBBox.UI
         public BindUIViewAttribute(string uiid,bool dontAutoDispose = false)
         {
             this.uiid = uiid;
-            this.dontAutoDispose = dontAutoDispose;
+            // this.dontAutoDispose = dontAutoDispose;
         }
+    }
+    
+    /// <summary>
+    /// IUIView出入栈状态的回调,可拓展至IUIView或者IUIViewController中
+    /// </summary>
+    public interface IUIViewOnStackState
+    {
+        void OnViewPushInStack(IUIView view);
+        void OnViewPopFromStack(IUIView view);
     }
     
     /// <summary>
     /// View 控制层
     /// </summary>
-    public interface IUIViewController : IDisposable
+    public interface IUIViewController
     {
         IUIView view { get; }
         void OnViewCreate(IUIView view);
         void OnViewDestroy(IUIView view);
+        void Release();
     }
 
     /// <summary>
     /// View 数据层
     /// </summary>
-    public interface IUIViewModel : IDisposable
+    public interface IUIViewModel : IDataModel
     {
-        Action<IUIViewModel> onDispose { get; }
-        Action<IUIViewModel> onRefresh { get; }
     }
 
     /// <summary>
@@ -62,6 +70,7 @@ namespace PBBox.UI
     {
         UIViews.ViewConfigure configure { get; }
         IUIViewController controller { get; set; }
+        string uniqueID { get; set; }
         string GetUIID();
         GameObject GetGameObject();
         void OnViewShow();
@@ -118,8 +127,9 @@ namespace PBBox.UI
             return UIViews.Resume(view);
         }
 
-        public static void Refresh(this IUIViewModel model){
-            model.onRefresh?.Invoke(model);
+        public static T GetController<T>(this IUIView view) where T : class,IUIViewController
+        {
+            return view.controller as T;
         }
 
         public static T GetModel<T>(this IUIViewController ctrl, bool autoCreate = true) where T : class, IUIViewModel, new()
@@ -130,11 +140,6 @@ namespace PBBox.UI
         public static T GetModel<T>(this IUIViewController ctrl, string uid, bool autoCreate = true) where T : class, IUIViewModel, new()
         {
             return UIViews.GetModel<T>(uid, autoCreate);
-        }
-
-        public static void DisposeModel<T>(this IUIViewController ctrl, string uid = null) where T : IUIViewModel
-        {
-            UIViews.DisposeModel<T>(uid);
         }
     }
 }

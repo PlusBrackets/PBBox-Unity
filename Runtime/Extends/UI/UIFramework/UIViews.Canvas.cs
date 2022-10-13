@@ -1,3 +1,9 @@
+using System.Linq;
+/*--------------------------------------------------------
+ *Copyright (c) 2022 PlusBrackets
+ *@update: 2022.05.21
+ *@author: PlusBrackets
+ --------------------------------------------------------*/
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -32,6 +38,7 @@ namespace PBBox.UI
             var viewCanvas = Instance.m_ViewCanvas;
             if (viewCanvas.ContainsValue(c))
             {
+                UnregisterCanvas(c.canvasID);
                 viewCanvas.Remove(c.canvasID);
                 return true;
             }
@@ -42,6 +49,10 @@ namespace PBBox.UI
         {
             if (!HasInstance) return;
             Instance.m_ViewCanvas.Remove(cid);
+            // var allInCanvasView = Instance.m_HoldingViews.Views.Where(v => v.canvasID == cid);
+            // foreach(var v in allInCanvasView){
+            //     Instance.m_HoldingViews.RemoveHoldingView(v);
+            // }
         }
 
         public static UIViewCanvas GetViewCanvas(string canvasID = null)

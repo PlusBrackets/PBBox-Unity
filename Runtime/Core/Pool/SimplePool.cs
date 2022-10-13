@@ -8,24 +8,35 @@ using UnityEngine;
 
 namespace PBBox
 {
+    public interface IPoolObject<T> : IPoolObject
+    {
+        void OnSpawned(T data);
+    }
+
     public interface IPoolObject
     {
-        SimplePool pool { get; set; }
-        void OnSpawned(object[] datas);
+        SimplePool Pool { get; set; }
+        void OnSpawned(object data);
         void OnDespawned();
     }
-    
-    internal static class IPoolObjectExtensions
+
+    public static class IPoolObjectExtensions
     {
-        internal static void _Spawn(this IPoolObject target, SimplePool pool, object[] datas)
+        internal static void _Spawn(this IPoolObject target, SimplePool pool, object data)
         {
-            target.pool = pool;
-            target.OnSpawned(datas);
+            target.Pool = pool;
+            target.OnSpawned(data);
+        }
+
+        internal static void _Spawn<T>(this IPoolObject<T> target, SimplePool pool, T data)
+        {
+            target.Pool = pool;
+            target.OnSpawned(data);
         }
 
         internal static void _Despawn(this IPoolObject target)
         {
-            target.pool = null;
+            target.Pool = null;
             target.OnDespawned();
         }
 
@@ -35,17 +46,17 @@ namespace PBBox
             if (!c)
                 return;
             var obj = c.gameObject;
-            if (target.pool != null && !target.pool.isDestroyed)
-                target.pool.Recycle(obj);
+            if (target.Pool != null && !target.Pool.isDestroyed)
+                target.Pool.Recycle(obj);
             else
             {
-                DebugUtils.Internal.Log($"[{obj?.name} 没有对应的pool ]");
+                // DebugUtils.Internal.Log($"[{obj?.name} 没有对应的pool ]");
                 GameObject.Destroy(obj);
             }
         }
     }
 
-    //TODO 等待优化,让其可支持普通类，Monobehaviour，GameObject
+    //TODO 等待优化,让其可支持普通类，Monobehaviour，GameObject；
     public sealed class SimplePool
     {
 
@@ -209,23 +220,27 @@ namespace PBBox
             return !po.isSpawned || (recycleUnactive && !po.obj.activeInHierarchy);
         }
 
-        public T Spawn<T>(params object[] datas)
+        // public T Spawn<T>(params object[] datas)
+        // {
+        //     return Spawn<T>(null, datas);
+        // }
+        public GameObject Spawn<T>(T data = default(T))
         {
-            return Spawn<T>(null, datas);
+            return Spawn(null, data);
         }
 
-        public GameObject Spawn(params object[] datas)
+        public GameObject Spawn(object data = null)
         {
-            return Spawn(null, datas);
+            return Spawn(null, data);
         }
 
-        public T Spawn<T>(SpawnParam? spawnParam, params object[] datas)
-        {
-            var obj = Spawn(spawnParam, datas);
-            return obj ? obj.GetComponent<T>() : default(T);
-        }
+        // public T Spawn<T>(SpawnParam? spawnParam, params object[] datas)
+        // {
+        //     var obj = Spawn(spawnParam, datas);
+        //     return obj ? obj.GetComponent<T>() : default(T);
+        // }
 
-        public GameObject Spawn(SpawnParam? spawnParam, params object[] datas)
+        public GameObject Spawn<T>(SpawnParam? spawnParam, T data = default)
         {
             if (isDestroyed)
             {
@@ -251,7 +266,7 @@ namespace PBBox
                 var sp = spawnParam.Value;
                 if (sp.scale.HasValue) obj.transform.localScale = sp.scale.Value;
                 if (sp.scaleMultiply.HasValue) obj.transform.localScale = Vector3.Scale(obj.transform.localScale, sp.scaleMultiply.Value);
-                if (sp.parent)  obj.transform.SetParent(sp.parent, sp.worldPosStay.HasValue ? sp.worldPosStay.Value : false);
+                if (sp.parent) obj.transform.SetParent(sp.parent, sp.worldPosStay.HasValue ? sp.worldPosStay.Value : false);
                 if (sp.position.HasValue) obj.transform.position = sp.position.Value;
                 if (sp.rotation.HasValue) obj.transform.rotation = sp.rotation.Value;
             }
@@ -259,7 +274,15 @@ namespace PBBox
             // obj.SendMessage("OnSpawned", datas, SendMessageOptions.DontRequireReceiver);
             foreach (var component in po.componentCaches)
             {
-                component._Spawn(this, datas);
+                if (component is IPoolObject<T> _component)
+                {
+                    component._Spawn(this, null);
+                    _component._Spawn(this, data);
+                }
+                else
+                {
+                    component._Spawn(this, data);
+                }
             }
             return obj;
         }
@@ -278,7 +301,8 @@ namespace PBBox
             var po = m_PoolObjectList[index];
             if (po.obj.transform.parent != objectParent && po.obj.transform.parent.gameObject.activeInHierarchy)
             {
-                po.obj.transform.parent = objectParent;
+                po.obj.transform.SetParent(objectParent, false);
+                // po.obj.transform.parent = objectParent;
             }
             po.isSpawned = false;
             m_PoolObjectList[index] = po;
@@ -318,7 +342,9 @@ namespace PBBox
             for (int i = startIndex; i < m_PoolObjectList.Count; i++)
             {
                 var po = m_PoolObjectList[i];
-                GameObject.Destroy(po.obj);
+                if(po.obj){
+                    GameObject.Destroy(po.obj);
+                }
             }
             m_PoolObjectList.RemoveRange(startIndex, count);
         }

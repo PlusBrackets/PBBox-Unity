@@ -6,6 +6,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Events;
 
 namespace PBBox
 {
@@ -34,7 +35,7 @@ namespace PBBox
         /// <returns></returns>        
         public static int RandomRange(this Vector2Int target)
         {
-            return Random.Range(target.x, target.y + 1);
+            return RandomUtils.Range(target.x, target.y + 1);
         }
 
         /// <summary>
@@ -44,7 +45,7 @@ namespace PBBox
         /// <returns></returns>
         public static float RandomRange(this Vector2 target)
         {
-            return Random.Range(target.x, target.y);
+            return RandomUtils.Range(target.x, target.y);
         }
 
         /// <summary>
@@ -112,7 +113,32 @@ namespace PBBox
         }
 
         #endregion
+        #region Number
+        /// <summary>
+        /// value是否在此范围 [min,max)
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public static bool IsInRange(this float value, float min, float max)
+        {
+            return value >= min && value < max;
+        }
+
+        
+        #endregion
         #region Array
+        public static T GetRandomItem<T>(this IList<T> target)
+        {
+            return RandomUtils.RandomArrayItem(target);
+        }
+
+        public static T[] GetRandomItems<T>(this IList<T> target, int count, bool canRepeat = true)
+        {
+            return RandomUtils.RandomArrayItems(target, count, canRepeat);
+        }
+
         public static void Push<T>(this IList<T> target, T value)
         {
             target.Add(value);
@@ -151,12 +177,63 @@ namespace PBBox
             {
                 return false;
             }
-            else{
+            else
+            {
                 value = Peek(target);
                 return true;
             }
         }
 
+        public static bool TryGet<T>(this IList<T> target, int index, out T value, T defaultValue = default(T))
+        {
+            if(index<target.Count && index>=0){
+                value = target[index];
+                return true;
+            }
+            else
+            {
+                value = defaultValue;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 存在value中的任意一个值则返回true
+        /// </summary>
+        /// /// <param name="source"></param>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static bool ContainsAny<T>(this IEnumerable<T> source, IEnumerable<T> value)
+        {
+            foreach (var v in value)
+            {
+                if (System.Linq.Enumerable.Contains(source, v))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 存在value中的所有值则返回true
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static bool ContainsAll<T>(this IEnumerable<T> source, IEnumerable<T> value)
+        {
+            foreach (var v in value)
+            {
+                if (!System.Linq.Enumerable.Contains(source, v))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         #endregion
     }

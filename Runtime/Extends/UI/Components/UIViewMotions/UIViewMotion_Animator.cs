@@ -3,12 +3,6 @@
  *@update: 2022.05.15
  *@author: PlusBrackets
  --------------------------------------------------------*/
-#if (ODIN_INSPECTOR || ODIN_INSPECTOR_3) && UNITY_EDITOR
-#define USE_ODIN
-#endif
-#if USE_ODIN
-using Sirenix.OdinInspector;
-#endif
 using System.Collections;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -16,7 +10,7 @@ using UnityEngine;
 
 namespace PBBox.UI
 {
-    [AddComponentMenu("PBBox/UI/Framework/UIView Motions/Motion - Animtor")]
+    [AddComponentMenu("PBBox/UI/Framework/UIView Motions/UIMotion - Animtor")]
     [RequireComponent(typeof(Animator))]
     public class UIViewMotion_Animator : BaseUIViewMotion
     {

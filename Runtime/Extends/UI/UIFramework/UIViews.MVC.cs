@@ -1,6 +1,6 @@
 /*--------------------------------------------------------
  *Copyright (c) 2022 PlusBrackets
- *@update: 2022.03.31
+ *@update: 2022.05.21
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
+using System.Linq;
 
 namespace PBBox.UI
 {
@@ -24,8 +25,7 @@ namespace PBBox.UI
 
         Dictionary<string, BindTypeInfo> m_ViewCtrlBindMap;
 
-        Dictionary<string, IUIViewController> m_ViewCtrls;
-        Dictionary<string, IUIViewModel> m_ViewModels;
+        Dictionary<int, IUIViewController> m_ViewCtrls;
 
         /// <summary>
         /// 绑定ViewCtrl
@@ -33,43 +33,55 @@ namespace PBBox.UI
         void InitMVC()
         {
             m_ViewCtrlBindMap = new Dictionary<string, BindTypeInfo>();
-            m_ViewCtrls = new Dictionary<string, IUIViewController>();
-            m_ViewModels = new Dictionary<string, IUIViewModel>();
+            m_ViewCtrls = new Dictionary<int, IUIViewController>();
 
-            var types = ReflectionUtils.GetAllChildClass<IUIViewController>();
-            if (types == null || types.Length == 0)
-                return;
+#if UNITY_EDITOR || GAME_TEST
+            System.Text.StringBuilder logs = new System.Text.StringBuilder();
+            logs.AppendLine("");
+            var testCost = new System.Diagnostics.Stopwatch();
+            testCost.Start();
+#endif
+            var types = ReflectionUtils.GetAllChildClassWithAttribute<IUIViewController, BindUIViewAttribute>(assemblyNames: PBBoxConfigs.UI_REFLECT_ASSEMBLIES);
+
+            // if (types == null || types.Count() == 0)
+            //     return;
             int bindCount = 0;
             foreach (Type t in types)
             {
-                if (t.IsDefined(typeof(BindUIViewAttribute), true))
+                var attributes = t.GetCustomAttributes<BindUIViewAttribute>(false);
+                foreach (var a in attributes)
                 {
-                    var attributes = t.GetCustomAttributes<BindUIViewAttribute>();
-                    foreach (var a in attributes)
+                    if (m_ViewCtrlBindMap.TryAdd(a.uiid, new BindTypeInfo() { type = t, attribute = a }))
                     {
-                        if (m_ViewCtrlBindMap.TryAdd(a.uiid, new BindTypeInfo() { type = t, attribute = a }))
-                        {
-                            DebugUtils.Internal.Info<UIViews>($"绑定 UIID[{a.uiid}] <-> ViewCtrl[{t.FullName}]");
-                            bindCount++;
-                        }
-                        else
-                        {
-                            this.LogInfoError($"{t.FullName} 无法绑定UIID: {a.uiid}，请检查是否有重复的绑定");
-                        }
+#if UNITY_EDITOR || GAME_TEST
+                        logs.AppendLine($"绑定 UIID[{a.uiid}] <-> ViewCtrl[{t.FullName}]");
+#endif
+                        bindCount++;
+                    }
+                    else
+                    {
+                        this.LogInfoError($"{t.FullName} 无法绑定UIID: {a.uiid}，请检查是否有重复的绑定");
                     }
                 }
             }
-            DebugUtils.Internal.Info<UIViews>($"UIViewCtrl绑定结束,已绑定:{bindCount}");
+#if UNITY_EDITOR || GAME_TEST
+            testCost.Stop();
+            DebugUtils.Internal.Info<UIViews>($"UIViewCtrl绑定结束,已绑定:{bindCount},耗时{testCost.Elapsed.TotalMilliseconds}ms"
+                + logs.ToString());
+#else
+                            
+             DebugUtils.Internal.Info<UIViews>($"UIViewCtrl绑定结束,已绑定:{bindCount}");
+#endif
         }
-
-        /// <summary>
+        #region controllers
+             /// <summary>
         /// 获取View的控制器
         /// </summary>
         /// <param name="uiid"></param>
         /// <returns></returns>
-        public static IUIViewController GetController(string uiid)
+        public static IUIViewController GetController(string uiid, string uniqueID)
         {
-            Instance.m_ViewCtrls.TryGetValue(uiid, out var ctrl);
+            Instance.m_ViewCtrls.TryGetValue(HoldingView.GetHashCode(uiid, uniqueID), out var ctrl);
             return ctrl;
         }
 
@@ -78,9 +90,9 @@ namespace PBBox.UI
         /// </summary>
         /// <param name="uiid"></param>
         /// <returns></returns>
-        public static T GetController<T>(string uiid) where T : class, IUIViewController
+        public static T GetController<T>(string uiid, string uniqueID) where T : class, IUIViewController
         {
-            return GetController(uiid) as T;
+            return GetController(uiid, uniqueID) as T;
         }
 
         /// <summary>
@@ -88,87 +100,76 @@ namespace PBBox.UI
         /// </summary>
         /// <param name="uiid"></param>
         /// <returns></returns>
-        public static bool DisposeController(string uiid)
+        public static bool ReleaseController(string uiid, string uniqueID)
         {
             var self = Instance;
-            if (self.m_ViewCtrls.TryGetValue(uiid, out var ctrl))
+            if (self.m_ViewCtrls.TryGetValue(HoldingView.GetHashCode(uiid, uniqueID), out var ctrl))
             {
-                if (self.m_InstantiatedViews.ContainsKey(uiid))
+                if (self.m_HoldingViews.HasInstantiatedView(uiid, uniqueID))
                 {
                     self.LogInfo($"UIID:[{uiid}] ViewCtrl占用中，请先将对应的UIView销毁");
                     return false;
                 }
                 else
                 {
-                    self.TryDisposeCtrl(uiid, ctrl, true);
+                    self.TryReleaseCtrl(uiid, uniqueID, ctrl, true);
                     return true;
                 }
             }
             return false;
         }
-
-        void TryDisposeCtrl(string uiid, IUIViewController ctrl, bool forceDispose = false)
+        
+        void TryReleaseCtrl(string uiid, string uniqueID, IUIViewController ctrl, bool forceRelease = false)
         {
             if (ctrl == null)
             {
-                if (!m_ViewCtrls.TryGetValue(uiid, out ctrl))
+                if (!m_ViewCtrls.TryGetValue(HoldingView.GetHashCode(uiid, uniqueID), out ctrl))
                     return;
             }
-            if (forceDispose || m_ViewCtrlBindMap[uiid].attribute.dontAutoDispose)
+            if (forceRelease)// || m_ViewCtrlBindMap[uiid].attribute.dontAutoDispose) //暂不加入
             {
-                ctrl.Dispose();
-                m_ViewCtrls.Remove(uiid);
+                ctrl.Release();
+                m_ViewCtrls.Remove(HoldingView.GetHashCode(uiid, uniqueID));
             }
         }
 
         void TryBindCtrlToView(IUIView view)
         {
-            string uiid = view.GetUIID();
-            if (m_ViewCtrlBindMap.TryGetValue(uiid, out BindTypeInfo info))
+            if (m_ViewCtrlBindMap.TryGetValue(view.GetUIID(), out BindTypeInfo info))
             {
-                if (!m_ViewCtrls.TryGetValue(uiid, out var vc))
+                if (!m_ViewCtrls.TryGetValue(HoldingView.GetHashCode(view), out var vc))
                 {
                     vc = Activator.CreateInstance(info.type) as IUIViewController;
-                    m_ViewCtrls.Add(uiid, vc);
+                    m_ViewCtrls.Add(HoldingView.GetHashCode(view), vc);
                 }
                 view.controller = vc;
                 vc.OnViewCreate(view);
             }
         }
+        #endregion
+
+        #region Models
 
         public static T GetModel<T>(bool autoCreate = true) where T : class, IUIViewModel, new()
         {
-            string uid = typeof(T).FullName;
-            return GetModel<T>(uid, autoCreate);
+            return DataModels.Get<T>(autoCreate);
         }
 
-        public static T GetModel<T>(string uid, bool autoCreate = true) where T : class, IUIViewModel, new()
+        public static T GetModel<T>(string modelName, bool autoCreate = true) where T : class, IUIViewModel, new()
         {
-            var self = Instance;
-            if (!self.m_ViewModels.TryGetValue(uid, out var model))
-            {
-                if (autoCreate)
-                {
-                    model = new T();
-                    self.m_ViewModels.Add(uid, model);
-                }
-            }
-            return model as T;
+            return DataModels.Get<T>(modelName, autoCreate);
         }
 
-        public static void DisposeModel<T>(string uid = null) where T : IUIViewModel
+        public static void ReleaseModel<T>() where T : IUIViewModel
         {
-            var self = Instance;
-            if (string.IsNullOrEmpty(uid))
-            {
-                uid = typeof(T).FullName;
-            }
-            if (self.m_ViewModels.Remove(uid, out var model))
-            {
-                model.Dispose();
-                model.onDispose?.Invoke(model);
-            }
+            DataModels.Release<T>();
         }
+
+        public static void ReleaseModel(string modelName)
+        {
+            DataModels.Release(modelName);
+        }
+        #endregion
 
     }
 

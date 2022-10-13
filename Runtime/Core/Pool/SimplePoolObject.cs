@@ -8,11 +8,27 @@ using UnityEngine.Events;
 
 namespace PBBox
 {
+    /// <summary>
+    /// 继承IPoolOpbject，结构体等值类型可避免装箱
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [AddComponentMenu("")]
+    public abstract class SimplePoolObject<T> : SimplePoolObject, IPoolObject<T>
+    {
+        void IPoolObject<T>.OnSpawned(T data)
+        {
+            this.OnSpawned(data);
+        }
+
+        protected virtual void OnSpawned(T data) { }
+    }
+
+    [AddComponentMenu("PBBox/Pool/Simple Pool Object")]
     public class SimplePoolObject : MonoBehaviour, IPoolObject
     {
         public class PoolObjectEvent : UnityEvent<SimplePoolObject> { }
 
-        SimplePool IPoolObject.pool { get; set; }
+        SimplePool IPoolObject.Pool { get; set; }
         [SerializeField]
         private float m_LifeTime = -1f;
         public float lifeTime
@@ -25,13 +41,13 @@ namespace PBBox
             {
                 m_LifeTime = value;
                 if (lifeTimer.state == GameTimer.State.Started)
+                {
+                    if (value < 0f) lifeTimer.Stop();
                     lifeTimer.duration = value;
+                }
                 else
                 {
-                    if (m_LifeTime > 0f)
-                    {
-                        lifeTimer.Start(m_LifeTime);
-                    }
+                    if (m_LifeTime > Mathf.Epsilon) lifeTimer.Start(m_LifeTime);
                 }
             }
         }
@@ -39,7 +55,8 @@ namespace PBBox
         public bool delayInGameTime = true;
         [Tooltip("在disable时立刻回收")]
         public bool recycleInDisable = false;
-        protected GameTimer lifeTimer = new GameTimer();
+        [SerializeField]
+        protected GameDualityTimer lifeTimer = new GameDualityTimer();
         [SerializeField]
         protected PoolObjectEvent m_OnSpawnedEvent;
         public PoolObjectEvent onSpawnedEvent
@@ -67,26 +84,29 @@ namespace PBBox
             }
         }
 
-        private ActionQueue m_RecycleDelayAQ;
+        ActionQueue m_RecycleDelayAQ;
+        bool m_IsInRecycle = false;
 
-        void IPoolObject.OnSpawned(object[] datas)
+        void IPoolObject.OnSpawned(object data)
         {
+            m_IsInRecycle = false;
             if (lifeTime >= 0f)
             {
                 lifeTimer.Start(lifeTime);
             }
 
             // this.pool = pool;
-            OnSpawned(datas);
+            OnSpawned(data);
             m_OnSpawnedEvent?.Invoke(this);
         }
 
         void IPoolObject.OnDespawned()
         {
+            m_IsInRecycle = true;
+            m_RecycleDelayAQ?.Cancel();
             lifeTimer.Stop();
             OnDespawned();
             m_OnDespawnedEvent?.Invoke(this);
-            m_RecycleDelayAQ?.Cancel();
         }
 
         protected virtual void LateUpdate()
@@ -100,29 +120,28 @@ namespace PBBox
 
         protected virtual void OnDisable()
         {
-            if (recycleInDisable && (this as IPoolObject).pool != null)
+            if (recycleInDisable && (this as IPoolObject).Pool != null)
             {
                 this.RecycleSelf();
             }
         }
 
-        protected virtual void OnSpawned(object[] datas)
-        {
+        protected virtual void OnSpawned(object data){}
 
-        }
-
-        protected virtual void OnDespawned()
-        {
-        }
+        protected virtual void OnDespawned(){}
 
         protected virtual void OnLifeTimeEnd()
         {
+            if (m_IsInRecycle)
+                return;
             if (recycleDelay > 0)
             {
-                if(m_RecycleDelayAQ==null){
+                m_IsInRecycle = true;
+                if (m_RecycleDelayAQ == null)
+                {
                     m_RecycleDelayAQ = new ActionQueue(this);
                 }
-                m_RecycleDelayAQ.DelayGameTime(recycleDelay,!delayInGameTime).Do(this.RecycleSelf).Execute();
+                m_RecycleDelayAQ.DelayGameTime(recycleDelay, !delayInGameTime).Do(this.RecycleSelf).Execute();
             }
             else
                 this.RecycleSelf();

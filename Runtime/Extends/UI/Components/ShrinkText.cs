@@ -1,3 +1,8 @@
+/*--------------------------------------------------------
+ *Copyright (c) 2022 PlusBrackets
+ *@update: 2022.05.21
+ *@author: PlusBrackets
+ --------------------------------------------------------*/
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,6 +12,7 @@ using PBBox;
 
 namespace PBBox.UI
 {
+    [AddComponentMenu("PBBox/UI/Components/Shrink Text")]
     public class ShrinkText : Text
     {
         /// <summary>

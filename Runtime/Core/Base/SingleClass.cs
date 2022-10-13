@@ -11,7 +11,7 @@ namespace PBBox
     /// <summary>
     /// c#类单例
     /// </summary>
-    public abstract class SingleClass<T> where T : SingleClass<T>
+    public abstract class SingleClass<T> where T : SingleClass<T>, new()
     {
         protected static T _instance;
         private static object _lock = new object();//线程锁定
@@ -46,40 +46,37 @@ namespace PBBox
             {
                 if (_instance == null)
                 {
-                    _instance = _Create();
+                    _instance = new T();// (T)Activator.CreateInstance(typeof(T));// _Create();
+                    _instance.Init();
                 }
             }
 
         }
 
+        protected virtual void Init(){}
+
         /// <summary>
-        /// 关闭单例，慎用
+        /// 销毁单例，慎用
         /// </summary>
-        public static void Dispose()
+        public static void Destroy()
         {
             if (HasInstance)
             {
+                var _temp = _instance;
                 _instance = null;
-                _instance.OnDispose();
+                _temp.OnDestroy();
             }
         }
 
-        protected virtual void OnDispose()
+        protected virtual void OnDestroy()
         {
         }
 
-        static T _Create()
-        {
-            Type type = typeof(T);
-            try
-            {
-                return (T)type.Assembly.CreateInstance(type.FullName, true, BindingFlags.NonPublic | BindingFlags.Instance, null, null, null, null);
-            }
-            catch (MissingMethodException ex)
-            {
-                throw new Exception($"{ex.Message}[{type.Name}类 缺少private的构造函数]");
-            }
-        }
+        // static T _Create()
+        // {
+        //     Type type = typeof(T);
+        //     return (T)Activator.CreateInstance(type);// (T)type.Assembly.CreateInstance(type.FullName, true, BindingFlags. | BindingFlags.Instance, null, null, null, null);
+        // }
     }
 
 }

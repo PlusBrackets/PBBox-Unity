@@ -34,7 +34,11 @@ namespace PBBox.UI
         string[] m_PreloadUIIDs;
         [Header("Init Status")]
         [SerializeField]
-        string[] m_DefaultShowUI,m_DestroyHideUI;
+        string[] m_DefaultShowUI;
+        [SerializeField]
+        string[] m_DestroyHideUI;
+        [SerializeField]
+        string[] m_DestoryHideTag;
 
         void Awake()
         {
@@ -45,9 +49,11 @@ namespace PBBox.UI
                     UIViews.RegisterUIPrefab(p);
                 }
             }
-            if(m_PreloadUIIDs != null){
-                foreach(var id in m_PreloadUIIDs){
-                    UIViews.LoadAsync(id).GetAwaiter().OnCompleted(() => DebugUtils.Log("Loaded UI: " + id));
+            if (m_PreloadUIIDs != null)
+            {
+                foreach (var id in m_PreloadUIIDs)
+                {
+                    UIViews.Load(id);
                 }
             }
         }
@@ -69,6 +75,13 @@ namespace PBBox.UI
                 foreach (var uiid in m_DestroyHideUI)
                 {
                     UIViews.Hide(uiid);
+                }
+            }
+            if (m_DestoryHideTag != null)
+            {
+                foreach (var tag in m_DestoryHideTag)
+                {
+                    UIViews.HideWithTag(tag, true);
                 }
             }
             if (m_UnregisterOnDestroy)

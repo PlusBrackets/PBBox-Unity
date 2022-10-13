@@ -1,4 +1,9 @@
- using System.Collections;
+/*--------------------------------------------------------
+ *Copyright (c) 2022 PlusBrackets
+ *@update: 2022.05.21
+ *@author: PlusBrackets
+ --------------------------------------------------------*/
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,22 +15,20 @@ namespace PBBox.UI
     [DisallowMultipleComponent]
     public sealed class PBVersionText : MonoBehaviour
     {
-        [System.Serializable]
-        public class TextEvent : UnityEvent<string> { }
         [SerializeField]
-        TextEvent m_OnGetVersion;
-        public TextEvent onGetVersion
+        UEvent_String m_OnGetVersion;
+        public UEvent_String onGetVersion
         {
             get
             {
                 if (m_OnGetVersion == null)
                 {
-                    m_OnGetVersion = new TextEvent();
+                    m_OnGetVersion = new UEvent_String();
                 }
                 return m_OnGetVersion;
             }
         }
-        
+
         public string prefix,suffix;
         public string text{get;private set;}
 

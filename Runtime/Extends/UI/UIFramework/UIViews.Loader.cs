@@ -39,6 +39,23 @@ namespace PBBox.UI
             // m_UIPaths = new Dictionary<string, UIPath>();
         }
 
+        /// <summary>
+        /// 异步加载
+        /// </summary>
+        /// <param name="uiid"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public static async void Load(string uiid, System.Action<IUIView> callBack = null)
+        {
+            await LoadAsync(uiid, callBack);
+        }
+
+        /// <summary>
+        /// 异步加载
+        /// </summary>
+        /// <param name="uiid"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public static async Task<IUIView> LoadAsync(string uiid, System.Action<IUIView> callBack = null)
         {
             if (IsLoaded(uiid))
@@ -51,7 +68,7 @@ namespace PBBox.UI
             {
                 view = obj.GetComponent<IUIView>();
                 RegisterUIPrefab(view);
-                DebugUtils.Info<UIViews>($"Loaded UI: [{uiid}]");
+                DebugUtils.Internal.Info<UIViews>($"Loaded UI: [{uiid}]");
             }
             else
             {
@@ -62,11 +79,16 @@ namespace PBBox.UI
             return view;
         }
 
-        public static IUIView Load(string uiid)
+        /// <summary>
+        /// 同步加载
+        /// </summary>
+        /// <param name="uiid"></param>
+        /// <returns></returns>
+        public static IUIView LoadSync(string uiid)
         {
             if (IsLoaded(uiid))
                 return Instance.m_ViewPrefabs[uiid];
-            GameObject obj = AssetManager.LoadAsset<GameObject>(uiid);
+            GameObject obj = AssetManager.LoadAssetSync<GameObject>(uiid);
             IUIView view = null;
             if (obj != null)
             {

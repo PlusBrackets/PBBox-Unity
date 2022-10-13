@@ -22,26 +22,26 @@ namespace PBBox
 
         #region static
 
-        public static GameObject Spawn(GameObject original, SimplePool.SpawnParam? param = null, params object[] datas)
+        public static GameObject Spawn(GameObject original, SimplePool.SpawnParam? param = null, object data = null)//params object[] datas)
         {
-            return Spawn(Default_GroupName, original, param, datas);
+            return Spawn(Default_GroupName, original, param, data);
         }
 
-        public static GameObject Spawn(string origianlName, SimplePool.SpawnParam? param = null, params object[] datas)
+        public static GameObject Spawn(string origianlName, SimplePool.SpawnParam? param = null, object data = null)//params object[] datas)
         {
-            return Spawn(Default_GroupName, origianlName, param, datas);
+            return Spawn(Default_GroupName, origianlName, param, data);
         }
 
-        public static GameObject Spawn(string groupName, GameObject original, SimplePool.SpawnParam? param = null, params object[] datas)
+        public static GameObject Spawn(string groupName, GameObject original, SimplePool.SpawnParam? param = null, object data = null)// params object[] datas)
         {
             var _pool = GetPool(groupName, original);
-            return _pool.Spawn(param, datas);
+            return _pool.Spawn(param, data);
         }
 
-        public static GameObject Spawn(string groupName, string originalName, SimplePool.SpawnParam? param = null, params object[] datas)
+        public static GameObject Spawn(string groupName, string originalName, SimplePool.SpawnParam? param = null, object data = null)//params object[] datas)
         {
             var _pool = GetPool(groupName, originalName);
-            return _pool?.Spawn(param, datas);
+            return _pool?.Spawn(param, data);
 
         }
 
@@ -71,8 +71,9 @@ namespace PBBox
 
         Dictionary<string, Group> groups;
 
-        private PoolsManager()
+        protected override void Init()
         {
+            base.Init();
             groups = new Dictionary<string, Group>();
             SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
@@ -137,9 +138,9 @@ namespace PBBox
             return pool;
         }
 
-        protected override void OnDispose()
+        protected override void OnDestroy()
         {
-            base.OnDispose();
+            base.OnDestroy();
             groups = null;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
         }
@@ -151,14 +152,17 @@ namespace PBBox
             {
                 var group = groups[groupKey];
                 var poolKeys = group.pools.Keys.ToArray();
-                foreach(string poolKey in poolKeys){
+                foreach (string poolKey in poolKeys)
+                {
                     var pool = group.pools[poolKey];
-                    if(pool.isDestroyed||pool.objectParent==null){
+                    if (pool.isDestroyed || pool.objectParent == null)
+                    {
                         pool.DestoryPool();
                         group.pools.Remove(poolKey);
                     }
                 }
-                if(group.pools.Count==0){
+                if (group.pools.Count == 0)
+                {
                     groups.Remove(groupKey);
                 }
             }

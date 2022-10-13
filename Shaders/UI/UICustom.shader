@@ -21,6 +21,9 @@ Shader "PBBox/UI/Custom"
         _Brightness("Brightness",Float) = 1
         _Saturation("Saturation",Float) = 1
         _Contrast("Contrast",Float) = 1
+
+        _TextureAlphaLerp("Texture Alpha Lerp",Range(0,1)) = 1
+        _TextureAlphaLerpCut("Texture Alpha Lerp Cut",Range(0,1)) = 0.01
         //end
     }
     
@@ -70,6 +73,9 @@ Shader "PBBox/UI/Custom"
             half _Brightness;
             half _Saturation;
             half _Contrast;
+
+            half _TextureAlphaLerp;
+            half _TextureAlphaLerpCut;
             
             struct appdata_t
             {
@@ -101,7 +107,9 @@ Shader "PBBox/UI/Custom"
             
             fixed4 frag(v2f IN) : SV_Target
             {
-                fixed4 c = tex2D(_MainTex, IN.texcoord)*IN.color;
+                fixed4 c = tex2D(_MainTex, IN.texcoord);
+                c.a = lerp(step(_TextureAlphaLerpCut,c.a) ,c.a, _TextureAlphaLerp);
+                c *= IN.color;
                 //改变亮度
                 c.rgb*= _Brightness;
                 //改变饱和度

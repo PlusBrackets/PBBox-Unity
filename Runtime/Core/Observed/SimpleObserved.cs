@@ -14,19 +14,20 @@ namespace PBBox
     /// 简单可观察类,同时也为观察者,相当于事件触发器
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public sealed class SimpleObservable<T> : IObservable<T>, IObserver<T>, IDisposable
+    public sealed class SimpleObservable<T> : IObservable<T>, IObserver<T>//, IDisposable
     {
         bool isDisposed = false;
         bool isStoped = false;
-        bool isNexting = false;
+        bool isObservarsOccupy => observars == nextingObservars;
         HashSet<IObserver<T>> observars;
+        HashSet<IObserver<T>> nextingObservars;
 
         IDisposable IObservable<T>.Subscribe(IObserver<T> observer)
         {
             if (isDisposed) throw new ObjectDisposedException(this.GetType().Name);
             if (isStoped) return Subscription.Empty;
             if (observars == null) observars = new HashSet<IObserver<T>>();
-            else if (isNexting) observars = new HashSet<IObserver<T>>(observars);
+            else if (isObservarsOccupy) observars = new HashSet<IObserver<T>>(observars);
             if (observars.Add(observer))
             {
                 return new Subscription(this, observer);
@@ -36,7 +37,7 @@ namespace PBBox
                 return Subscription.Empty;
             }
         }
-        
+
         /// <summary>
         /// 订阅事件
         /// </summary>
@@ -61,13 +62,12 @@ namespace PBBox
 
         public void OnNext(T value)
         {
-            isNexting = true;
-            var _observers = observars;
-            foreach (var o in _observers)
+            nextingObservars = observars;
+            foreach (var o in nextingObservars)
             {
                 o.OnNext(value);
             }
-            isNexting = false;
+            nextingObservars = null;
         }
 
         public void OnError(Exception e)
@@ -82,12 +82,32 @@ namespace PBBox
             }
         }
 
-        public void Dispose()
+        // private void OnDispose()
+        // {
+        //     isDisposed = true;
+        //     observars = null;
+        // }
+
+        // public void Dispose()
+        // {
+        //     OnDispose();
+        //     GC.SuppressFinalize(this);
+        // }
+
+        public void DisposeObservar(IObserver<T> target)
         {
-            isDisposed = true;
-            observars = null;
+            if(isDisposed)
+                return;
+            if (isObservarsOccupy)
+            {
+                observars = new HashSet<IObserver<T>>(observars);
+            }
+            else
+            {
+                observars.Remove(target);
+            }
         }
-        
+
         public class Subscription : IDisposable
         {
             public readonly static Subscription Empty = new Subscription(null, null);
@@ -105,7 +125,7 @@ namespace PBBox
             {
                 if (parent != null && target != null && parent.observars != null)
                 {
-                    parent.observars.Remove(target);
+                    parent.DisposeObservar(target);
                 }
                 parent = null;
                 target = null;
@@ -123,7 +143,7 @@ namespace PBBox
         readonly Action onCompleted;
         readonly Action<Exception> onError;
 
-        public SimpleObserver(Action<T> onNext,Action onCompleted,Action<Exception> onError)
+        public SimpleObserver(Action<T> onNext, Action onCompleted, Action<Exception> onError)
         {
             this.onNext = onNext;
             this.onCompleted = onCompleted;

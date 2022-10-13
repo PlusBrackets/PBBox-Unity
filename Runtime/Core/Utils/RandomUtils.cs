@@ -16,6 +16,8 @@ namespace PBBox
     {
         public static System.Random sysRandom = new System.Random((int)DateTime.Now.Ticks);
 
+        public static float Value => (float)sysRandom.NextDouble();
+
         /// <summary>
         /// [min,max)
         /// </summary>
@@ -24,8 +26,7 @@ namespace PBBox
         /// <returns></returns>
         public static float Range(float min, float max)
         {
-            double r = sysRandom.NextDouble();
-            return (float)((max - min) * r + min);
+            return (float)((max - min) * Value + min);
         }
 
         /// <summary>

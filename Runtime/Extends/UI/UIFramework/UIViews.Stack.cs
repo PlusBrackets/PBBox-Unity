@@ -14,25 +14,18 @@ namespace PBBox.UI
     {
         class StackedViewState
         {
-            public string uiid;
-            public ViewFlags flags;
+            public string uiid => holdingView.uiid;
+            public string uniqueID => holdingView.uniqueID;
+            public ViewFlags flags => holdingView.flags;
+            public HoldingView holdingView;
             public int hideCount;
             public int forceHideCount;
 
-            public StackedViewState(IUIView view)
+            public StackedViewState(HoldingView viewHoldingData)
             {
-                uiid = view.GetUIID();
+                holdingView = viewHoldingData;
                 hideCount = 0;
                 forceHideCount = 0;
-                this.flags = view.configure.uiFlags;
-            }
-
-            public StackedViewState(string uiid, ViewFlags flags)
-            {
-                this.uiid = uiid;
-                hideCount = 0;
-                forceHideCount = 0;
-                this.flags = flags;
             }
 
             public void FlatHideCount(int flat, int force)
@@ -44,21 +37,26 @@ namespace PBBox.UI
 
             public bool IsView(IUIView view)
             {
-                return view.GetUIID() == uiid;
+                return holdingView.IsView(view);
+            }
+
+            public bool IsView(HoldingView view)
+            {
+                return holdingView == view || (holdingView.uiid == view.uiid && holdingView.uniqueID == view.uniqueID);
             }
 
             public bool IsHide()
             {
                 if (forceHideCount > 0)
                     return true;
-                if (hideCount > 0 && !flags.HasFlag(ViewFlags.PauseIfHideAtStack))
+                if (hideCount > 0 && !holdingView.flags.HasFlag(ViewFlags.PauseIfHideAtStack))
                     return true;
                 return false;
             }
 
             public static implicit operator bool(StackedViewState exists)
             {
-                return !string.IsNullOrEmpty(exists.uiid);
+                return exists.holdingView;
             }
         }
 
@@ -75,13 +73,37 @@ namespace PBBox.UI
                 m_ViewStates = new Lazy<List<StackedViewState>>();
             }
 
-
-            internal void PushBeforeShow(IUIView view)
+            internal bool IsViewInStackButNoOnTop(HoldingView view)
             {
+                if (view.isStacked)
+                {
+                    if (viewStates.TryPeek(out var vs) && !vs.IsView(view))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+
+            internal void PushBeforeShow(HoldingView view, bool hideStackBehind)
+            {
+                //Check
+                bool isInStackButNoTop = IsViewInStackButNoOnTop(view);
+                if (isInStackButNoTop)
+                {
+                    int index = viewStates.FindLastIndex(vs => vs.IsView(view));
+                    if (hideStackBehind)
+                    {
+                        PopAfterHide(viewStates[index + 1].holdingView, true);
+                    }
+                    return;
+                }
+                view.isStacked = true;
                 StackedViewState targetView = new StackedViewState(view);
                 bool hasStacked = viewStates.TryPeek(out StackedViewState previousViewState);
                 viewStates.Push(targetView);
-                var uiFlags = view.configure.uiFlags;
+                var uiFlags = view.flags;
 
                 if (hasStacked)
                 {
@@ -102,7 +124,8 @@ namespace PBBox.UI
                     }
                     else
                     {
-                        Pause(previousViewState.uiid);
+                        //暂停前一个
+                        TryHideOrPauseView(previousViewState, 0, 0);
                     }
                 }
 
@@ -111,30 +134,61 @@ namespace PBBox.UI
                     state.FlatHideCount(hideCount, forceCount);
                     if (state.IsHide())
                     {
-                        _instance.HideView(Get(state.uiid), false);
+                        _instance.HideView(Get(state.uiid, state.uniqueID), state.holdingView, false);
                     }
                     else
                     {
-                        Pause(state.uiid);
+                        _instance.PauseView(Get(state.uiid, state.uniqueID));
                     }
                 }
             }
 
-            internal void PopAfterHide(IUIView view)
+            internal void PopAfterHide(HoldingView holdingView, bool hideStackBehind)
             {
                 StackedViewState lastViewState;
                 bool hasStacked = viewStates.TryPeek(out lastViewState);
-                if (!hasStacked)
+                if (!hasStacked || (!hideStackBehind && !lastViewState.IsView(holdingView)))
                     return;
                 int hideCount = 0;
                 int forceCount = 0;
-                if (lastViewState.IsView(view))
+                if (!lastViewState.IsView(holdingView))
+                {   
+                    //将在该view之后入栈的view全部关闭
+                    int index = viewStates.FindLastIndex(s => s.IsView(holdingView));
+                    if (index == -1) return;
+                    lastViewState = viewStates[index];
+
+                    for (int i = viewStates.Count - 1; i > index; i--)
+                    {
+                        var hv = viewStates[i].holdingView;
+                        //设置hideCount 和forceCount的数量
+                        if (hv.flags.HasFlag(ViewFlags.HideAllAtStack))
+                        {
+                            hideCount += 1;
+                            forceCount += hv.flags.HasFlag(ViewFlags.Ingore_PauseIf_Flags) ? 1 : 0;
+                        }
+                        else if (i == index + 1 && hv.flags.HasFlag(ViewFlags.HidePreviousAtStack))//如果是目标view的上一个，则判断是否有隐藏前一个的flag
+                        {
+                            hideCount += 1;
+                            forceCount += hv.flags.HasFlag(ViewFlags.Ingore_PauseIf_Flags) ? 1 : 0;
+                        }
+                        //将hv移出栈，并隐藏
+                        viewStates.RemoveAt(i);
+                        // var _hv = _instance.m_HoldingViews.TryGetHoldingView(hv.uiid, hv.uniqueID);
+                        hv.isStacked = false;
+                        _instance.HideView(Get(hv.uiid, hv.uniqueID), hv, false, true, false);
+                        //end
+                    }
+                }
+                if (lastViewState.IsView(holdingView))
                 {
                     viewStates.Pop();
+                    holdingView.isStacked = false;
                     hasStacked = viewStates.TryPeek(out var previousViewState);
                     if (hasStacked)
                     {
-                        if (view.configure.uiFlags.HasFlag(ViewFlags.HideAllAtStack))
+                        //取消隐藏所有
+                        if (holdingView.flags.HasFlag(ViewFlags.HideAllAtStack))
                         {
                             hideCount += 1;
                             forceCount += lastViewState.flags.HasFlag(ViewFlags.Ingore_PauseIf_Flags) ? 1 : 0;
@@ -144,12 +198,14 @@ namespace PBBox.UI
                                 TryResumeOrShowView(_sv, hideCount, forceCount, _sv == previousViewState);
                             }
                         }
-                        else if (view.configure.uiFlags.HasFlag(ViewFlags.HidePreviousAtStack))
+                        //取消隐藏上一个
+                        else if (holdingView.flags.HasFlag(ViewFlags.HidePreviousAtStack))
                         {
                             hideCount += 1;
                             forceCount += lastViewState.flags.HasFlag(ViewFlags.Ingore_PauseIf_Flags) ? 1 : 0;
                             TryResumeOrShowView(previousViewState, hideCount, forceCount, true);
                         }
+                        //单纯把上一个resume
                         else
                         {
                             TryResumeOrShowView(previousViewState, hideCount, forceCount, true);
@@ -161,10 +217,10 @@ namespace PBBox.UI
                     state.FlatHideCount(-hideCount, -forceCount);
                     if (!state.IsHide())
                     {
-                        var v = GetOrCreate(state.uiid);
+                        var v = GetOrCreate(state.uiid, state.uniqueID);
                         if (v.IsShowing() && resume)
                         {
-                            Resume(v);
+                            _instance.ResumeView(v);
                         }
                         else
                         {
@@ -175,24 +231,39 @@ namespace PBBox.UI
             }
         }
 
-        Dictionary<string, UIStack> m_ViewGroups;
+        Dictionary<string, UIStack> m_ViewStacks;
+
+        // //更新Stack，排除无效的HoldingView，维护stack安全
+        // void UpdateStacks(){
+
+        // }
 
         void InitViewStacked()
         {
-            m_ViewGroups = new Dictionary<string, UIStack>();
-            m_ViewGroups.Add(UIStack.DEFAULT_STACK_ID, new UIStack(UIStack.DEFAULT_STACK_ID));
+            m_ViewStacks = new Dictionary<string, UIStack>();
+            m_ViewStacks.Add(UIStack.DEFAULT_STACK_ID, new UIStack(UIStack.DEFAULT_STACK_ID));
         }
 
-        void PushView(IUIView view)
+        void PushView(HoldingView view, bool hideStackBehind)
         {
-            m_ViewGroups[UIStack.DEFAULT_STACK_ID].PushBeforeShow(view);
+            m_ViewStacks[UIStack.DEFAULT_STACK_ID].PushBeforeShow(view, hideStackBehind);
         }
 
-        void PopView(IUIView view)
+        void PopView(HoldingView view, bool hideStackBehind)
         {
-            m_ViewGroups[UIStack.DEFAULT_STACK_ID].PopAfterHide(view);
+            m_ViewStacks[UIStack.DEFAULT_STACK_ID].PopAfterHide(view, hideStackBehind);
         }
 
+        public bool IsViewInStack(IUIView view)
+        {
+            var holdingView = m_HoldingViews.TryGetHoldingView(view);
+            if (holdingView)
+                return holdingView.isStacked;
+            else
+                return false;
+            // int i = m_ViewGroups[UIStack.DEFAULT_STACK_ID].viewStates.FindIndex(state => state.uiid == view.GetUIID());
+            // return i>= 0;
+        }
 
     }
 

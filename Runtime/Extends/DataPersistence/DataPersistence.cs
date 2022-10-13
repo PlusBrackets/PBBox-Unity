@@ -82,8 +82,9 @@ namespace PBBox.Persistence
 
         #region Initialization
 
-        private DataPersistence()
+        protected override void Init()
         {
+            base.Init();
             saveDataPath = Application.persistentDataPath + "/SaveData/";
             m_ContainerDict = new Dictionary<string, IPersistentContainer>();
         }

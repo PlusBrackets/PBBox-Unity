@@ -9,22 +9,8 @@ using System;
 
 namespace PBBox.UI
 {
-    public abstract class BaseUIViewModel : IUIViewModel
+    public abstract class BaseUIViewModel : BaseDataModel, IUIViewModel
     {
-        private event Action<IUIViewModel> m_OnRefresh, m_OnDispose;
-        public Action<IUIViewModel> onRefresh => m_OnRefresh;
-        public Action<IUIViewModel> onDispose => m_OnDispose;
-        public bool isDisposed { get; private set; }
-
-        protected virtual void OnDispose() { }
-
-        public void Dispose()
-        {
-            if (isDisposed)
-                return;
-            isDisposed = true;
-            OnDispose();
-        }
     }
 
     /// <summary>
@@ -48,16 +34,16 @@ namespace PBBox.UI
             m_View = null;
         }
 
-        void IDisposable.Dispose()
+        void IUIViewController.Release()
         {
             if (m_IsDisposed)
                 return;
             m_IsDisposed = true;
-            OnDispose();
+            OnRelease();
         }
 
         protected virtual void OnViewCreate(IUIView view){}
         protected virtual void OnViewDestroy(IUIView view){}
-        protected virtual void OnDispose(){}
+        protected virtual void OnRelease(){}
     }
 }
