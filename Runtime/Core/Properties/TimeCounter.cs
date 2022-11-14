@@ -29,7 +29,7 @@ namespace PBBox
         public delegate void TimerStateChange(GameTimer timer, State state);
 
         public event TimerStateChange onStateChanged;
-
+        
         public enum State
         {
             Started,

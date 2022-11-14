@@ -22,15 +22,6 @@ namespace PBBox
         private readonly Dictionary<string, CmdMethodInfo> _methodMap = new Dictionary<string, CmdMethodInfo>();
         private readonly BindingFlags _methodBindingFlag = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        [RuntimeInitializeOnLoadMethod]
-        private static void OnGameLoad()
-        {
-            if (PBBoxConfigs.CMD_SYS_AUTO_CREATE)
-            {
-                PBCommands.Create();
-            }
-        }
-
         protected override void Init()
         {
             base.Init();
@@ -194,7 +185,7 @@ namespace PBBox
 #endif
             return null;
 
-            static T SetParameter<T>(bool flag, T result, ParameterInfo pInfo)
+            static TParam SetParameter<TParam>(bool flag, TParam result, ParameterInfo pInfo)
             {
                 if (flag)
                 {
@@ -202,7 +193,7 @@ namespace PBBox
                 }
                 else
                 {
-                    return pInfo.HasDefaultValue ? (T)pInfo.DefaultValue : default(T);
+                    return pInfo.HasDefaultValue ? (TParam)pInfo.DefaultValue : default(TParam);
                 }
             }
 
@@ -214,7 +205,7 @@ namespace PBBox
                     //TODO 后续拓展支持列表
                 }
                 //若包含特殊字符串
-                if (paramStr.Contains('\''))
+                if (paramStr.Contains('\"'))
                 {
                     //TODO 等待后续拓展
                 }

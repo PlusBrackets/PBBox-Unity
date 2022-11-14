@@ -1,3 +1,4 @@
+using System.Text;
 using System;
 /*--------------------------------------------------------
  *Copyright (c) 2022 PlusBrackets
@@ -8,23 +9,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-
-namespace PBBox
-{
-    internal partial class PBBoxSettings
-    {
-        [Space]
-        public UIViewSettings uiViewSettings;
-        
-        [System.Serializable]
-        public class UIViewSettings
-        {
-
-            [Tooltip("允许反射绑定viewController的程序集名称,为空则反射全部程序集(耗时)")]
-            public string[] reflectAssemblies = new string[] { "Assembly-CSharp" };
-        }
-    }
-}
 
 namespace PBBox.UI
 {

@@ -1,26 +1,27 @@
 {
-  "name": "com.blackfish.pbbox",
+  "name": "com.plusbrackets.pbbox",
   "displayName": "PBBox",
-  "version": "0.26.0",
+  "version": "0.26.1",
   "description": "Some base scripts and tools for game",
   "author": "plusBrackets <@PlusBrackets>",
   "contributors": [
     {
-      "name": "plusBrackets",
+      "name": "+)",
       "twitter": "@Plusbrackets"
     }
   ],
   "unity": "2019.4",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PlusBrackets/PBBoxForUntiy-Package.git"
+    "url": "git+https://github.com/PlusBrackets/PBBox-Unity.git"
   },
   "bugs": {
-    "url": "https://github.com/PlusBrackets/PBBoxForUntiy-Package/issues"
+    "url": "https://github.com/PlusBrackets/PBBox-Unity/issues"
   },
   "keywords": [
     "PBBox",
-    "Black Fish"
+    "Black Fish",
+    "plusBrackets"
   ],
   "dependencies": {
     "com.unity.addressables": "1.0.0"

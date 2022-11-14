@@ -23,7 +23,7 @@ namespace PBBox
     #endregion
 
     /// <summary>
-    /// 静态全局事件，比PBEvents性能好，但灵活性
+    /// 静态全局事件，比PBEvents性能好，但灵活性不足
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public static class PBEvent<T>

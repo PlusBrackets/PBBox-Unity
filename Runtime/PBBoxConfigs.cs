@@ -1,3 +1,6 @@
+using System.Collections;
+using System.Collections.Generic;
+
 namespace PBBox
 {
     /// <summary>
@@ -7,13 +10,19 @@ namespace PBBox
     {
         #region CMD_SYS
         /// <summary>
-        /// 是否在游戏加载时自动创建PBCommandSystem
-        /// </summary>
-        public static readonly bool CMD_SYS_AUTO_CREATE = true;
-        /// <summary>
         /// PBCommandSystem 允许反射绑定指令的程序集名称,为空则反射全部程序集(耗时)
         /// </summary>
-        public static readonly string[] CMD_SYS_REFLECT_ASSEMBLIES = new string[] {
+        public static readonly HashSet<string> CMD_SYS_REFLECT_ASSEMBLIES = new HashSet<string> {
+            "Assembly-CSharp",
+            "PBBox"
+            };
+        #endregion
+        
+        #region UI
+        /// <summary>
+        /// 允许反射绑定指令的程序集名称,为空则反射全部程序集(耗时)
+        /// </summary>
+        public static readonly HashSet<string> UI_REFLECT_ASSEMBLIES = new HashSet<string>{
             "Assembly-CSharp"
             };
         #endregion
@@ -26,18 +35,10 @@ namespace PBBox
         /// <summary>
         /// 允许反射绑定指令的程序集名称,为空则反射全部程序集(耗时)
         /// </summary>
-        public static readonly string[] DATA_OPERA_REFLECT_ASSEMBLIES = new string[]{
+        public static readonly HashSet<string> DATA_OPERA_REFLECT_ASSEMBLIES = new HashSet<string>{
             "Assembly-CSharp"
             };
         #endregion
 
-        #region UI
-        /// <summary>
-        /// 允许反射绑定指令的程序集名称,为空则反射全部程序集(耗时)
-        /// </summary>
-        public static readonly string[] UI_REFLECT_ASSEMBLIES = new string[]{
-            "Assembly-CSharp"
-            };
-        #endregion
     }
 }

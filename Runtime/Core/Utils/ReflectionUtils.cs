@@ -25,7 +25,7 @@ namespace PBBox
         /// <param name="domain"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static IEnumerable<Type> GetAllChildClass<T>(bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, string[] assemblyNames = null)
+        public static IEnumerable<Type> GetAllChildClass<T>(bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null)
         {
             return GetAllChildClass(typeof(T), moreDeep, containAbstract, domain, assemblyNames);
         }
@@ -38,7 +38,7 @@ namespace PBBox
         /// <param name="containAbstract"></param>
         /// <param name="domain"></param>
         /// <returns></returns>
-        public static IEnumerable<Type> GetAllChildClass(this Type target, bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, string[] assemblyNames = null)
+        public static IEnumerable<Type> GetAllChildClass(this Type target, bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null)
         {
 #if GAME_TEST
             var test = new System.Diagnostics.Stopwatch();
@@ -51,19 +51,19 @@ namespace PBBox
             if (moreDeep)
             {
                 if (type.IsClass)
-                    result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Length == 0 || assemblyNames.Contains(a.GetName().Name))
+                    result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                         .SelectMany(a => a.GetTypes().Where(t => (containAbstract || !t.IsAbstract) && t.IsSubclassOf(type)));
                 else if (type.IsInterface)
-                    result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Length == 0 || assemblyNames.Contains(a.GetName().Name))
+                    result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                         .SelectMany(a => a.GetTypes().Where(t => (containAbstract || !t.IsAbstract) && type.IsAssignableFrom(t)));
             }
             else
             {
                 if (type.IsClass)
-                    result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Length == 0 || assemblyNames.Contains(a.GetName().Name))
+                    result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                         .SelectMany(a => a.GetTypes().Where(t => (containAbstract || !t.IsAbstract) && t.BaseType == type));
                 else if (type.IsInterface)
-                    result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Length == 0 || assemblyNames.Contains(a.GetName().Name))
+                    result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                         .SelectMany(a => a.GetTypes().Where(t => (containAbstract || !t.IsAbstract) && t.GetInterfaces().Contains(type)));
             }
 #if GAME_TEST
@@ -82,7 +82,7 @@ namespace PBBox
         /// <param name="domain"></param>
         /// <typeparam name="TAttribute"></typeparam>
         /// <returns></returns>
-        public static IEnumerable<Type> GetAllClassWithAttribute<TAttribute>(bool containAbstract = false, bool inherit = true, AppDomain domain = null, string[] assemblyNames = null) where TAttribute : Attribute
+        public static IEnumerable<Type> GetAllClassWithAttribute<TAttribute>(bool containAbstract = false, bool inherit = true, AppDomain domain = null, IEnumerable<string> assemblyNames = null) where TAttribute : Attribute
         {
 #if GAME_TEST
             var test = new System.Diagnostics.Stopwatch();
@@ -90,7 +90,7 @@ namespace PBBox
 #endif
             if (domain == null)
                 domain = AppDomain.CurrentDomain;
-            var result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Length == 0 || assemblyNames.Contains(a.GetName().Name))
+            var result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                 .SelectMany(a => a.GetTypes().Where(t => t.IsDefined(typeof(TAttribute), inherit)));
 #if GAME_TEST
             test.Stop();
@@ -109,7 +109,7 @@ namespace PBBox
         /// <param name="domain"></param>
         /// <typeparam name="TAttribute"></typeparam>
         /// <returns></returns>
-        public static IEnumerable<Type> GetAllChildClassWithAttribute<TAttribute>(this Type target, bool inherit = false, bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, string[] assemblyNames = null) where TAttribute : Attribute
+        public static IEnumerable<Type> GetAllChildClassWithAttribute<TAttribute>(this Type target, bool inherit = false, bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null) where TAttribute : Attribute
         {
             return GetAllChildClass(target, moreDeep, containAbstract, domain, assemblyNames).Where(t => t.IsDefined(typeof(TAttribute), inherit));
         }
@@ -124,7 +124,7 @@ namespace PBBox
         /// <typeparam name="TType"></typeparam>
         /// <typeparam name="TAttribute"></typeparam>
         /// <returns></returns>
-        public static IEnumerable<Type> GetAllChildClassWithAttribute<TType, TAttribute>(bool inherit = false, bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, string[] assemblyNames = null) where TAttribute : Attribute
+        public static IEnumerable<Type> GetAllChildClassWithAttribute<TType, TAttribute>(bool inherit = false, bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null) where TAttribute : Attribute
         {
             return GetAllChildClassWithAttribute<TAttribute>(typeof(TType), inherit, moreDeep, containAbstract, domain, assemblyNames);
         }
@@ -136,7 +136,7 @@ namespace PBBox
         /// <param name="domain"></param>
         /// <typeparam name="TAttribute"></typeparam>
         /// <returns></returns>
-        public static IEnumerable<MethodInfo> GetAllMethodWithAtturbute<TAttribute>(BindingFlags bindingFlags = BindingFlags.Default, bool inherit = false, AppDomain domain = null, string[] assemblyNames = null)
+        public static IEnumerable<MethodInfo> GetAllMethodWithAtturbute<TAttribute>(BindingFlags bindingFlags = BindingFlags.Default, bool inherit = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null)
         {
 #if GAME_TEST
             var test = new System.Diagnostics.Stopwatch();
@@ -148,7 +148,7 @@ namespace PBBox
                 domain = AppDomain.CurrentDomain;
             }
 
-            result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Length == 0 || assemblyNames.Contains(a.GetName().Name))
+            result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                 .SelectMany(a => a.GetTypes().SelectMany(t => t.GetMethods(bindingFlags).Where(m => m.IsDefined(typeof(TAttribute), inherit))));
 #if GAME_TEST
             test.Stop();
@@ -164,7 +164,7 @@ namespace PBBox
         /// <param name="domain"></param>
         /// <typeparam name="TMethodAttribute"></typeparam>
         /// <returns></returns>
-        public static IEnumerable<MethodInfo> GetAllMethodWithAtturbute<TClassAttribute, TMethodAttribute>(BindingFlags bindingFlags = BindingFlags.Default, bool inherit = false, AppDomain domain = null, string[] assemblyNames = null)
+        public static IEnumerable<MethodInfo> GetAllMethodWithAtturbute<TClassAttribute, TMethodAttribute>(BindingFlags bindingFlags = BindingFlags.Default, bool inherit = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null)
         {
 #if GAME_TEST
             var test = new System.Diagnostics.Stopwatch();
@@ -176,7 +176,7 @@ namespace PBBox
                 domain = AppDomain.CurrentDomain;
             }
 
-            result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Length == 0 || assemblyNames.Contains(a.GetName().Name))
+            result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                 .SelectMany(a => a.GetTypes().Where(t => t.IsDefined(typeof(TClassAttribute), inherit)).SelectMany(t => t.GetMethods(bindingFlags).Where(m => m.IsDefined(typeof(TMethodAttribute), inherit))));
 #if GAME_TEST
             test.Stop();

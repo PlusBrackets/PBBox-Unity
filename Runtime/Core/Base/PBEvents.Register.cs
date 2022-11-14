@@ -229,7 +229,7 @@ namespace PBBox
             /// </summary>
             /// <param name="key"></param>
             /// <param name="listener"></param>
-            /// <param name="order">若为空，则会按执行顺序从后到前移除一个listener，若不为空，则只会移除order相同的最后一个listener</param>
+            /// <param name="order">若为空，则会按执行顺序从后到前移除一个listener（若有相同listener），若不为空，则只会移除order相同的最后一个listener</param>
             public void Off<T>(TKey key, Action listener, int? order = null)
             {
                 PBEvents.Off(key, listener, order);
