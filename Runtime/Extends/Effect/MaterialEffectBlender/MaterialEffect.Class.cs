@@ -3,7 +3,6 @@
  *@update: 2022.11.09
  *@author: PlusBrackets
  --------------------------------------------------------*/
-using UnityEngine;
 //Define USE Odin
 #if ODIN_INSPECTOR && UNITY_EDITOR
 #define USE_ODIN
@@ -12,6 +11,7 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 #endif
 //Define End
+using UnityEngine;
 
 namespace PBBox.Effects
 {

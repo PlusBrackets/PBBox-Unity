@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using PBBox;
 //Define USE Odin
 #if ODIN_INSPECTOR && UNITY_EDITOR
 #define USE_ODIN
@@ -10,9 +6,10 @@ using PBBox;
 using Sirenix.OdinInspector;
 #endif
 //Define End
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using PBBox;
 
 namespace PBBox.Effects
 {
@@ -20,7 +17,7 @@ namespace PBBox.Effects
     /// 材质效果
     /// </summary>
     [System.Serializable]
-    public partial class MaterialEffect :ISerializationCallbackReceiver
+    public partial class MaterialEffect : ISerializationCallbackReceiver
     {
         [System.Serializable]
         public class Motion
@@ -43,19 +40,19 @@ namespace PBBox.Effects
         [Tooltip("优先度，修改同一个参数时，数字大的效果会覆盖数字小的")]
         public float priority;
         [Space]
-        #if USE_ODIN
+#if USE_ODIN
         [OnValueChanged("UpdateMotionMetaData", true, InvokeOnInitialize = true, InvokeOnUndoRedo = true)]
-        #endif
+#endif
         public Motion[] motions;
         [Space]
-        #if USE_ODIN
+#if USE_ODIN
         [ShowInInspector, EnableIf("@false"), SerializeField]
-        #endif
+#endif
         private float m_TotalDuration;
         public float TotalDuration => m_TotalDuration;
-        #if USE_ODIN
+#if USE_ODIN
         [ShowInInspector, EnableIf("@false"), SerializeField]
-        #endif
+#endif
         private bool m_IsLoopEffect;
         public bool IsLoopEffect => m_IsLoopEffect;
         [Min(0)]

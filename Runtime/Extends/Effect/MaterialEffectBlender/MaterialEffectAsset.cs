@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 //Define USE Odin
 #if ODIN_INSPECTOR && UNITY_EDITOR
 #define USE_ODIN
@@ -9,6 +6,9 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 #endif
 //Define End
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace PBBox.Effects
 {
