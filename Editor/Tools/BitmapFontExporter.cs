@@ -11,7 +11,7 @@ namespace PBBox.CEditor
 
     public class BitmapFontExporter : ScriptableWizard
     {
-        [MenuItem("PBBox/UI/Create Font From BMFont")]
+        [MenuItem("Tools/PBBox/UI/Create Font From BMFont")]
         private static void CreateFont()
         {
             ScriptableWizard.DisplayWizard<BitmapFontExporter>("Create Font");

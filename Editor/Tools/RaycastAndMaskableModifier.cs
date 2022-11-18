@@ -13,13 +13,13 @@ namespace PBBox.CEditor
 
     public class RaycastAndMaskableModifier : ScriptableWizard
     {
-        [MenuItem("PBBox/UI/Modify UI Raycast and Maskable")]
+        [MenuItem("Tools/PBBox/UI/Modify UI Raycast and Maskable")]
         private static void ShowWizard()
         {
             ScriptableWizard.DisplayWizard<RaycastAndMaskableModifier>("UI Raycast and Maskable Modifier", "Do");
         }
 
-        [MenuItem("PBBox/UI/Select Interactable Object")]
+        [MenuItem("Tools/PBBox/UI/Select Interactable Object")]
         private static void SelectInteractable()
         {
             if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
