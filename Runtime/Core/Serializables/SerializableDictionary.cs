@@ -1,6 +1,6 @@
 /*--------------------------------------------------------
- *Copyright (c) 2022 PlusBrackets
- *@update: 2022.04.16
+ *Copyright (c) 2016-2022 PlusBrackets
+ *@update: 2022.11.18
  *@author: PlusBrackets
  --------------------------------------------------------*/
 #if (ODIN_INSPECTOR || ODIN_INSPECTOR_3) && UNITY_EDITOR
@@ -20,23 +20,16 @@ namespace PBBox
     // public interface ISDictionary {}
 
     // Dictionary<TKey, TValue>
+    /// <summary>
+    /// 可序列化字典,支持unityInspector以及Unity的JsonUtility
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
     [System.Serializable]
     public class SDictionary<TKey, TValue> : ISerializationCallbackReceiver, IDictionary<TKey, TValue>//,ISDictionary
     {
-        [System.Serializable]
-        struct KeyValue
-        {
-            public TKey key;
-            public TValue value;
-            public KeyValue(TKey key, TValue value)
-            {
-                this.key = key;
-                this.value = value;
-            }
-        }
-
         [SerializeField]
-        List<KeyValue> maps = new List<KeyValue>();
+        List<SKeyValuePair<TKey, TValue>> maps = new List<SKeyValuePair<TKey, TValue>>();
 
         Dictionary<TKey, int> keyIndexs => _keyIndexs.Value;
         
@@ -52,7 +45,7 @@ namespace PBBox
         {
             foreach (var key in target.Keys)
             {
-                maps.Add(new KeyValue(key, target[key]));
+                maps.Add(new SKeyValuePair<TKey, TValue>(key, target[key]));
             }
         }
 
@@ -105,7 +98,7 @@ namespace PBBox
             get => maps[keyIndexs[key]].value;
             set
             {
-                KeyValue keyValue = new KeyValue(key, value);
+                SKeyValuePair<TKey, TValue> keyValue = new SKeyValuePair<TKey, TValue>(key, value);
                 if (keyIndexs.ContainsKey(key))
                 {
                     maps[keyIndexs[key]] = keyValue;
@@ -143,7 +136,7 @@ namespace PBBox
             else
             {
                 keyIndexs[key] = maps.Count;
-                maps.Add(new KeyValue(key, value));
+                maps.Add(new SKeyValuePair<TKey, TValue>(key, value));
                 return true;
             }
         }
@@ -217,7 +210,7 @@ namespace PBBox
         {
             return maps.Select(ToKeyValuePair).GetEnumerator();
 
-            static KeyValuePair<TKey, TValue> ToKeyValuePair(KeyValue kvp)
+            static KeyValuePair<TKey, TValue> ToKeyValuePair(SKeyValuePair<TKey, TValue> kvp)
             {
                 return new KeyValuePair<TKey, TValue>(kvp.key, kvp.value);
             }
