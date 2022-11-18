@@ -1,7 +1,10 @@
-using System.Collections;
+/*--------------------------------------------------------
+ *Copyright (c) 2016-2022 PlusBrackets
+ *@update: 2022.11.17
+ *@author: PlusBrackets
+ --------------------------------------------------------*/
 using System.Collections.Generic;
 using UnityEngine;
-using PBBox.Variables;
 
 namespace PBBox
 {
@@ -11,6 +14,7 @@ namespace PBBox
         SDictionary<string, Object[]> GetReferenceArrayMap();
         Dictionary<string, Component> GetComponentStorage();
     }
+
     public static partial class PBExtensions
     {
         /// <summary>
