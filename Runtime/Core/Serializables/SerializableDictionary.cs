@@ -26,7 +26,7 @@ namespace PBBox
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     [System.Serializable]
-    public class SDictionary<TKey, TValue> : ISerializationCallbackReceiver, IDictionary<TKey, TValue>//,ISDictionary
+    public class SDictionary<TKey, TValue> : ISerializationCallbackReceiver, IDictionary<TKey, TValue>, IEnumerable<SKeyValuePair<TKey, TValue>>//,ISDictionary
     {
         [SerializeField]
         List<SKeyValuePair<TKey, TValue>> maps = new List<SKeyValuePair<TKey, TValue>>();
@@ -206,7 +206,11 @@ namespace PBBox
             }
         }
 
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        public IEnumerator<SKeyValuePair<TKey, TValue>> GetEnumerator(){
+            return maps.GetEnumerator();
+        }
+
+        IEnumerator<KeyValuePair<TKey, TValue>> IDictionary<TKey, TValue>.GetEnumerator()
         {
             return maps.Select(ToKeyValuePair).GetEnumerator();
 
