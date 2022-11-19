@@ -116,6 +116,16 @@ namespace PBBox
         public int Count => maps.Count;
         public bool IsReadOnly => false;
 
+        /// <summary>
+        /// 获得index位置的SKeyValuePair<Key,Value>
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public SKeyValuePair<TKey, TValue> GetPair(int index)
+        {
+            return maps[index];
+        }
+
         public void Add(TKey key, TValue value)
         {
             if (!TryAdd(key, value))
@@ -210,7 +220,7 @@ namespace PBBox
             return maps.GetEnumerator();
         }
 
-        IEnumerator<KeyValuePair<TKey, TValue>> IDictionary<TKey, TValue>.GetEnumerator()
+        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
             return maps.Select(ToKeyValuePair).GetEnumerator();
 
