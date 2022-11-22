@@ -107,7 +107,8 @@ namespace PBBox.UI
             Dispose(false);
         }
 
-        public void SetData(IEnumerable<TData> datas){
+        public void SetData(IEnumerable<TData> datas)
+        {
             this.Datas = new List<TData>(datas);
             SetData(this.Datas);
         }
@@ -116,6 +117,11 @@ namespace PBBox.UI
         {
             this.Datas = datas;
             this.RefreshItems();
+        }
+
+        public void Clear()
+        {
+            SetData(null);
         }
 
         protected virtual void RefreshItems()
@@ -165,7 +171,7 @@ namespace PBBox.UI
                 return;
             IsDisposed = true;
             if (isDisposing)
-            {
+            {   Clear();
                 m_ItemPool?.Clean();
                 m_ItemPool?.DestoryPool();
             }

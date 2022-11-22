@@ -22,7 +22,7 @@ namespace PBBox.UI
     {
         SimplePool IPoolObject.Pool { get; set; }
         public TData Data { get; protected set; }
-        protected TData PreviourData { get; private set; }
+        // protected TData PreviourData { get; private set; }
         public IUIAdapterList AdapterList { get; private set; }
         public int Index { get; private set; } = 0;
         public bool Selected { get; protected set; } = false;
@@ -55,20 +55,20 @@ namespace PBBox.UI
 
         public virtual void SetData(TData data, IUIAdapterList list, int index)
         {
+            OnClearData();
+            this.Data = data;
             this.AdapterList = list;
             this.Index = index;
-            this.PreviourData = this.Data;
-            this.Data = data;
             OnDataUpdate(data);
-            this.PreviourData = default(TData);
+            // this.PreviourData = default(TData);
         }
 
         public virtual void ClearData()
         {
+            OnClearData();
             this.Data = default(TData);
             this.AdapterList = null;
             this.Index = -1;
-            OnDataClear();
         }
 
         void IUIAdapterItem.Select()
@@ -104,7 +104,10 @@ namespace PBBox.UI
 
         // protected virtual void OnDataSwitching(TData before, TData after) { }
         protected abstract void OnDataUpdate(TData data);
-        protected virtual void OnDataClear() { }
+        /// <summary>
+        /// 数据清理前调用
+        /// </summary>
+        protected virtual void OnClearData() { }
         protected virtual void OnSelected() { }
         protected virtual void OnDeselected() { }
 
@@ -115,6 +118,7 @@ namespace PBBox.UI
 
         void IPoolObject.OnDespawned()
         {
+            // OnClearData();
             Data = default(TData);
         }
 
