@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-/*--------------------------------------------------------
+﻿/*--------------------------------------------------------
  *Copyright (c) 2022 PlusBrackets
  *@update: 2022.03.29
  *@author: PlusBrackets
@@ -12,6 +11,7 @@ using Sirenix.OdinInspector;
 #endif
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 namespace PBBox
 {
