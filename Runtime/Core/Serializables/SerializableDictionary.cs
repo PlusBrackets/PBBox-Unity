@@ -17,6 +17,7 @@ using System.Linq;
 
 namespace PBBox
 {
+    //TODO 写一个自定义的迭代器，避免继承两个IEnumeralble导致Linq无法直接使用
     // public interface ISDictionary {}
 
     // Dictionary<TKey, TValue>
@@ -26,7 +27,7 @@ namespace PBBox
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     [System.Serializable]
-    public class SDictionary<TKey, TValue> : ISerializationCallbackReceiver, IDictionary<TKey, TValue>, IEnumerable<SKeyValuePair<TKey, TValue>>//,ISDictionary
+    public class SDictionary<TKey, TValue> : ISerializationCallbackReceiver, IEnumerable<SKeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>//,ISDictionary
     {
         [SerializeField]
         List<SKeyValuePair<TKey, TValue>> maps = new List<SKeyValuePair<TKey, TValue>>();

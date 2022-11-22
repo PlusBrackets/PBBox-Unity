@@ -1,4 +1,5 @@
-﻿/*--------------------------------------------------------
+﻿using System.Collections.Generic;
+/*--------------------------------------------------------
  *Copyright (c) 2022 PlusBrackets
  *@update: 2022.03.29
  *@author: PlusBrackets
@@ -38,7 +39,7 @@ namespace PBBox
             }
             set
             {
-                if (!Equals(m_Value, value))
+                if (!EqualityComparer<T>.Default.Equals(m_Value, value))
                 {
                     T _oldValue = m_Value;
                     m_Value = value;
