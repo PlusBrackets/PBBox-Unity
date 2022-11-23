@@ -3,14 +3,14 @@
  *@update: 2022.11.18
  *@author: PlusBrackets
  --------------------------------------------------------*/
-using System.Globalization;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace PBBox
 {
+    /// <summary>
+    /// 可序列化的KeyValuePair
+    /// </summary>
     [System.Serializable]
     public struct SKeyValuePair<TKey, TValue> : IEquatable<SKeyValuePair<TKey, TValue>>
     {

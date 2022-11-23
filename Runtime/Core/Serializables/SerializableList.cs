@@ -15,7 +15,6 @@ using UnityEngine;
 
 namespace PBBox
 {
-
     /// <summary>
     /// 可单独序列化的list
     /// </summary>
@@ -23,16 +22,15 @@ namespace PBBox
     [System.Serializable]
     public class SList<T> : IList<T>, ICollection<T>, IEnumerable<T>, IEnumerable
     {
-        #if USE_ODIN
+#if USE_ODIN
         [InlineProperty]
-        #endif
+#endif
         [SerializeField]
         List<T> values;
         public List<T> Source => values;
         public T this[int index] { get => values[index]; set => values[index] = value; }
         public int Count => values.Count;
         bool ICollection<T>.IsReadOnly => ((ICollection<T>)values).IsReadOnly;
-
 
         public SList(List<T> list = null)
         {

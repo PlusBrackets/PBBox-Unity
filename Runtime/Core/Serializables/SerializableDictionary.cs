@@ -1,6 +1,6 @@
 /*--------------------------------------------------------
  *Copyright (c) 2016-2022 PlusBrackets
- *@update: 2022.11.18
+ *@update: 2022.11.23
  *@author: PlusBrackets
  --------------------------------------------------------*/
 #if (ODIN_INSPECTOR || ODIN_INSPECTOR_3) && UNITY_EDITOR
@@ -17,25 +17,21 @@ using System.Linq;
 
 namespace PBBox
 {
-    //TODO 写一个自定义的迭代器，避免继承两个IEnumeralble导致Linq无法直接使用
-    // public interface ISDictionary {}
-
     // Dictionary<TKey, TValue>
     /// <summary>
-    /// 可序列化字典,支持unityInspector以及Unity的JsonUtility
+    /// 可序列化字典,支持UnityInspector以及Unity的JsonUtility。性能约为Dictionary的一半。
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     [System.Serializable]
-    public class SDictionary<TKey, TValue> : ISerializationCallbackReceiver, IEnumerable<SKeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>//,ISDictionary
+    public class SDictionary<TKey, TValue> : ISerializationCallbackReceiver, IEnumerable<SKeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>
     {
         [SerializeField]
-        List<SKeyValuePair<TKey, TValue>> maps = new List<SKeyValuePair<TKey, TValue>>();
+        private List<SKeyValuePair<TKey, TValue>> maps = new List<SKeyValuePair<TKey, TValue>>();
 
-        Dictionary<TKey, int> keyIndexs => _keyIndexs.Value;
-        
         [NonSerialized]
-        Lazy<Dictionary<TKey, int>> _keyIndexs;
+        private Lazy<Dictionary<TKey, int>> _keyIndexs;
+        private Dictionary<TKey, int> m_KeyIndexs => _keyIndexs.Value;
 
         public SDictionary()
         {
@@ -50,11 +46,6 @@ namespace PBBox
             }
         }
 
-        public SDictionary(string json)
-        {
-            JsonUtility.FromJsonOverwrite(json, this);
-        }
-
         Dictionary<TKey, int> LazyDictionaryIniter()
         {
             var d = new Dictionary<TKey, int>();
@@ -66,15 +57,6 @@ namespace PBBox
                 }
             }
             return d;
-        }
-
-        public void OnBeforeSerialize()
-        {
-        }
-
-        public void OnAfterDeserialize()
-        {
-            _keyIndexs = new Lazy<Dictionary<TKey, int>>(LazyDictionaryIniter);
         }
 
         public Dictionary<TKey, TValue> ToDictionary()
@@ -92,40 +74,71 @@ namespace PBBox
             return dict;
         }
 
-        #region Dictionary Func    
-
-        public TValue this[TKey key]
-        {
-            get => maps[keyIndexs[key]].value;
-            set
-            {
-                SKeyValuePair<TKey, TValue> keyValue = new SKeyValuePair<TKey, TValue>(key, value);
-                if (keyIndexs.ContainsKey(key))
-                {
-                    maps[keyIndexs[key]] = keyValue;
-                }
-                else
-                {
-                    keyIndexs.Add(key, maps.Count);
-                    maps.Add(keyValue);
-                }
-            }
-        }
-
-        public ICollection<TKey> Keys => maps.Select(t => t.key).ToArray();
-        public ICollection<TValue> Values => maps.Select(t => t.value).ToArray();
-        public int Count => maps.Count;
-        public bool IsReadOnly => false;
+        /// <summary>
+        /// 快捷转变，方便使用Linq等利用IEnumerable。
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<SKeyValuePair<TKey, TValue>> AsEnumerable() => (IEnumerable<SKeyValuePair<TKey, TValue>>)this;
 
         /// <summary>
         /// 获得index位置的SKeyValuePair<Key,Value>
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public SKeyValuePair<TKey, TValue> GetPair(int index)
+        public SKeyValuePair<TKey, TValue> GetPair(int index) => maps[index];
+
+        /// <summary>
+        /// 尝试加入一个对值，若已存在key值，则返回false
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool TryAdd(TKey key, TValue value)
         {
-            return maps[index];
+            if (m_KeyIndexs.ContainsKey(key))
+            {
+                return false;
+            }
+            else
+            {
+                m_KeyIndexs[key] = maps.Count;
+                maps.Add(new SKeyValuePair<TKey, TValue>(key, value));
+                return true;
+            }
         }
+
+        #region Interface Func 
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            _keyIndexs = new Lazy<Dictionary<TKey, int>>(LazyDictionaryIniter);
+        }
+
+        public TValue this[TKey key]
+        {
+            get => maps[m_KeyIndexs[key]].value;
+            set
+            {
+                SKeyValuePair<TKey, TValue> keyValue = new SKeyValuePair<TKey, TValue>(key, value);
+                if (m_KeyIndexs.ContainsKey(key))
+                {
+                    maps[m_KeyIndexs[key]] = keyValue;
+                }
+                else
+                {
+                    m_KeyIndexs.Add(key, maps.Count);
+                    maps.Add(keyValue);
+                }
+            }
+        }
+
+        ICollection<TKey> IDictionary<TKey, TValue>.Keys => maps.Select(t => t.key).ToArray();
+        ICollection<TValue> IDictionary<TKey, TValue>.Values => maps.Select(t => t.value).ToArray();
+        bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => ((ICollection<SKeyValuePair<TKey, TValue>>)maps).IsReadOnly;
+        public int Count => maps.Count;
 
         public void Add(TKey key, TValue value)
         {
@@ -133,28 +146,11 @@ namespace PBBox
                 throw new ArgumentException("An element with the same key already exists in the dictionary.");
         }
 
-        public void Add(KeyValuePair<TKey, TValue> kvp)
-        {
-            Add(kvp.Key, kvp.Value);
-        }
-
-        public bool TryAdd(TKey key, TValue value)
-        {
-            if (keyIndexs.ContainsKey(key))
-            {
-                return false;
-            }
-            else
-            {
-                keyIndexs[key] = maps.Count;
-                maps.Add(new SKeyValuePair<TKey, TValue>(key, value));
-                return true;
-            }
-        }
+        public void Add(KeyValuePair<TKey, TValue> kvp)=>Add(kvp.Key, kvp.Value);
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            if (keyIndexs.TryGetValue(key, out int index))
+            if (m_KeyIndexs.TryGetValue(key, out int index))
             {
                 value = maps[index].value;
                 return true;
@@ -166,42 +162,32 @@ namespace PBBox
             }
         }
 
-        public bool ContainsKey(TKey key)
-        {
-            return keyIndexs.ContainsKey(key);
-        }
+        public bool ContainsKey(TKey key) => m_KeyIndexs.ContainsKey(key);
 
-        public bool Contains(KeyValuePair<TKey, TValue> kvp)
-        {
-            return keyIndexs.ContainsKey(kvp.Key);
-        }
-
+        public bool Contains(KeyValuePair<TKey, TValue> kvp) => m_KeyIndexs.ContainsKey(kvp.Key);
 
         public bool Remove(TKey key)
         {
-            if (keyIndexs.TryGetValue(key, out int index))
+            if (m_KeyIndexs.TryGetValue(key, out int index))
             {
-                keyIndexs.Remove(key);
+                m_KeyIndexs.Remove(key);
                 maps.RemoveAt(index);
                 for (var i = index; i < maps.Count; i++)
-                    keyIndexs[maps[i].key] = i;
+                    m_KeyIndexs[maps[i].key] = i;
 
                 return true;
             }
             return false;
         }
 
-        public bool Remove(KeyValuePair<TKey, TValue> kvp)
-        {
-            return Remove(kvp.Key);
-        }
+        public bool Remove(KeyValuePair<TKey, TValue> kvp) => Remove(kvp.Key);
 
         public void Clear()
         {
             maps.Clear();
             if (_keyIndexs.IsValueCreated)
             {
-                keyIndexs.Clear();
+                m_KeyIndexs.Clear();
             }
         }
 
@@ -217,9 +203,7 @@ namespace PBBox
             }
         }
 
-        public IEnumerator<SKeyValuePair<TKey, TValue>> GetEnumerator(){
-            return maps.GetEnumerator();
-        }
+        public IEnumerator<SKeyValuePair<TKey, TValue>> GetEnumerator() => maps.GetEnumerator();
 
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
