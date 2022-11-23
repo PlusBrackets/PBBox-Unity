@@ -16,13 +16,15 @@ namespace PBBox.Timeline
     [PBCommandClass]
     internal static class PBCmdEmitterCmds
     {
-        
+
         [PBCommand(PBCmdEmitter.CMD_PREFIX + "SendMsg", false, true)]
         [PBCommand(PBCmdEmitter.CMD_PREFIX + "SendLocalMsg", false, true)]
-        private static void CmdSendLockMsg(string msg,TimelineCmdExtraParams extraParams){
-            if(extraParams == null)
+        private static void CmdSendLockMsg(string msg, TimelineCmdExtraParams extraParams)
+        {
+            if (extraParams == null)
                 return;
-            if(extraParams.receiver is PBSignalReceiver _receiver){
+            if (extraParams.receiver is PBSignalReceiver _receiver)
+            {
                 _receiver.OnLocalMessage?.Invoke(msg, extraParams);
             }
         }
@@ -49,10 +51,10 @@ namespace PBBox.Timeline
         [PBCommand(PBCmdEmitter.CMD_PREFIX + "PauseUtilFlag", false, true)]
         private static void CmdPauseUtilFlag(string flagName, bool cond = true, TimelineCmdExtraParams extraParams = null)
         {
-            if(extraParams == null)
+            if (extraParams == null)
                 return;
             var graph = extraParams.origin.GetGraph();
-            
+
             // graph.Stop();
             var speed = graph.GetRootPlayable(0).GetSpeed();
             graph.GetRootPlayable(0).SetSpeed(0);
@@ -119,7 +121,7 @@ namespace PBBox.Timeline
                 return;
             }
             attachDatas.AttachDatas[flagName] = value;
-            
+
         }
 
         /// <summary>
@@ -147,7 +149,7 @@ namespace PBBox.Timeline
                 try
                 {
                     _value = Convert.ToBoolean(value);
-                    Debug.Log(flagName +":" + _value);
+                    Debug.Log(flagName + ":" + _value);
                     return _value == cond;
                 }
                 catch (Exception e)
@@ -193,15 +195,16 @@ namespace PBBox.Timeline
             }
             DebugUtils.Log($"[Timeline CMD] JumpToMark失败，无法找到名称为{markerName}的Makerer");
         }
-        
+
         [PBCommand(PBCmdEmitter.CMD_PREFIX + "FadeAnimState", false, true)]
         private static void CmdFadeAnimState(string stateName, float fadeDur, bool inFixedTime = true, TimelineCmdExtraParams extraParams = null)
         {
             if (extraParams == null)
                 return;
-            var keys = extraParams.referencesMap.Keys;
-            foreach (string key in keys)
+            // var keys = extraParams.referencesMap.Keys;
+            foreach (var kvp in extraParams.referencesMap)
             {
+                var key = kvp.key;
                 var obj = extraParams.GetReference<GameObject>(key);
                 if (obj == null || obj.GetInstanceID() < 0)
                     continue;
