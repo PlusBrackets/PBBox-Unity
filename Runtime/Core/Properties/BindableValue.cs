@@ -86,9 +86,9 @@ namespace PBBox
         /// <param name="action">(OldValue,NewValue)</param>
         public void Bind(Action<T, T> action, bool callBackImmediately = true)
         {
+            m_OnValueChangedWithOldValue += action;
             if (callBackImmediately)
                 action(Value, Value);
-            m_OnValueChangedWithOldValue += action;
         }
 
         /// <summary>
@@ -97,9 +97,9 @@ namespace PBBox
         /// <param name="action"></param>
         public void Bind(Action<T> action, bool callBackImmediately = true)
         {
+            m_OnValueChanged += action;
             if (callBackImmediately)
                 action(Value);
-            m_OnValueChanged += action;
         }
 
         /// <summary>

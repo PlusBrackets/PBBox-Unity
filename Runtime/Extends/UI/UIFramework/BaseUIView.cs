@@ -11,9 +11,7 @@ using Sirenix.OdinInspector;
 #endif
 using UnityEngine;
 using UnityEngine.Events;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 
 namespace PBBox.UI
 {

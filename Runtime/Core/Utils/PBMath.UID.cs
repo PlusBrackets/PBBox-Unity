@@ -107,32 +107,60 @@ namespace PBBox
             return suid >> SUID_SUFFIX_BIT;
         }
 
+        /// <summary>
+        /// 生成时间戳(ms,UTC)
+        /// </summary>
+        /// <returns></returns>
         public static long GenTimestamp()
         {
             return (long)(System.DateTime.UtcNow - DATE_START_TIME).TotalMilliseconds;
         }
 
+        /// <summary>
+        /// 生成时间戳(s,UTC)
+        /// </summary>
+        /// <returns></returns>
         public static long GenTimestampShort()
         {
             return (long)(System.DateTime.UtcNow - DATE_START_TIME).TotalSeconds;
         }
 
+        /// <summary>
+        /// 根据所给时间生成时间戳(ms,UTC)
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
         public static long GenTimestamp(System.DateTime dateTime)
         {
             return (long)(dateTime.ToUniversalTime() - DATE_START_TIME).TotalMilliseconds;
         }
 
+        /// <summary>
+        /// 根据所给时间生成时间戳(s,UTC)
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
         public static long GenTimestampShort(System.DateTime dateTime)
         {
             return (long)(dateTime.ToUniversalTime() - DATE_START_TIME).TotalSeconds;
         }
 
+        /// <summary>
+        /// timestamp (ms) 转DateTime (UTC时间)
+        /// </summary>
+        /// <param name="timestamp"></param>
+        /// <returns></returns>
         public static DateTime TimestampToDateTime(long timestamp){
-            return DATE_START_TIME.AddMilliseconds(timestamp).ToLocalTime();
+            return DATE_START_TIME.AddMilliseconds(timestamp);
         }
 
+        /// <summary>
+        /// timestamp (s) 转DateTime (UTC时间)
+        /// </summary>
+        /// <param name="shortTimestamp"></param>
+        /// <returns></returns>
         public static DateTime TimestampShortToDateTime(long shortTimestamp){
-            return DATE_START_TIME.AddSeconds(shortTimestamp).ToLocalTime();
+            return DATE_START_TIME.AddSeconds(shortTimestamp);
         }
     }
 }
