@@ -9,14 +9,14 @@ namespace PBBox
 {
     public interface IWeightsItem
     {
-        float Weights{get;set;}
+        float Weights { get; set; }
     }
 
-    public interface IWeightsItem<Content> : IWeightsItem
+    public interface IWeightsItem<TContent> : IWeightsItem
     {
-        Content content { get; }
+        TContent Content { get; }
     }
-    
+
     public static class WeightsItemExtensions
     {
         #region IWeightsItem
