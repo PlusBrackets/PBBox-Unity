@@ -92,28 +92,28 @@ namespace PBBox
         }
     }
 
-    public static partial class PBExtensions
-    {
-#if LOG_DEFAULT || UNITY_EDITOR || GAME_TEST
-        public static void LogInfo(this object target, object message)
-        {
-            DebugUtils.Log($"[{target.GetType().FullName}] {message}");
-        }
+//     public static partial class PBExtensions
+//     {
+// #if LOG_DEFAULT || UNITY_EDITOR || GAME_TEST
+//         public static void LogInfo(this object target, object message)
+//         {
+//             DebugUtils.Log($"[{target.GetType().FullName}] {message}");
+//         }
 
-        public static void LogInfoWarning(this object target, object message)
-        {
-            DebugUtils.LogWarning($"[{target.GetType().FullName}] {message}");
-        }
+//         public static void LogInfoWarning(this object target, object message)
+//         {
+//             DebugUtils.LogWarning($"[{target.GetType().FullName}] {message}");
+//         }
 
-        public static void LogInfoError(this object target, object message)
-        {
-            DebugUtils.LogError($"[{target.GetType().FullName}] {message}");
-        }
-#else
-        public static void LogInfo(this object target, object message){}
-        public static void LogInfoWarning(this object target, object message){}
-        public static void LogInfoError(this object target, object message){}
-#endif
+//         public static void LogInfoError(this object target, object message)
+//         {
+//             DebugUtils.LogError($"[{target.GetType().FullName}] {message}");
+//         }
+// #else
+//         public static void LogInfo(this object target, object message){}
+//         public static void LogInfoWarning(this object target, object message){}
+//         public static void LogInfoError(this object target, object message){}
+// #endif
 
-    }
+    // }
 }

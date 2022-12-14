@@ -60,7 +60,7 @@ namespace PBBox.UI
                     }
                     else
                     {
-                        this.LogInfoError($"{t.FullName} 无法绑定UIID: {a.uiid}，请检查是否有重复的绑定");
+                        DebugUtils.LogError($"{t.FullName} 无法绑定UIID: {a.uiid}，请检查是否有重复的绑定");
                     }
                 }
             }
@@ -107,7 +107,7 @@ namespace PBBox.UI
             {
                 if (self.m_HoldingViews.HasInstantiatedView(uiid, uniqueID))
                 {
-                    self.LogInfo($"UIID:[{uiid}] ViewCtrl占用中，请先将对应的UIView销毁");
+                    DebugUtils.Log($"UIID:[{uiid}] ViewCtrl占用中，请先将对应的UIView销毁");
                     return false;
                 }
                 else

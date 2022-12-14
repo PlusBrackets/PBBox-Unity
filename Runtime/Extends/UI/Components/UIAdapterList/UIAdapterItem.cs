@@ -49,7 +49,7 @@ namespace PBBox.UI
             }
             else
             {
-                this.LogInfoError("数值类型不匹配");
+                DebugUtils.LogError("数值类型不匹配");
             }
         }
 

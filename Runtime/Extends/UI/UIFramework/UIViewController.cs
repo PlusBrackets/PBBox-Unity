@@ -22,7 +22,7 @@ namespace PBBox.UI
             view = _view as UIView;
             if (view == null)
             {
-                this.LogInfoError($"View[{base.view.GetUIID()}] 并非UIView类型，请继承BaseUIViewCtrl而不是UIViewCtrl");
+                DebugUtils.LogError($"View[{base.view.GetUIID()}] 并非UIView类型，请继承BaseUIViewCtrl而不是UIViewCtrl");
             }
             OnViewCreate(view);
             view.onShowEvent.AddListener(_OnViewShow);

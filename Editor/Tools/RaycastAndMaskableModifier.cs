@@ -66,13 +66,13 @@ namespace PBBox.CEditor
 
         private void OnWizardCreate()
         {
-            this.LogInfo("Modify Start");
+            DebugUtils.Log("Modify Start");
             m_InteractableObjects.Clear();
             string[] _ignoreNameTags = ignoreNameTag.Split(",");
             ModifyTarget(target, false, _ignoreNameTags, null);
             Selection.objects = m_InteractableObjects.ToArray();
             m_InteractableObjects.Clear();
-            this.LogInfo("Modify End, Selected interactable object, please check");
+            DebugUtils.Log("Modify End, Selected interactable object, please check");
         }
 
         private void ModifyTarget(GameObject target, bool hasMaskParent, string[] tags,string path)
@@ -104,7 +104,7 @@ namespace PBBox.CEditor
                         }
                         if (!string.IsNullOrEmpty(log))
                         {
-                            this.LogInfo(log);
+                            DebugUtils.Log(log);
                         }
                     }
                 }

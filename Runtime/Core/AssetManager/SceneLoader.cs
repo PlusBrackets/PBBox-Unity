@@ -83,7 +83,7 @@ namespace PBBox
         {
             if (isLoadingScene)
             {
-                this.LogInfoError("正在加载场景流程中，请等待加载完毕");
+                DebugUtils.LogError("正在加载场景流程中，请等待加载完毕");
                 return;
             }
             loadingProgress = 0f;
