@@ -6,7 +6,7 @@ namespace PBBox
     /// <summary>
     /// PBPox的一些设置
     /// </summary>    
-    internal static partial class PBBoxConfigs
+    internal static class PBBoxConfigs
     {
         #region CMD_SYS
         /// <summary>
