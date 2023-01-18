@@ -1,19 +1,22 @@
-using System.Collections;
+/*--------------------------------------------------------
+ *Copyright (c) 2016-2023 PlusBrackets
+ *@update: 2023.01.18
+ *@author: PlusBrackets
+ --------------------------------------------------------*/
 using System.Collections.Generic;
 
-namespace PBBox
+namespace PBBox.Collections
 {
-
     public partial class SortedMutiLinkedList<TKey, TValue>
     {
         protected struct Group
         {
             public TKey OrderKey { get; private set; }
-            public LinkedListNode<TValue> Start { get; private set; }
-            public LinkedListNode<TValue> End { get; private set; }
+            public LinkedListNode<KeyItemPair<TKey,TValue>> Start { get; private set; }
+            public LinkedListNode<KeyItemPair<TKey,TValue>> End { get; private set; }
             public int Count { get; private set; }
 
-            public Group(TKey key, LinkedListNode<TValue> startNode, LinkedListNode<TValue> endNode)
+            public Group(TKey key, LinkedListNode<KeyItemPair<TKey,TValue>> startNode, LinkedListNode<KeyItemPair<TKey,TValue>> endNode)
             {
                 OrderKey = key;
                 Start = startNode;
@@ -21,7 +24,7 @@ namespace PBBox
                 Count = 1;
             }
 
-            public Group AddNode(LinkedListNode<TValue> node)
+            public Group AddNode(LinkedListNode<KeyItemPair<TKey,TValue>> node)
             {
                 End.List.AddAfter(End, node);
                 End = node;
@@ -29,35 +32,51 @@ namespace PBBox
                 return this;
             }
 
-            public Group RemoveNode(TValue item, out LinkedListNode<TValue> removedNode)
+            public Group RemoveNode(KeyItemPair<TKey,TValue> item, out LinkedListNode<KeyItemPair<TKey,TValue>> removedNode)
             {
                 removedNode = GetNode(item);
-                if (removedNode != null)
+                return RemoveNode(removedNode, out removedNode);
+            }
+
+            public Group RemoveNode(LinkedListNode<KeyItemPair<TKey,TValue>> node, out LinkedListNode<KeyItemPair<TKey,TValue>> removedNode)
+            {
+                if (node != null && OrderKeyEquals(node.Value))
                 {
-                    if (End == removedNode && End != Start)
+                    if (End == node && End != Start)
                     {
                         End = End.Previous;
                     }
-                    else if (Start == removedNode && Start != End)
+                    else if (Start == node && Start != End)
                     {
                         Start = Start.Next;
                     }
-                    End.List.Remove(removedNode);
+                    End.List.Remove(node);
                     Count--;
+                    removedNode = node;
                 }
+                removedNode = null;
                 return this;
             }
 
-            public LinkedListNode<TValue> GetNode(TValue item)
+            public LinkedListNode<KeyItemPair<TKey,TValue>> GetNode(KeyItemPair<TKey,TValue> item)
             {
+                if (!OrderKeyEquals(item))
+                {
+                    return null;
+                }
                 for (var n = Start; n != End.Next; n = n.Next)
                 {
-                    if (EqualityComparer<TValue>.Default.Equals(item, n.Value))
+                    if (EqualityComparer<KeyItemPair<TKey,TValue>>.Default.Equals(item, n.Value))
                     {
                         return n;
                     }
                 }
                 return null;
+            }
+
+            private bool OrderKeyEquals(KeyItemPair<TKey,TValue> orderItem)
+            {
+                return EqualityComparer<TKey>.Default.Equals(orderItem.Key, OrderKey);
             }
         }
 

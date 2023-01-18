@@ -39,7 +39,7 @@ namespace PBBox
                 return s_Instance != null;
             }
         }
-        
+
         public static void Create()
         {
             lock (s_Locker)

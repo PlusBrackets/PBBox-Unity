@@ -1,13 +1,13 @@
 /*--------------------------------------------------------
  *Copyright (c) 2016-2023 PlusBrackets
- *@update: 2023.01.13
+ *@update: 2023.01.18
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace PBBox
+namespace PBBox.Collections
 {
     /// <summary>
     /// LinkedList的其中一段
