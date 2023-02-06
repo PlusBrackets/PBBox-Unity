@@ -1,6 +1,6 @@
 /*--------------------------------------------------------
  *Copyright (c) 2016-2023 PlusBrackets
- *@update: 2023.01.10
+ *@update: 2023.01.18
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
@@ -28,7 +28,7 @@ namespace PBBox.Collections
     /// <para>Key可以相同，不同的Key过多会在插入时造成一定程度的性能问题。遍历性能与LinkedList一致。</para>
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
-    public partial class SortedMutiLinkedList<TKey, TValue> : IEnumerable<TValue>, IEnumerable where TKey : IComparable<TKey>
+    public partial class SortedMutiLinkedList<TKey, TValue> : IEnumerable<TValue>, IEnumerable where TKey : IComparable<TKey>, IEquatable<TKey>
     {
         //节点cache，减少移除添加时的gc
         private readonly Lazy<ReferenceTempCache<LinkedListNode<KeyItemPair<TKey, TValue>>>> m_NodeCache;
@@ -185,8 +185,21 @@ namespace PBBox.Collections
             }
         }
 
+        /// <summary>
+        /// 移除项目，需要遍历列表获取节点
+        /// </summary>
+        /// <param name="orderKey"></param>
+        /// <param name="item"></param>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <returns></returns>
         public bool Remove(TKey orderKey, TValue item) => Remove(new KeyItemPair<TKey, TValue>(orderKey, item));
 
+        /// <summary>
+        /// 移除项目，需要遍历列表获取节点
+        /// </summary>
+        /// <param name="orderItem"></param>
+        /// <returns></returns>
         public bool Remove(KeyItemPair<TKey, TValue> orderItem)
         {
             if (m_GroupLookUp.TryGetValue(orderItem.Key, out var _groupNode))
@@ -197,6 +210,11 @@ namespace PBBox.Collections
             return false;
         }
 
+        /// <summary>
+        /// 移除项目，不需要遍历获取节点
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
         public bool Remove(LinkedListNode<KeyItemPair<TKey, TValue>> node)
         {
             var orderItem = node.Value;

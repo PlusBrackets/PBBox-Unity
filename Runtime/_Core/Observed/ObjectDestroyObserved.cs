@@ -14,9 +14,9 @@ namespace PBBox
     [AddComponentMenu("PBBox/Observed/Object Destroy Observerd")]
     public class ObjectDestroyObserved : MonoBehaviour
     {
-        SimpleObservable<GameObject> m_Subject;
-        HashSet<IDisposable> m_Disposables;
-        bool isDestroyed = false;
+        private SimpleObservable<GameObject> m_Subject;
+        private HashSet<IDisposable> m_Disposables;
+        private bool m_IsDestroyed = false;
 
         public SimpleObservable<GameObject> GetObserved()
         {
@@ -25,20 +25,23 @@ namespace PBBox
 
         public void AddDisposableOnDestroy(IDisposable disposable)
         {
-            if (isDestroyed)
+            if (m_IsDestroyed)
             {
                 disposable.Dispose();
             }
             else
             {
-                if (m_Disposables == null) m_Disposables = new HashSet<IDisposable>();
+                if (m_Disposables == null)
+                {
+                    m_Disposables = new HashSet<IDisposable>();
+                }
                 m_Disposables.Add(disposable);
             }
         }
 
         void OnDestroy()
         {
-            isDestroyed = true;
+            m_IsDestroyed = true;
             if (m_Disposables != null)
             {
                 foreach (var d in m_Disposables)

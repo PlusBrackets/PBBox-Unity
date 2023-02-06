@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace PBBox
 {
-    public static class SimpleObservedExtensions
+    public static partial class SimpleObservedExtensions
     {
         /// <summary>
         /// 订阅观察

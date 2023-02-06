@@ -11,10 +11,10 @@ namespace PBBox.Collections
     /// <summary>
     /// 类似于KeyValuePair，但继承了IEquatable和IComparable，避免在自身比较时产生gc
     /// </summary>
-    public struct KeyItemPair<TKey, TItem> : IEquatable<KeyItemPair<TKey, TItem>>, IComparable<KeyItemPair<TKey, TItem>>
+    public readonly struct KeyItemPair<TKey, TItem> : IEquatable<KeyItemPair<TKey, TItem>>, IComparable<KeyItemPair<TKey, TItem>>
     {
-        public TKey Key { get; set; }
-        public TItem Item { get; set; }
+        public TKey Key { get; }
+        public TItem Item { get; }
 
         public KeyItemPair(TKey key, TItem item)
         {
