@@ -17,7 +17,6 @@ namespace PBBox
         private readonly Dictionary<TKey, SortedMutiLinkedList<Delegate>> m_EventHandlerDict;
         private readonly Queue<Event> m_EventQueue;
         private readonly Dictionary<Event, LinkedListNode<KeyItemPair<int, Delegate>>> m_NextTriggerHandlers;
-        public bool EnableCheckMode { get; set; } = false;
 
         public EventPool()
         {
@@ -37,59 +36,11 @@ namespace PBBox
                 Event _event = null;
                 while (m_EventQueue.TryDequeue(out _event))
                 {
-                    _event.Emit();
-                    _event.Release();
+                    TriggerEvent(_event);
                 }
 #if !PB_THREAD_UNSAFE
             }
 #endif
-        }
-
-        private void TriggerEvent<T>(Event e, T eventArgs)
-        {
-            IEventArgs _eventArgs = eventArgs as IEventArgs;
-            if (m_EventHandlerDict.TryGetValue(e.EventId, out var _handlers))
-            {
-                var _currentHandler = _handlers.First;
-                while (_currentHandler != null)
-                {
-                    m_NextTriggerHandlers[e] = _currentHandler.Next;
-                    if (_currentHandler.Value is EventHandler<T> __handler)
-                    {
-                        //若state被设置为Interrupted，则中断事件的传输
-                        if (_eventArgs != null)
-                        {
-                            if (_eventArgs.EventState == EventArgsState.Interrupted)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                _eventArgs.EventState = EventArgsState.Sending;
-                            }
-                        }
-                        __handler(e.Sender, eventArgs);
-                    }
-                    else if (EnableCheckMode)
-                    {
-                        Log.Warning(
-                            "Type mismatch, please check if the passed-in args and event handler match."
-                            + $"\n( {e.EventId},  {typeof(T)},  {_currentHandler.Value.GetType()} )\n",
-                            "EventPool",
-                            Log.PBBoxLoggerName);
-                    }
-                    _currentHandler = m_NextTriggerHandlers[e];
-                }
-                m_NextTriggerHandlers.Remove(e);
-            }
-            if (_eventArgs != null)
-            {
-                if (_eventArgs.EventState != EventArgsState.Interrupted)
-                {
-                    _eventArgs.EventState = EventArgsState.Finished;
-                }
-                _eventArgs.Release();
-            }
         }
 
         private void TriggerEvent(Event e)
@@ -97,25 +48,17 @@ namespace PBBox
             if (m_EventHandlerDict.TryGetValue(e.EventId, out var _handlers))
             {
                 var _currentHandler = _handlers.First;
-                while (_currentHandler != null)
+                bool _keepSending = true;
+                while (_currentHandler != null && _keepSending)
                 {
                     m_NextTriggerHandlers[e] = _currentHandler.Next;
-                    if (_currentHandler.Value.Item is Action<object> __handler)
-                    {
-                        __handler(e.Sender);
-                    }
-                    else if (EnableCheckMode)
-                    {
-                        Log.Warning(
-                            "Type mismatch, please check if the passed-in args and event handler match."
-                            + $"\n( {e.EventId},  No args,  {_currentHandler.Value.GetType()} )\n",
-                            "EventPool",
-                            Log.PBBoxLoggerName);
-                    }
+                    _keepSending = e.Trigger(_currentHandler.Value.Item);
+
                     _currentHandler = m_NextTriggerHandlers[e];
                 }
                 m_NextTriggerHandlers.Remove(e);
             }
+            e.Release();
         }
 
         private void EnqueueEvent(Event e)
@@ -185,50 +128,37 @@ namespace PBBox
             }
         }
 
-        private void EmitImpl<T>(TKey eventId, object sender, T eventArgs, bool immediately)
+        private void EmitImpl<T>(TKey eventId, object sender, T eventArgs, bool immediately, IReferenceCacheBase releaseReferencePool)
         {
-            Event e = Event.Create(eventId, sender);
-            e.SetTriggerAction(CallTriggerEvent);
-
-            if (eventArgs is IEventArgs _eventArgs)
-            {
-                _eventArgs.EventState = EventArgsState.Standby;
-            }
+            var _event = ReferencePool.Acquire<Event<T>>();
+            _event.EventId = eventId;
+            _event.Sender = sender;
+            _event.EventArgs = eventArgs;
+            _event.EventArgsReferencePool = releaseReferencePool;
 
             if (immediately)
             {
-                e.Emit();
-                e.Release();
+                TriggerEvent(_event);
             }
             else
             {
-                EnqueueEvent(e);
-            }
-
-            void CallTriggerEvent()
-            {
-                TriggerEvent<T>(e, eventArgs);
+                EnqueueEvent(_event);
             }
         }
 
         private void EmitImpl(TKey eventId, object sender, bool immediately)
         {
-            Event e = Event.Create(eventId, sender);
-            e.SetTriggerAction(CallTriggerEvent);
+            var _event = ReferencePool.Acquire<Event>();
+            _event.EventId = eventId;
+            _event.Sender = sender;
 
             if (immediately)
             {
-                e.Emit();
-                e.Release();
+                TriggerEvent(_event);
             }
             else
             {
-                EnqueueEvent(e);
-            }
-
-            void CallTriggerEvent()
-            {
-                TriggerEvent(e);
+                EnqueueEvent(_event);
             }
         }
 
@@ -239,7 +169,7 @@ namespace PBBox
         /// <param name="handler"></param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <typeparam name="T">事件参数类型，可以继承EventArgsBase或者IEventArgs获得更多的支持。</typeparam>
-        public void On<T>(TKey eventId, EventHandler<T> handler, int order = 0) => OnImpl(eventId, handler, order);
+        public void On<T>(TKey eventId, Action<object, T> handler, int order = 0) => OnImpl(eventId, handler, order);
 
         /// <summary>
         /// 添加事件监听
@@ -248,6 +178,22 @@ namespace PBBox
         /// <param name="handler"></param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         public void On(TKey eventId, Action<object> handler, int order = 0) => OnImpl(eventId, handler, order);
+        /// <summary>
+        /// 添加事件监听
+        /// </summary>
+        /// <param name="eventId">事件唯一id</param>
+        /// <param name="handler">返回false时可以中断事件传递</param>
+        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
+        /// <typeparam name="T">事件参数类型，可以继承EventArgsBase或者IEventArgs获得更多的支持。</typeparam>
+        public void On<T>(TKey eventId, Func<object, T, bool> handler, int order = 0) => OnImpl(eventId, handler, order);
+
+        /// <summary>
+        /// 添加事件监听
+        /// </summary>
+        /// <param name="eventId">事件唯一id</param>
+        /// <param name="handler">返回false时可以中断事件传递</param>
+        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
+        public void On(TKey eventId, Func<object, bool> handler, int order = 0) => OnImpl(eventId, handler, order);
 
         /// <summary>
         /// 移除事件监听
@@ -256,7 +202,7 @@ namespace PBBox
         /// <param name="handler"></param>
         /// <param name="order">接收事件的顺序，默认为0，需要与添加事件时保持一致</param>
         /// <typeparam name="T">事件参数类型，可以继承EventArgsBase或者IEventArgs获得更多的支持。</typeparam>
-        public void Off<T>(TKey eventId, EventHandler<T> handler, int order = 0) => OffImpl(eventId, handler, order);
+        public void Off<T>(TKey eventId, Action<object, T> handler, int order = 0) => OffImpl(eventId, handler, order);
 
         /// <summary>
         /// 移除事件监听
@@ -267,13 +213,30 @@ namespace PBBox
         public void Off(TKey eventId, Action<object> handler, int order = 0) => OffImpl(eventId, handler, order);
 
         /// <summary>
+        /// 移除事件监听
+        /// </summary>
+        /// <param name="eventId">事件唯一id</param>
+        /// <param name="handler">返回false时可以中断事件传递</param>
+        /// <param name="order">接收事件的顺序，默认为0，需要与添加事件时保持一致</param>
+        /// <typeparam name="T">事件参数类型，可以继承EventArgsBase或者IEventArgs获得更多的支持。</typeparam>
+        public void Off<T>(TKey eventId, Func<object, T, bool> handler, int order = 0) => OffImpl(eventId, handler, order);
+
+        /// <summary>
+        /// 移除事件监听
+        /// </summary>
+        /// <param name="eventId">事件唯一id</param>
+        /// <param name="handler">返回false时可以中断事件传递</param>
+        /// <param name="order">接收事件的顺序，默认为0，需要与添加事件时保持一致</param>
+        public void Off(TKey eventId, Func<object, bool> handler, int order = 0) => OffImpl(eventId, handler, order);
+
+        /// <summary>
         /// 发送事件，事件会在下一帧触发
         /// </summary>
         /// <param name="eventId"></param>
         /// <param name="sender"></param>
         /// <param name="eventArgs">事件参数可以继承EventArgsBase获得更多的功能</param>
         /// <typeparam name="T"></typeparam>
-        public void Emit<T>(TKey eventId, object sender, T eventArgs) => EmitImpl<T>(eventId, sender, eventArgs, false);
+        public void Emit<T>(TKey eventId, object sender, T eventArgs, IReferenceCacheBase releaseToReferenceCache = null) => EmitImpl<T>(eventId, sender, eventArgs, false, releaseToReferenceCache);
 
         /// <summary>
         /// 发送事件，事件会在下一帧触发
@@ -289,7 +252,7 @@ namespace PBBox
         /// <param name="sender"></param>
         /// <param name="eventArgs">事件参数可以继承EventArgsBase获得更多的功能</param>
         /// <typeparam name="T"></typeparam>
-        public void EmitNow<T>(TKey eventId, object sender, T eventArgs) => EmitImpl<T>(eventId, sender, eventArgs, true);
+        public void EmitNow<T>(TKey eventId, object sender, T eventArgs, IReferenceCacheBase releaseToReferenceCache = null) => EmitImpl<T>(eventId, sender, eventArgs, true, releaseToReferenceCache);
 
         /// <summary>
         /// 立即发送事件，这种事件是非线程安全的
@@ -298,17 +261,5 @@ namespace PBBox
         /// <param name="sender"></param>
         public void EmitNow(TKey eventId, object sender) => EmitImpl(eventId, sender, true);
 
-        /// <summary>
-        /// 中断EventArgs的传递
-        /// </summary>
-        /// <param name="eventArgs"></param>
-        public static void InterruptEventArgs(IEventArgs eventArgs)
-        {
-            if (eventArgs == null)
-            {
-                throw new Log.FetalErrorException("EventArgs can not be null.", "EventPool", Log.PBBoxLoggerName);
-            }
-            eventArgs.EventState = EventArgsState.Interrupted;
-        }
     }
 }
