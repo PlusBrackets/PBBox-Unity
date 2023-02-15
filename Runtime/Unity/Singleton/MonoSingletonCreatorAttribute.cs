@@ -23,7 +23,7 @@ namespace PBBox
         /// 若无法在场景中找到脚本，是否可以自动创建，默认为true
         /// </summary>
         /// <value></value>
-        public bool AutoCreate { get; set; } = true;
+        public bool AutoCreateIfNotFound { get; set; } = true;
         public bool DontDestroyOnLoad { get; set; } = true;
         public HideFlags HideFlags { get; set; } = HideFlags.None;
         /// <summary>
@@ -48,7 +48,7 @@ namespace PBBox
                 {
                     go = (component as Component).gameObject;
                 }
-                else if (!AutoCreate)
+                else if (!AutoCreateIfNotFound)
                 {
                     Log.Error(
                         "Failed to find any [" + typeof(T).Name + "] in scene, and it will not be automatically created.",
