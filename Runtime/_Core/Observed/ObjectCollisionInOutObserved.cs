@@ -24,12 +24,12 @@ namespace PBBox
 
         private void OnCollisionEnter(Collision other)
         {
-            m_SubjectEnter?.OnNext(gameObject);
+            m_SubjectEnter?.OnNext(other.gameObject);
         }
 
         private void OnCollisionExit(Collision other)
         {
-            m_SubjectExit?.OnNext(gameObject);
+            m_SubjectExit?.OnNext(other.gameObject);
         }
     }
 

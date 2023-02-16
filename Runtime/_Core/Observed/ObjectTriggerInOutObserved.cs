@@ -24,12 +24,12 @@ namespace PBBox
 
         private void OnTriggerEnter(Collider other)
         {
-            m_SubjectEnter?.OnNext(gameObject);
+            m_SubjectEnter?.OnNext(other.gameObject);
         }
 
         private void OnTriggerExit(Collider other)
         {
-            m_SubjectExit?.OnNext(gameObject);
+            m_SubjectExit?.OnNext(other.gameObject);
         }
     }
 
