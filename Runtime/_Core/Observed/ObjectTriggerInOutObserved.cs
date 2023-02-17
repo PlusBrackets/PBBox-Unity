@@ -9,27 +9,27 @@ namespace PBBox
     [AddComponentMenu("")]
     public class ObjectTriggerInOutObserved : MonoBehaviour
     {
-        SimpleObservable<GameObject> m_SubjectEnter;
-        SimpleObservable<GameObject> m_SubjectExit;
+        SimpleObservable<Collider> m_SubjectEnter;
+        SimpleObservable<Collider> m_SubjectExit;
 
-        public SimpleObservable<GameObject> GetEnterObserved()
+        public SimpleObservable<Collider> GetEnterObserved()
         {
-            return m_SubjectEnter ?? (m_SubjectEnter = new SimpleObservable<GameObject>());
+            return m_SubjectEnter ?? (m_SubjectEnter = new SimpleObservable<Collider>());
         }
 
-        public SimpleObservable<GameObject> GetExitObserved()
+        public SimpleObservable<Collider> GetExitObserved()
         {
-            return m_SubjectExit ?? (m_SubjectExit = new SimpleObservable<GameObject>());
+            return m_SubjectExit ?? (m_SubjectExit = new SimpleObservable<Collider>());
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            m_SubjectEnter?.OnNext(other.gameObject);
+            m_SubjectEnter?.OnNext(other);
         }
 
         private void OnTriggerExit(Collider other)
         {
-            m_SubjectExit?.OnNext(other.gameObject);
+            m_SubjectExit?.OnNext(other);
         }
     }
 
@@ -42,7 +42,7 @@ namespace PBBox
         /// <param name="onNext"></param>
         /// <param name="onComplete"></param>
         /// <returns></returns>
-        public static SimpleObservable<GameObject>.Subscription ObservedTriggerEnter(this GameObject target, Action<GameObject> onNext, Action onComplete = null)
+        public static SimpleObservable<Collider>.Subscription ObservedTriggerEnter(this GameObject target, Action<Collider> onNext, Action onComplete = null)
         {
             return target.GetOrAddComponent<ObjectTriggerInOutObserved>().GetEnterObserved().Subscribe(onNext, onComplete);
         }
@@ -54,7 +54,7 @@ namespace PBBox
         /// <param name="onNext"></param>
         /// <param name="onComplete"></param>
         /// <returns></returns>
-        public static SimpleObservable<GameObject>.Subscription ObservedTriggerExit(this GameObject target, Action<GameObject> onNext, Action onComplete = null)
+        public static SimpleObservable<Collider>.Subscription ObservedTriggerExit(this GameObject target, Action<Collider> onNext, Action onComplete = null)
         {
             return target.GetOrAddComponent<ObjectTriggerInOutObserved>().GetExitObserved().Subscribe(onNext, onComplete);
         }
