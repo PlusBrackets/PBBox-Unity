@@ -21,14 +21,16 @@ namespace PBBox
 
         void ISingletonLifecycle.OnCreateAsSingleton()
         {
-            m_EventPoolInt = new EventPool<int>();
-            m_EventPoolString = new EventPool<string>();
+            m_EventPoolInt = ReferencePool.Acquire<EventPool<int>>();
+            m_EventPoolString =  ReferencePool.Acquire<EventPool<string>>();
             LogicUpdater.Attach(this);
         }
 
         void ISingletonLifecycle.OnDestroyAsSingleton()
         {
             LogicUpdater.Unattach(this);
+            ReferencePool.Release(m_EventPoolInt);
+            ReferencePool.Release(m_EventPoolString);
         }
 
         void ILogicUpdateHandler<LogicUpdater.Default>.OnUpdate(float deltaTime)

@@ -12,11 +12,18 @@ namespace PBBox
     /// <summary>
     /// 事件池
     /// </summary>
-    public sealed partial class EventPool<TKey>
+    public sealed partial class EventPool<TKey> : IReferencePoolItem
     {
+
         private readonly Dictionary<TKey, SortedMutiLinkedList<Delegate>> m_EventHandlerDict;
         private readonly Queue<Event> m_EventQueue;
+        /// <summary>
+        /// 下一个要触发的EventHandler的链表节点，用于解决遍历EventHandler链表时移除节点的一些问题。
+        /// </summary>
         private readonly Dictionary<Event, LinkedListNode<KeyItemPair<int, Delegate>>> m_NextTriggerHandlers;
+
+        bool IReferencePoolItem.IsUsing { get; set; }
+        public bool IsUsing => ((IReferencePoolItem)this).IsUsing;
 
         public EventPool()
         {
@@ -48,11 +55,12 @@ namespace PBBox
             if (m_EventHandlerDict.TryGetValue(e.EventId, out var _handlers))
             {
                 var _currentHandler = _handlers.First;
-                bool _keepSending = true;
+                bool _keepSending = true;//若Handler返回false时，终止传递事件
                 while (_currentHandler != null && _keepSending)
                 {
                     m_NextTriggerHandlers[e] = _currentHandler.Next;
                     _keepSending = e.Trigger(_currentHandler.Value.Item);
+
 
                     _currentHandler = m_NextTriggerHandlers[e];
                 }
@@ -75,6 +83,7 @@ namespace PBBox
 
         private void OnImpl(TKey eventId, Delegate handler, int order)
         {
+            //TODO 未进行线程保护
             if (!m_EventHandlerDict.TryGetValue(eventId, out var _handlers))
             {
                 _handlers = new SortedMutiLinkedList<Delegate>();
@@ -261,5 +270,21 @@ namespace PBBox
         /// <param name="sender"></param>
         public void EmitNow(TKey eventId, object sender) => EmitImpl(eventId, sender, true);
 
+        public void Clear()
+        {
+            m_NextTriggerHandlers.Clear();
+            m_EventHandlerDict.Clear();
+            m_EventQueue.Clear();
+        }
+
+        void IReferencePoolItem.OnReferenceAcquire()
+        {
+
+        }
+
+        void IReferencePoolItem.OnReferenceRelease()
+        {
+            Clear();
+        }
     }
 }

@@ -9,6 +9,10 @@ namespace PBBox
 {
     public sealed partial class EventPool<TKey>
     {
+        /// <summary>
+        /// 队列事件，带有一个泛型表示传入参数
+        /// </summary>
+        /// <typeparam name="TEventArgs"></typeparam>
         private class Event<TEventArgs> : Event
         {
             public TEventArgs EventArgs { get; set; }
@@ -48,7 +52,9 @@ namespace PBBox
             }
         }
 
-
+        /// <summary>
+        /// 队列事件
+        /// </summary>
         private class Event : IReferencePoolItem
         {
             bool IReferencePoolItem.IsUsing { get; set; } = true;
