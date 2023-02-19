@@ -7,16 +7,19 @@ namespace PBBox.FSM
     {
         string Name { get; }
         int? CurrentStateKey { get; }
-        
+
         IState GetState(int key);
         IState SetState(int key, IState state);
         IState RemoveState(int key);
         bool ContainsState(int key);
-        
+
         bool TryGetValue<T>(int key, out T value);
         void SetValue<T>(int key, T value);
         void RemoveValue(int key);
         bool ContainsValue(int key);
+        
+        IEnumerator<KeyValuePair<int, IState>> GetAllStates();
+        IEnumerator<KeyValuePair<int, object>> GetAllValues();
 
         void ChangeToState(int key);
         void Update(float deltaTime);
