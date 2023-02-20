@@ -80,7 +80,7 @@ namespace PBBox
             }
         }
 
-        public static void UnAttach(ILogicUpdateHandler<Fixed> handler)
+        public static void Unattach(ILogicUpdateHandler<Fixed> handler)
         {
             s_FixedUpdater.Unattach(handler);
         }
@@ -119,7 +119,7 @@ namespace PBBox
             }
         }
 
-        public static void UnAttach(ILogicUpdateHandler<Late> handler)
+        public static void Unattach(ILogicUpdateHandler<Late> handler)
         {
             s_LateUpdater.Unattach(handler);
         }
