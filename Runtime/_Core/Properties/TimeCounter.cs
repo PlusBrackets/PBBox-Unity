@@ -195,7 +195,7 @@ namespace PBBox
             }
         }
     }
-
+        
     /// <summary>
     /// 游戏计时器，使用Time.unscaleTime计时
     /// </summary>
@@ -259,6 +259,16 @@ namespace PBBox
     {
         private long _createdTicks = DateTime.UtcNow.Ticks;
         protected override float currentTime => (float)((DateTime.UtcNow.Ticks - _createdTicks) / 10000) / 1000f;
+    }
+
+    public class ManualTimer : GameTimer
+    {
+        private float m_AdvancedSec = 0f;
+        protected override float currentTime => m_AdvancedSec;
+
+        public void Advance(float sec){
+            m_AdvancedSec += sec;
+        }
     }
 
 }
