@@ -185,6 +185,43 @@ namespace PBBox
             return result;
         }
 
+        /// <summary>
+        /// 获得所有使用该类型的Class,包括自身
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="includeAbstractClass"></param>
+        /// <param name="assemblyNames"></param>
+        /// <param name="domain"></param>
+        /// <returns></returns>
+        public static IEnumerable<Type> GetReferencingClass(this Type target, bool includeAbstractClass = false, IEnumerable<string> assemblyNames = null, AppDomain domain = null)
+        {
+            if (domain == null)
+                domain = AppDomain.CurrentDomain;
+            IEnumerable<Type> result = null;
+            var _allTypes = domain
+                .GetAssemblies()
+                .Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
+                .SelectMany(a => a.GetTypes());
+            if (target.IsClass)
+            {
+                if (target.IsSubclassOf(typeof(System.Attribute)))
+                {
+                    var _attributeUsage = target.GetCustomAttribute<AttributeUsageAttribute>();
+                    bool _inherited = _attributeUsage != null ? _attributeUsage.Inherited : false;
+                    result = _allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && t.IsDefined(target, _inherited));
+                }
+                else
+                {
+                    result = _allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && (t.IsSubclassOf(target) || t == target));
+                }
+            }
+            else if (target.IsInterface)
+            {
+                result = _allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && target.IsAssignableFrom(t));
+            }
+            return result;
+        }
+
 
     }
 }
