@@ -24,9 +24,9 @@ namespace PBBox.Unity
         private Type m_FromType = null;
         private Type[] m_IncludeTypes = null;
 
-        private Dictionary<string, Type> m_SelectableTypes = null;
+        private Type[] m_SelectableTypes = null;
         private string[] m_SelectableTypeNames = null;
-        public Dictionary<string, Type> SelectableTypes
+        public Type[] SelectableTypes
         {
             get
             {
@@ -43,14 +43,7 @@ namespace PBBox.Unity
                 {
                     _list.UnionWith(m_IncludeTypes);
                 }
-                m_SelectableTypes = _list.ToDictionary(t =>
-                {
-                    if (!t.TryGetCustomDisplayName(out var name))
-                    {
-                        name = t.FullName;
-                    }
-                    return name;
-                });
+                m_SelectableTypes = _list.ToArray();
                 return m_SelectableTypes;
             }
         }

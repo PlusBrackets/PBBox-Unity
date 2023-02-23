@@ -42,11 +42,14 @@ namespace PBBox.Unity
                 {
                     var _sortedList =
                         new KeyValuePair<int, GUIContent>[] { new KeyValuePair<int, GUIContent>(int.MinValue, new GUIContent("Null")) }
-                        .Concat(m_SelectableTypes.Select(kvp =>
+                        .Concat(m_SelectableTypes.Select(_type =>
                         {
                             int _order = 0;
-                            kvp.Value.TryGetCustomDisplayName(out var _name, ref _order);
-                            return new KeyValuePair<int, GUIContent>(_order, new GUIContent(kvp.Key, kvp.Value.FullName));
+                            if (!_type.TryGetCustomDisplayName(out var _name, ref _order))
+                            {
+                                _name = _type.FullName;
+                            }
+                            return new KeyValuePair<int, GUIContent>(_order, new GUIContent(_name, _type.FullName));
                         })).ToList();
                     _sortedList.Sort(NameSroter.DEFAULT);
                     m_SelectableNameAndTypes = _sortedList.Select(t => t.Value).ToArray();
@@ -228,7 +231,7 @@ namespace PBBox.Unity
                 }
                 else
                 {
-                    _selector.SelectableTypes.TryGetValue(typeInfo.text, out var _type);
+                    var _type = _selector.SelectableTypes.First(t => t.FullName == typeInfo.tooltip);
                     return _type;
                 }
             }
