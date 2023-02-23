@@ -167,7 +167,7 @@ namespace PBBox.Unity
                 {
                     var _IndentedHintTempRect = EditorGUI.IndentedRect(_selectTypeRect);
                     Rect _hintLabelRect = new Rect(_IndentedHintTempRect.x, _IndentedHintTempRect.y, _IndentedHintTempRect.width - 15f, EditorGUIUtility.singleLineHeight);
-                    EditorGUI.SelectableLabel(_hintLabelRect, "Select Class", s_HintStyle);
+                    EditorGUI.LabelField(_hintLabelRect, "Select Class", s_HintStyle);
                 }
 
                 s_IsFoldoutDict.TryGetValue(property.propertyPath, out bool _isFoldout);
