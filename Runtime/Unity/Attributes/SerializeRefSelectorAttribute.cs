@@ -32,7 +32,7 @@ namespace PBBox.Unity
         {
             get
             {
-                if (m_SelectableTypes != null && m_SelectableTypeNames != null)
+                if (m_SelectableTypes != null)
                 {
                     return m_SelectableTypes;
                 }
@@ -46,20 +46,7 @@ namespace PBBox.Unity
                     _list.UnionWith(m_IncludeTypes);
                 }
                 m_SelectableTypes = _list.ToArray();
-                m_SelectableTypeNames = new string[] { "Null" }.Concat(m_SelectableTypes.Select(t => t.FullName).ToArray()).ToArray();
                 return m_SelectableTypes;
-            }
-        }
-
-        public string[] SelectableTypeNames
-        {
-            get
-            {
-                if (SelectableTypes != null)
-                {
-                    return m_SelectableTypeNames;
-                }
-                return null;
             }
         }
 
@@ -78,12 +65,42 @@ namespace PBBox.Unity
         }
 
 #if UNITY_EDITOR
+
+        private GUIContent[] m_SelectableNameAndTypes = null;
+        private GUIContent[] SelectableNameAndTypes
+        {
+            get
+            {
+                if (SelectableTypes != null)
+                {
+                    m_SelectableNameAndTypes = new GUIContent[] { new GUIContent("Null") }.Concat(m_SelectableTypes.Select(t => new GUIContent(t.FullName, t.FullName))).ToArray();
+                    return m_SelectableNameAndTypes;
+                }
+                return null;
+            }
+        }
+
         [CustomPropertyDrawer(typeof(SerializeRefSelectorAttribute))]
         private sealed class Drawer : PropertyDrawer
         {
+            private bool m_IsFoldout = false;
+
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
-                return EditorGUI.GetPropertyHeight(property, label, true) + EditorGUIUtility.singleLineHeight + 3f * EditorGUIUtility.standardVerticalSpacing;
+                float _propertyHeight = EditorGUIUtility.singleLineHeight;
+                string _curPath = property.propertyPath + ".";
+                bool _enter = true;
+                while (m_IsFoldout && property.NextVisible(_enter))
+                {
+                    if (!property.propertyPath.StartsWith(_curPath))
+                    {
+                        _propertyHeight += EditorGUIUtility.standardVerticalSpacing;
+                        break;
+                    }
+                    _enter = false;
+                    _propertyHeight += EditorGUI.GetPropertyHeight(property, true) + EditorGUIUtility.standardVerticalSpacing;
+                }
+                return _propertyHeight;
             }
 
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -93,29 +110,27 @@ namespace PBBox.Unity
                 {
                     return;
                 }
-                float _padding = EditorGUIUtility.standardVerticalSpacing;
                 float _lineHeight = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                Rect _selectTypeRect = new Rect(position.x, position.y + _padding, position.width - _padding, _lineHeight);
-                Rect _propertyRect = new Rect(position.x, _selectTypeRect.y + _lineHeight, position.width - _padding, position.height - _lineHeight - _padding);
+                Rect _selectTypeRect = new Rect(position.x, position.y, position.width, _lineHeight);
+                Rect _propertyRect = new Rect(position.x, _selectTypeRect.y + _lineHeight, position.width - EditorGUIUtility.standardVerticalSpacing, position.height - _lineHeight);
 
-                GUI.Box(position, GUIContent.none);
                 EditorGUI.BeginProperty(position, label, property);
 
                 int _selecting = GetSelectingIndex(_selector, property.managedReferenceValue);
-                var _selectableTypeNames = _selector.SelectableTypeNames;
+                var _selectableTypeNames = _selector.SelectableNameAndTypes;
                 if (_selecting < 0)
                 {
-                    _selectableTypeNames[0] = "[Not Include]" + property.managedReferenceValue.GetType();
+                    _selectableTypeNames[0].text = "[Not Include]" + property.managedReferenceValue.GetType();
                     _selecting = 0;
                 }
                 else
                 {
-                    _selectableTypeNames[0] = "Null";
+                    _selectableTypeNames[0].text = "Null";
                 }
-                int _newSelectIndex = EditorGUI.Popup(_selectTypeRect, _selecting, _selector.SelectableTypeNames);
+                int _newSelectIndex = EditorGUI.Popup(_selectTypeRect, label, _selecting, _selector.SelectableNameAndTypes);
                 if (_selecting != _newSelectIndex)
                 {
-                    var _newType = GetSelectedType(_selector, _selector.SelectableTypeNames[_newSelectIndex]);
+                    var _newType = GetSelectedType(_selector, _selector.SelectableNameAndTypes[_newSelectIndex].tooltip);
                     if (_newType == null)
                     {
                         property.managedReferenceValue = null;
@@ -130,12 +145,41 @@ namespace PBBox.Unity
                         }
                         property.managedReferenceValue = _object;
                     }
+                    _selecting = _newSelectIndex;
                 }
-
-                EditorGUI.indentLevel++;
-                EditorGUI.PropertyField(_propertyRect, property, label, true);
-                EditorGUI.indentLevel--;
+                if (_selectableTypeNames[_selecting].text != "Null")
+                {
+                    m_IsFoldout = EditorGUI.Foldout(_selectTypeRect, m_IsFoldout, GUIContent.none, true);
+                }
+                if (m_IsFoldout)
+                {
+                    Rect _boxRect = position;
+                    _boxRect.y += EditorGUIUtility.singleLineHeight;
+                    _boxRect.height -= EditorGUIUtility.singleLineHeight;
+                    GUI.Box(EditorGUI.IndentedRect(_boxRect), GUIContent.none);
+                    EditorGUI.indentLevel++;
+                    DrawInlineProperty(_propertyRect, property);
+                    // EditorGUI.PropertyField(_propertyRect, property, true);
+                    EditorGUI.indentLevel--;
+                }
                 EditorGUI.EndProperty();
+            }
+
+            private void DrawInlineProperty(Rect position, SerializedProperty property)
+            {
+                string _curPath = property.propertyPath + ".";
+                bool _enter = true;
+                while (property.NextVisible(_enter))
+                {
+                    if (!property.propertyPath.StartsWith(_curPath))
+                    {
+                        break;
+                    }
+                    _enter = false;
+                    position.height = EditorGUI.GetPropertyHeight(property, true);
+                    EditorGUI.PropertyField(position, property, new GUIContent(property.displayName), true);
+                    position.y = position.y + position.height + EditorGUIUtility.standardVerticalSpacing;
+                }
             }
 
             private int GetSelectingIndex(SerializeRefSelectorAttribute _selector, object curValue)
