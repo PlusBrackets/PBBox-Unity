@@ -83,14 +83,29 @@ namespace PBBox.Unity
         [CustomPropertyDrawer(typeof(SerializeRefSelectorAttribute))]
         private sealed class Drawer : PropertyDrawer
         {
-            private bool m_IsFoldout = false;
+            private static Dictionary<string,bool> s_IsFoldoutDict = new Dictionary<string, bool>();
+            private static GUIStyle __HintStyle = null;
+            private static GUIStyle s_HintStyle{
+                get{
+                    if(__HintStyle == null){
+                        __HintStyle = new GUIStyle(EditorStyles.centeredGreyMiniLabel);
+                        __HintStyle.alignment = TextAnchor.MiddleRight;
+                    }
+                    return __HintStyle;
+                }
+            }
 
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
+                s_IsFoldoutDict.TryGetValue(property.propertyPath, out bool _isFoldout);
+                if (property.managedReferenceValue == null)
+                {
+                    _isFoldout = false;
+                }
                 float _propertyHeight = EditorGUIUtility.singleLineHeight;
                 string _curPath = property.propertyPath + ".";
                 bool _enter = true;
-                while (m_IsFoldout && property.NextVisible(_enter))
+                while (_isFoldout && property.NextVisible(_enter))
                 {
                     if (!property.propertyPath.StartsWith(_curPath))
                     {
@@ -127,10 +142,10 @@ namespace PBBox.Unity
                 {
                     _selectableTypeNames[0].text = "Null";
                 }
-                int _newSelectIndex = EditorGUI.Popup(_selectTypeRect, label, _selecting, _selector.SelectableNameAndTypes);
+                int _newSelectIndex = EditorGUI.Popup(_selectTypeRect, label, _selecting, _selectableTypeNames);
                 if (_selecting != _newSelectIndex)
                 {
-                    var _newType = GetSelectedType(_selector, _selector.SelectableNameAndTypes[_newSelectIndex].tooltip);
+                    var _newType = GetSelectedType(_selector, _selectableTypeNames[_newSelectIndex].tooltip);
                     if (_newType == null)
                     {
                         property.managedReferenceValue = null;
@@ -147,11 +162,33 @@ namespace PBBox.Unity
                     }
                     _selecting = _newSelectIndex;
                 }
-                if (_selectableTypeNames[_selecting].text != "Null")
+
+                if (EditorGUIUtility.currentViewWidth > 250f)
                 {
-                    m_IsFoldout = EditorGUI.Foldout(_selectTypeRect, m_IsFoldout, GUIContent.none, true);
+                    var _IndentedHintTempRect = EditorGUI.IndentedRect(_selectTypeRect);
+                    Rect _hintLabelRect = new Rect(_IndentedHintTempRect.x, _IndentedHintTempRect.y, _IndentedHintTempRect.width - 15f, EditorGUIUtility.singleLineHeight);
+                    EditorGUI.SelectableLabel(_hintLabelRect, "Select Class", s_HintStyle);
                 }
-                if (m_IsFoldout)
+
+                s_IsFoldoutDict.TryGetValue(property.propertyPath, out bool _isFoldout);
+                if (property.managedReferenceValue != null)
+                {
+                    var _isFoldoutNew = EditorGUI.Foldout(_selectTypeRect, _isFoldout, GUIContent.none, true);
+                    if (_isFoldoutNew == false && _isFoldout == true)
+                    {
+                        s_IsFoldoutDict.Remove(property.propertyPath);
+                    }
+                    else if (_isFoldoutNew == true && _isFoldout == false)
+                    {
+                        s_IsFoldoutDict.TryAdd(property.propertyPath, _isFoldoutNew);
+                    }
+                    _isFoldout = _isFoldoutNew;
+                }
+                else
+                {
+                    _isFoldout = false;
+                }
+                if (_isFoldout)
                 {
                     Rect _boxRect = position;
                     _boxRect.y += EditorGUIUtility.singleLineHeight;
