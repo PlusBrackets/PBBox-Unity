@@ -234,6 +234,11 @@ namespace PBBox
             return Spawn(null, data);
         }
 
+        public GameObject Spawn(SpawnParam spawnParam)
+        {
+            return Spawn<object>(spawnParam, null);
+        }
+
         // public T Spawn<T>(SpawnParam? spawnParam, params object[] datas)
         // {
         //     var obj = Spawn(spawnParam, datas);
