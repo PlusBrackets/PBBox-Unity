@@ -6,7 +6,9 @@ namespace PBBox.FSM
     public interface IStateMachine
     {
         string Name { get; }
-        int? CurrentStateKey { get; }
+        object Owner { get; }
+        int? CurrentState { get; }
+        int? EntryState { get; }
 
         IState GetState(int key);
         IState SetState(int key, IState state);
@@ -23,7 +25,7 @@ namespace PBBox.FSM
 
         void ChangeToState(int key);
         void Update(float deltaTime);
-        void Start(int key);
+        void Start(int? key = null);
         void Stop();
     }
 }

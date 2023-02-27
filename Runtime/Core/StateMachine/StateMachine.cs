@@ -10,20 +10,40 @@ namespace PBBox.FSM
     public class StateMachine : IStateMachine, IReferencePoolItem
     {
         public string Name { get; set; } = null;
+        public object Owner { get; protected set; } = null;
         protected Dictionary<int, IState> m_States;
         protected Dictionary<int, object> m_Values;
-        public int? CurrentStateKey { get; protected set; } = null;
+        public int? CurrentState { get; protected set; } = null;
+        public int? EntryState { get; protected set; } = null;
         bool IReferencePoolItem.IsUsing { get; set; }
 
         public StateMachine()
         {
             m_States = new Dictionary<int, IState>();
-            CurrentStateKey = null;
         }
 
-        public static StateMachine Create(IDictionary<int, IState> states = null, IDictionary<int, object> values = null)
+        public StateMachine(object owner)
+        {
+            m_States = new Dictionary<int, IState>();
+            CurrentState = null;
+            Owner = owner;
+        }
+
+        public StateMachine(object owner, IDictionary<int, IState> states, IDictionary<int, object> values = null)
+        {
+            Owner = owner;
+            m_States = new Dictionary<int, IState>(states);
+            if (values != null)
+            {
+                m_Values = new Dictionary<int, object>(values);
+            }
+        }
+
+        public static StateMachine Create(object owner = null, int? entryState = null, IDictionary<int, IState> states = null, IDictionary<int, object> values = null)
         {
             var _machine = ReferencePool.Acquire<StateMachine>();
+            _machine.Owner = owner;
+            _machine.EntryState = entryState;
             if (states != null)
             {
                 foreach (var _stateKvp in states)
@@ -60,14 +80,11 @@ namespace PBBox.FSM
             }
             ReferencePool.Release(machine);
         }
-
-        public StateMachine(IDictionary<int, IState> states = null, IDictionary<int, object> values = null)
+        
+        public StateMachine SetEntryState(int stateKey)
         {
-            m_States = new Dictionary<int, IState>(states);
-            if (values != null)
-            {
-                m_Values = new Dictionary<int, object>(values);
-            }
+            EntryState = stateKey;
+            return this;
         }
 
         public virtual void ChangeToState(int stateKey)
@@ -82,23 +99,23 @@ namespace PBBox.FSM
                 return;
             }
             IState _previousState = null;
-            if (CurrentStateKey.HasValue)
+            if (CurrentState.HasValue)
             {
-                _previousState = GetState(CurrentStateKey.Value);
+                _previousState = GetState(CurrentState.Value);
             }
-            var _prevoursKey = CurrentStateKey;
+            var _prevoursKey = CurrentState;
             _previousState?.Exit(this, stateKey);
-            CurrentStateKey = stateKey;
+            CurrentState = stateKey;
             _nextState.Enter(this, _prevoursKey);
         }
 
         public virtual void Update(float deltaTime)
         {
-            if (!CurrentStateKey.HasValue)
+            if (!CurrentState.HasValue)
             {
                 return;
             }
-            IState _currentState = GetState(CurrentStateKey.Value);
+            IState _currentState = GetState(CurrentState.Value);
             if (_currentState == null)
             {
                 return;
@@ -106,9 +123,9 @@ namespace PBBox.FSM
             _currentState.Update(this, deltaTime);
         }
 
-        public virtual void Start(int stateKey)
+        public virtual void Start(int? stateKey = null)
         {
-            if (CurrentStateKey.HasValue)
+            if (CurrentState.HasValue)
             {
                 Log.Warning(
                     $"This Machine[{(!string.IsNullOrEmpty(Name) ? Name : this.GetType())}] has areadly stated",
@@ -116,7 +133,20 @@ namespace PBBox.FSM
                     Log.PBBoxLoggerName);
                 return;
             }
-            IState _state = GetState(stateKey);
+            if (!stateKey.HasValue)
+            {
+                stateKey = EntryState;
+            }
+            if (!stateKey.HasValue)
+            {
+                Log.Error(
+                    $"Can not start the Machine[{(!string.IsNullOrEmpty(Name) ? Name : this.GetType())}] because it has no entry state.",
+                    "FSM",
+                    Log.PBBoxLoggerName
+                );
+                return;
+            }
+            IState _state = GetState(stateKey.Value);
             if (_state == null)
             {
                 Log.Error(
@@ -125,30 +155,33 @@ namespace PBBox.FSM
                     Log.PBBoxLoggerName);
                 return;
             }
-            CurrentStateKey = stateKey;
+            CurrentState = stateKey;
             _state.Enter(this, null);
         }
 
         public virtual void Stop()
         {
-            if (!CurrentStateKey.HasValue)
+            if (!CurrentState.HasValue)
             {
                 return;
             }
-            IState _state = GetState(CurrentStateKey.Value);
+            IState _state = GetState(CurrentState.Value);
             _state.Exit(this, null);
-            CurrentStateKey = null;
+            CurrentState = null;
         }
 
         void IReferencePoolItem.OnReferenceAcquire() { }
 
         void IReferencePoolItem.OnReferenceRelease()
         {
-            if(CurrentStateKey.HasValue){
+            if (CurrentState.HasValue)
+            {
                 Stop();
             }
             m_States.Clear();
             m_Values.Clear();
+            Owner = null;
+            EntryState = null;
             Name = null;
         }
 
@@ -166,7 +199,7 @@ namespace PBBox.FSM
             if (!m_States.TryAdd(key, state))
             {
                 var _oldState = m_States[key];
-                if (CurrentStateKey.HasValue && CurrentStateKey.Value == key)
+                if (CurrentState.HasValue && CurrentState.Value == key)
                 {
                     _oldState.Exit(this, key);
                     m_States[key] = state;
@@ -183,7 +216,7 @@ namespace PBBox.FSM
 
         public IState RemoveState(int key)
         {
-            if (CurrentStateKey.HasValue && CurrentStateKey.Value == key)
+            if (CurrentState.HasValue && CurrentState.Value == key)
             {
                 throw new Log.FetalErrorException($"This state[{key}] is runing, can not remove!", "FSM", Log.PBBoxLoggerName);
             }
@@ -205,7 +238,7 @@ namespace PBBox.FSM
             if (m_Values != null && m_Values.TryGetValue(key, out var _objValue))
             {
                 value = (T)_objValue;
-                return false;
+                return true;
             }
             value = default(T);
             return false;
