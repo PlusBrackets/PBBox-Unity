@@ -113,7 +113,7 @@ namespace PBBox.Unity
 
                 EditorGUI.BeginProperty(position, label, property);
 
-                int _selecting = GetSelectingIndex(_selector, property.managedReferenceValue);
+                int _selecting = GetSelectingIndex(_selector, property);
                 var _selectableTypeNames = _selector.SelectableNameAndTypes;
                 if (_selecting < 0)
                 {
@@ -201,22 +201,16 @@ namespace PBBox.Unity
                 }
             }
 
-            private int GetSelectingIndex(SerializeRefSelectorAttribute _selector, object curValue)
+            private int GetSelectingIndex(SerializeRefSelectorAttribute selector, SerializedProperty property)
             {
-                if (curValue == null)
+                if (property.managedReferenceValue == null)
                 {
                     return 0;
                 }
-                string _fullName = curValue.GetType().FullName;
-                int _index = Array.FindIndex(_selector.SelectableNameAndTypes, content => content.tooltip == _fullName);
+                string _fullName = property.managedReferenceValue.GetType().FullName;
+                int _index = Array.FindIndex(selector.SelectableNameAndTypes, content => content.tooltip == _fullName);
                 if (_index < 0)
                 {
-                    // if (!curValue.GetType().TryGetCustomDisplayName(out var _customName))
-                    // {
-                    //     _customName = _fullName;
-                    // }
-                    // _index = Array.FindIndex(_selector.SelectableNameAndTypes, content => content.text == _customName);
-                    //TODO 类型不匹配的补救措施
                     return -1;
                 }
 
@@ -231,7 +225,7 @@ namespace PBBox.Unity
                 }
                 else
                 {
-                    var _type = _selector.SelectableTypes.First(t => t.FullName == typeInfo.tooltip);
+                    var _type = _selector.SelectableTypes.FirstOrDefault(t => t.FullName == typeInfo.tooltip);
                     return _type;
                 }
             }
