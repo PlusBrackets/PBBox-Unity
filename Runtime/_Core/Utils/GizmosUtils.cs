@@ -157,15 +157,17 @@ namespace PBBox
             }
         }
 
-        public static void DrawCircle(Vector3 center, float radius, int segment=36){
-            Vector3[] pos = new Vector3[segment+1];
-            float delta = 2*Mathf.PI/segment;
-            for(int i = 0;i<segment;i++){
-                float x = radius*Mathf.Cos(delta*i);
-                float z = radius*Mathf.Sin(delta*i);
-                pos[i] = new Vector3(x,0,z);
+        public static void DrawCircle(Vector3 center, float radius, int segment = 36)
+        {
+            Vector3[] pos = new Vector3[segment + 1];
+            float delta = 2 * Mathf.PI / segment;
+            for (int i = 0; i < segment; i++)
+            {
+                float x = radius * Mathf.Cos(delta * i);
+                float z = radius * Mathf.Sin(delta * i);
+                pos[i] = new Vector3(x, 0, z);
             }
-            pos[segment]=pos[0];
+            pos[segment] = pos[0];
             DrawLines(pos);
         }
     }
