@@ -36,6 +36,7 @@ namespace PBBox.Unity.UI
         private int? m_CurPointerId;
 
         public Vector2 InputVector { get; protected set; }
+        public bool IsInputting { get; private set; }
 
         public bool DynamicOriginMode
         {
@@ -102,6 +103,7 @@ namespace PBBox.Unity.UI
                     m_StickBackground.SetLocalPositionAndRotation(_localPoint, m_StickBackground.localRotation);
                 }
             }
+            IsInputting = true;
             ((IDragHandler)this).OnDrag(eventData);
         }
 
@@ -115,6 +117,7 @@ namespace PBBox.Unity.UI
             m_StickHandle.SetLocalPositionAndRotation(Vector2.zero, m_StickHandle.localRotation);
             m_StickBackground.anchoredPosition3D = m_BackgroundDefaultPos;
             InputVector = Vector2.zero;
+            IsInputting = false;
         }
 
 #if UNITY_EDITOR

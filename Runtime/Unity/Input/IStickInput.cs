@@ -7,5 +7,6 @@ namespace PBBox.Unity.Input
     public interface IStickInput
     {
         Vector2 InputVector { get; }
+        bool IsInputting { get; }
     }
 }
