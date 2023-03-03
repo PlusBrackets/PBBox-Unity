@@ -64,6 +64,11 @@ namespace PBBox.Unity.UI
             }
         }
 
+        private void Start()
+        {
+            m_StickHandle.SetLocalPositionAndRotation(Vector2.zero, m_StickHandle.localRotation);
+        }
+
         void IDragHandler.OnDrag(PointerEventData eventData)
         {
             if (!m_CurPointerId.HasValue || m_CurPointerId.Value != eventData.pointerId)
@@ -75,7 +80,8 @@ namespace PBBox.Unity.UI
                 Vector2 _range = m_CustomRadius > 0 ? new Vector2(m_CustomRadius, m_CustomRadius) : m_StickBackground.sizeDelta / 2f;
                 _localPoint /= _range;
                 InputVector = _localPoint.sqrMagnitude > 1f ? _localPoint.normalized : _localPoint;
-                m_StickHandle.anchoredPosition = new Vector2(InputVector.x * _range.x, InputVector.y * _range.y);
+                m_StickHandle.SetLocalPositionAndRotation(new Vector2(InputVector.x * _range.x, InputVector.y * _range.y), m_StickHandle.localRotation);
+                // m_StickHandle.anchoredPosition = new Vector2(InputVector.x * _range.x, InputVector.y * _range.y);
             }
         }
 
@@ -93,7 +99,7 @@ namespace PBBox.Unity.UI
                     && RectTransformUtility.RectangleContainsScreenPoint(m_StickBackground, eventData.position, eventData.pressEventCamera))
                     && RectTransformUtility.ScreenPointToLocalPointInRectangle(m_StickBackground.parent as RectTransform, eventData.position, eventData.pressEventCamera, out var _localPoint))
                 {
-                    m_StickBackground.anchoredPosition = _localPoint;
+                    m_StickBackground.SetLocalPositionAndRotation(_localPoint, m_StickBackground.localRotation);
                 }
             }
             ((IDragHandler)this).OnDrag(eventData);
@@ -106,7 +112,7 @@ namespace PBBox.Unity.UI
                 return;
             }
             m_CurPointerId = null;
-            m_StickHandle.anchoredPosition = Vector2.zero;
+            m_StickHandle.SetLocalPositionAndRotation(Vector2.zero, m_StickHandle.localRotation);
             m_StickBackground.anchoredPosition3D = m_BackgroundDefaultPos;
             InputVector = Vector2.zero;
         }
