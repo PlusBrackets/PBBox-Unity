@@ -44,7 +44,7 @@ namespace PBBox
 #if UNITY_EDITOR
                     temp = "<color=#008080>[" + tag + "]</color> " + temp;
 #else
-                    temp = "[" + Tag + "] " + temp;
+                    temp = "[" + tag + "] " + temp;
 #endif
                 }
                 if (!string.IsNullOrEmpty(logger))
@@ -52,7 +52,7 @@ namespace PBBox
 #if UNITY_EDITOR
                     temp = "<color=#808080>[" + logger + "]</color> " + temp;
 #else
-                    temp = "[" + Logger + "] " + temp;
+                    temp = "[" + logger + "] " + temp;
 #endif
                 }
                 return temp;

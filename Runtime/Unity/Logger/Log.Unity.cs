@@ -26,19 +26,23 @@ namespace PBBox
         [Conditional("UNITY_EDITOR")]
         public static void SetNameColor(string loggerName, Color color)
         {
+#if UNITY_EDITOR
             if (GetLogger(loggerName) is UnityLogger _logger)
             {
                 _logger.NameColor = color;
             }
+#endif
         }
 
         [Conditional("UNITY_EDITOR")]
         public static void SetTagColor(string loggerName, Color color)
         {
+#if UNITY_EDITOR
             if (GetLogger(loggerName) is UnityLogger _logger)
             {
                 _logger.TagColor = color;
             }
+#endif
         }
 
         #region Log Functions    

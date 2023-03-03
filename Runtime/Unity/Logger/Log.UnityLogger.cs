@@ -73,9 +73,11 @@ namespace PBBox
 #if UNITY_EDITOR
                             .Append("<color=#").Append(m_NameColorString).Append(">")
 #endif
-                            .Append('[').Append(Name).Append(']')
+                            .Append('[').Append(Name)
 #if UNITY_EDITOR
-                            .Append("</color>");
+                            .Append("]</color>");
+#else
+                            .Append("]");
 #endif
                     }
                     if (!string.IsNullOrEmpty(tag))
@@ -86,7 +88,9 @@ namespace PBBox
 #endif
                             .Append('[').Append(tag).Append(']')
 #if UNITY_EDITOR
-                            .Append("</color>");
+                            .Append("]</color>");
+#else
+                            .Append("]");
 #endif
                     }
                     switch (level)
