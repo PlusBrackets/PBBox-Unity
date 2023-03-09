@@ -22,5 +22,61 @@ namespace PBBox.Variables
         {
             return a * b;
         }
+
+        /// <summary>
+        /// 使用其他的基础值计算效果
+        /// </summary>
+        /// <param name="otherBaseValue"></param>
+        /// <param name="rounding">取整方向，小于0向下取整，等于0则四舍五入,大于0向上取整</param>
+        /// <returns></returns>
+        public long ComputeEffective(long otherBaseValue, int rounding = -1)
+        {
+            if (m_ConstMod.HasValue)
+            {
+                return (long)m_ConstMod.Value;
+            }
+            double _tempValue = otherBaseValue;
+            if (m_FlatMod.HasValue)
+            {
+                _tempValue += m_FlatMod.Value;
+            }
+            if (m_PrecentMod.HasValue)
+            {
+                _tempValue *= m_PrecentMod.Value;
+            }
+            if (m_MultMod.HasValue)
+            {
+                _tempValue *= m_MultMod.Value;
+            }
+            return (long)(rounding < 0 ? _tempValue : (rounding == 0 ? System.Math.Round(_tempValue) : System.Math.Ceiling(_tempValue)));
+        }
+
+        /// <summary>
+        /// 使用其他的基础值计算效果
+        /// </summary>
+        /// <param name="otherBaseValue"></param>
+        /// <param name="rounding">取整方向，小于0向下取整，等于0则四舍五入,大于0向上取整</param>
+        /// <returns></returns>
+        public long ComputeEffective(int otherBaseValue, int rounding = -1)
+        {
+            if (m_ConstMod.HasValue)
+            {
+                return (int)m_ConstMod.Value;
+            }
+            float _tempValue = otherBaseValue;
+            if (m_FlatMod.HasValue)
+            {
+                _tempValue += m_FlatMod.Value;
+            }
+            if (m_PrecentMod.HasValue)
+            {
+                _tempValue *= m_PrecentMod.Value;
+            }
+            if (m_MultMod.HasValue)
+            {
+                _tempValue *= m_MultMod.Value;
+            }
+            return (int)(rounding < 0 ? _tempValue : (rounding == 0 ? System.MathF.Round(_tempValue) : System.MathF.Ceiling(_tempValue)));
+        }
     }
 }
