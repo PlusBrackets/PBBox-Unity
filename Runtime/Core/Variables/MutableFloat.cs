@@ -57,7 +57,7 @@ namespace PBBox.Variables
         /// <param name="otherBaseValue"></param>
         /// <param name="rounding">取整方向，小于0向下取整，等于0则四舍五入,大于0向上取整</param>
         /// <returns></returns>
-        public long ComputeEffective(int otherBaseValue, int rounding = -1)
+        public int ComputeEffective(int otherBaseValue, int rounding = -1)
         {
             if (m_ConstMod.HasValue)
             {
