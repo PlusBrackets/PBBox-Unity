@@ -13,6 +13,9 @@ namespace PBBox.Variables
     [System.Serializable]
     public sealed partial class MutableFloat : MutableValue<float>
     {
+        public MutableFloat(float baseValue = 0f) : base(baseValue) { }
+        public MutableFloat() : this(0f) { }
+
         protected override float AddValue(float a, float b)
         {
             return a + b;
