@@ -6,7 +6,7 @@ using UnityEditor;
 using System;
 
 
-namespace PBBox.Variables
+namespace PBBox.Properties
 {
     public abstract partial class MutableValue<T> where T : struct, IEquatable<T>
     {

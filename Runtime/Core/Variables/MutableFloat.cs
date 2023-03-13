@@ -3,14 +3,15 @@
  *@update: 2023.03.09
  *@author: PlusBrackets
  --------------------------------------------------------*/
+using System;
 
-namespace PBBox.Variables
+namespace PBBox.Properties
 {
     /// <summary>
     /// 可变值类, Value = Constant || ∏(Multiply) * ( base + ∑(Flat) + base * ∑(Percent) )
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [System.Serializable]
+    [Serializable]
     public sealed partial class MutableFloat : MutableValue<float>
     {
         public MutableFloat(float baseValue = 0f) : base(baseValue) { }
@@ -51,7 +52,7 @@ namespace PBBox.Variables
             {
                 _tempValue *= m_MultMod.Value;
             }
-            return (long)(rounding < 0 ? _tempValue : (rounding == 0 ? System.Math.Round(_tempValue) : System.Math.Ceiling(_tempValue)));
+            return (long)(rounding < 0 ? _tempValue : (rounding == 0 ? Math.Round(_tempValue) : Math.Ceiling(_tempValue)));
         }
 
         /// <summary>
@@ -79,7 +80,7 @@ namespace PBBox.Variables
             {
                 _tempValue *= m_MultMod.Value;
             }
-            return (int)(rounding < 0 ? _tempValue : (rounding == 0 ? System.MathF.Round(_tempValue) : System.MathF.Ceiling(_tempValue)));
+            return (int)(rounding < 0 ? _tempValue : (rounding == 0 ? MathF.Round(_tempValue) : MathF.Ceiling(_tempValue)));
         }
     }
 }

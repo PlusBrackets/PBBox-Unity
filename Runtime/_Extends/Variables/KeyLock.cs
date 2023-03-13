@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PBBox.Variables
+namespace PBBox.Properties
 {
 
     [System.Serializable]

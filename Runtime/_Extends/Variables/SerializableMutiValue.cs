@@ -9,7 +9,7 @@
 using System;
 using UnityEngine;
 
-namespace PBBox.Variables
+namespace PBBox.Properties
 {
 
     [Serializable]

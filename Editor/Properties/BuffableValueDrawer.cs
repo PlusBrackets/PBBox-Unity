@@ -6,7 +6,7 @@
 using System;
 using UnityEngine;
 using UnityEditor;
-using PBBox.Variables;
+using PBBox.Properties;
 
 namespace PBBox.CEditor
 { 

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using PBBox;
 using PBBox.UI;
-using PBBox.Variables;
+using PBBox.Properties;
 
 namespace PBBox.UI
 {

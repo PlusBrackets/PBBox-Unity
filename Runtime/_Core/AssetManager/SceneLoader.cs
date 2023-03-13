@@ -9,7 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using PBBox;
+using PBBox.Properties;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
@@ -28,7 +28,7 @@ namespace PBBox
         /// </summary>
         /// <value></value>
         public string loadingSceneName { get; set; } = "GameLoadingScene";
-        public BindableValue<float> bindableLoadingProgress { get; private set; } = new BindableValue<float>(1f);
+        public BindableProperty<float> bindableLoadingProgress { get; private set; } = new BindableProperty<float>(1f);
         public float loadingProgress { get => bindableLoadingProgress.Value; private set => bindableLoadingProgress.Value = value; }
 
         // List<AsyncOperationHandle<SceneInstance>> m_LoadedAddressableScenes = new List<AsyncOperationHandle<SceneInstance>>();

@@ -6,7 +6,7 @@ using System;
 using Sirenix.OdinInspector;
 #endif
 
-namespace PBBox.Variables
+namespace PBBox.Properties
 {
 #if ODIN_INSPECTOR
     [DrawWithUnity]

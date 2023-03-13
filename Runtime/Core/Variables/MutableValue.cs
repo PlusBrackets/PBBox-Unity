@@ -5,18 +5,15 @@
  --------------------------------------------------------*/
 using System.Collections.Generic;
 using System;
-#if UNITY_5_3_OR_NEWER
-using UnityEngine;
-#endif
 
-namespace PBBox.Variables
+namespace PBBox.Properties
 {
 
     /// <summary>
     /// 可变值类, Value = Constant || ∏(Multiply) * ( base + ∑(Flat) + base * ∑(Percent) )
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [System.Serializable]
+    [Serializable]
     public abstract partial class MutableValue<T> : IReferencePoolItem where T : struct, IEquatable<T>
     {
         public enum ModType
@@ -27,7 +24,7 @@ namespace PBBox.Variables
             Constant = 3
         }
 
-        [System.Serializable]
+        [Serializable]
         protected struct ConstantMod
         {
             public int priority;
@@ -41,7 +38,7 @@ namespace PBBox.Variables
         }
 
 #if UNITY_5_3_OR_NEWER
-        [SerializeField]
+        [UnityEngine.SerializeField]
 #endif
         protected T m_BaseValue = default;
         
