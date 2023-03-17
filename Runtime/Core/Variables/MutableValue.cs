@@ -322,7 +322,7 @@ namespace PBBox.Properties
         /// <summary>
         /// 更新buff数值
         /// </summary>
-        private void TryRecomputeValue()
+        protected void TryRecomputeValue()
         {
             if (!m_NeedRecompute)
             {

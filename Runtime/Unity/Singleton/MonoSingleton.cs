@@ -18,5 +18,13 @@ namespace PBBox
         public static void Create() => Singleton<T>.Create();
         public static void Destroy() => Singleton<T>.Destroy();
         public static void SetInstance(T newInstance) => Singleton<T>.SetInstance(newInstance);
+
+        protected virtual void OnDestroy()
+        {
+            if (Singleton<T>.HasInstance && Singleton<T>.Instance == this)
+            {
+                SetInstance(null);
+            }
+        }
     }
 }

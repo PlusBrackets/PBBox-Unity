@@ -35,6 +35,7 @@ namespace PBBox.Properties
         /// <returns></returns>
         public long ComputeEffective(long otherBaseValue, int rounding = -1)
         {
+            TryRecomputeValue();
             if (m_ConstMod.HasValue)
             {
                 return (long)m_ConstMod.Value;
@@ -63,6 +64,7 @@ namespace PBBox.Properties
         /// <returns></returns>
         public int ComputeEffective(int otherBaseValue, int rounding = -1)
         {
+            TryRecomputeValue();
             if (m_ConstMod.HasValue)
             {
                 return (int)m_ConstMod.Value;

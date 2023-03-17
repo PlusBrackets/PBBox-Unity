@@ -40,6 +40,7 @@ namespace PBBox.Collections
 
             public Group RemoveNode(LinkedListNode<KeyItemPair<TKey,TValue>> node, out LinkedListNode<KeyItemPair<TKey,TValue>> removedNode)
             {
+                removedNode = null;
                 if (node != null && OrderKeyEquals(node.Value))
                 {
                     if (End == node && End != Start)
@@ -54,7 +55,6 @@ namespace PBBox.Collections
                     Count--;
                     removedNode = node;
                 }
-                removedNode = null;
                 return this;
             }
 

@@ -58,7 +58,8 @@ namespace PBBox.Unity
                 return m_SelectableNameAndTypes;
             }
         }
-
+        
+        //TODO 重写一份Odin环境中的editor
         [CustomPropertyDrawer(typeof(SerializeRefSelectorAttribute))]
         private sealed class Drawer : PropertyDrawer
         {

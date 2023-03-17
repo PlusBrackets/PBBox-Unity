@@ -18,7 +18,10 @@ namespace PBBox
         {
             if (instance != null && instance is Component _instance)
             {
-                GameObject.Destroy(_instance.gameObject);
+                if (_instance != null && _instance.gameObject != null)
+                {
+                    GameObject.Destroy(_instance.gameObject);
+                }
             }
         }
     }
