@@ -237,8 +237,11 @@ namespace PBBox.FSM
         {
             if (m_Values != null && m_Values.TryGetValue(key, out var _objValue))
             {
-                value = (T)_objValue;
-                return true;
+                if (_objValue is T _value)
+                {
+                    value = _value;
+                    return true;
+                }
             }
             value = default(T);
             return false;
