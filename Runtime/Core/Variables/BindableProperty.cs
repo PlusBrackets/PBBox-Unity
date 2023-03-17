@@ -15,9 +15,9 @@ namespace PBBox.Properties
     /// <summary>
     /// 可绑定的属性
     /// </summary>
-    public class BindableProperty<T> : IReferencePoolItem
+    public sealed class BindableProperty<T> : IReferencePoolItem
     {
-        
+
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.HideLabel]
 #endif
@@ -49,11 +49,11 @@ namespace PBBox.Properties
         /// <summary>
         /// 当值改变时
         /// </summary>
-        public event Action<T> OnValueChanged;
+        private event Action<T> m_OnValueChanged;
         /// <summary>
         /// 当值改变时，Action(oldValue, newValue);
         /// </summary>
-        public event Action<T, T> OnValueChangedWithOldValue;
+        private event Action<T, T> m_OnValueChangedWithOldValue;
         bool IReferencePoolItem.IsUsing { get; set; }
 
         public BindableProperty() { }
@@ -65,8 +65,8 @@ namespace PBBox.Properties
 
         private void InvokeEventImpl(T oldValue, T newValue)
         {
-            OnValueChangedWithOldValue?.Invoke(oldValue, newValue);
-            OnValueChanged?.Invoke(newValue);
+            m_OnValueChangedWithOldValue?.Invoke(oldValue, newValue);
+            m_OnValueChanged?.Invoke(newValue);
         }
 
         /// <summary>
@@ -86,52 +86,53 @@ namespace PBBox.Properties
             m_Value = value;
         }
 
-        // /// <summary>
-        // /// 绑定
-        // /// </summary>
-        // /// <param name="action">(OldValue,NewValue)</param>
-        // public void Bind(Action<T, T> action, bool callBackImmediately = true)
-        // {
-        //     OnValueChangedWithOldValue += action;
-        //     if (callBackImmediately)
-        //         action(Value, Value);
-        // }
+        /// <summary>
+        /// 绑定
+        /// </summary>
+        /// <param name="action">(OldValue,NewValue)</param>
+        public void Bind(Action<T, T> action, bool InvokeImmediately = true)
+        {
+            m_OnValueChangedWithOldValue += action;
+            if (InvokeImmediately)
+                action(Value, Value);
+        }
 
-        // /// <summary>
-        // /// 绑定
-        // /// </summary>
-        // /// <param name="action"></param>
-        // public void Bind(Action<T> action, bool callBackImmediately = true)
-        // {
-        //     m_OnValueChanged += action;
-        //     if (callBackImmediately)
-        //         action(Value);
-        // }
+        /// <summary>
+        /// 绑定
+        /// </summary>
+        /// <param name="action"></param>
+        public void Bind(Action<T> action, bool InvokeImmediately = true)
+        {
+            m_OnValueChanged += action;
+            if (InvokeImmediately)
+                action(Value);
+        }
 
-        // /// <summary>
-        // /// 解绑
-        // /// </summary>
-        // /// <param name="action"></param>
-        // public void UnBind(Action<T, T> action)
-        // {
-        //     OnValueChangedWithOldValue -= action;
-        // }
+        /// <summary>
+        /// 解绑
+        /// </summary>
+        /// <param name="action"></param>
+        public void UnBind(Action<T, T> action)
+        {
+            m_OnValueChangedWithOldValue -= action;
+        }
 
-        // /// <summary>
-        // /// 解绑
-        // /// </summary>
-        // /// <param name="action"></param>
-        // public void UnBind(Action<T> action)
-        // {
-        //     m_OnValueChanged -= action;
-        // }
+        /// <summary>
+        /// 解绑
+        /// </summary>
+        /// <param name="action"></param>
+        public void UnBind(Action<T> action)
+        {
+            m_OnValueChanged -= action;
+        }
 
         void IReferencePoolItem.OnReferenceAcquire() { }
 
         void IReferencePoolItem.OnReferenceRelease()
         {
-            OnValueChanged = null;
-            OnValueChangedWithOldValue = null;
+            m_Value = default;
+            m_OnValueChanged = null;
+            m_OnValueChangedWithOldValue = null;
         }
 
         public static bool operator ==(BindableProperty<T> left, T right)
