@@ -20,7 +20,7 @@ namespace PBBox
         {
             get
             {
-                if (s_Instance == null)
+                if (!HasInstance)
                 {
                     Create();
                 }
@@ -36,6 +36,12 @@ namespace PBBox
         {
             get
             {
+#if UNITY_5_3_OR_NEWER
+                if (s_Instance is UnityEngine.Object __instance)
+                {
+                    return __instance != null;
+                }
+#endif
                 return s_Instance != null;
             }
         }
@@ -44,7 +50,7 @@ namespace PBBox
         {
             lock (s_Locker)
             {
-                if (s_Instance == null)
+                if (!HasInstance)
                 {
                     if (typeof(T).IsDefined(typeof(CustomSingletonCreatorAttribute), false))
                     {
@@ -72,7 +78,7 @@ namespace PBBox
         {
             lock (s_Locker)
             {
-                if (s_Instance != null)
+                if (HasInstance)
                 {
                     if (s_Instance is ISingletonLifecycle __instance)
                     {
