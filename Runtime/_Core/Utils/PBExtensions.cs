@@ -49,11 +49,24 @@ namespace PBBox
         }
 
         /// <summary>
-        /// 获得 lastKeyTime - firstKeyTime
+        /// rect里的随机点
         /// </summary>
         /// <param name="target"></param>
         /// <returns></returns>
-        public static float CuvreWidth(this AnimationCurve target)
+        public static Vector2 RandomInsidePoint(this Rect target)
+        {
+            return new Vector2(
+                RandomUtils.Range(target.xMin, target.xMax),
+                RandomUtils.Range(target.yMin, target.yMax)
+            );
+        }
+
+        /// <summary>
+        /// 获得总时间 lastKeyTime - firstKeyTime
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static float GetDuration(this AnimationCurve target)
         {
             if (target.length >= 2)
             {
@@ -63,20 +76,20 @@ namespace PBBox
         }
 
         /// <summary>
-        /// 按尺寸evaluate
+        /// 按比例进度evaluate
         /// </summary>
         /// <param name="target"></param>
-        /// <param name="time"></param>
-        /// <param name="width">与该curve宽度对应的宽度</param>
+        /// <param name="progress"></param>
+        /// <param name="totalProgress">与该curve宽度对应的宽度</param>
         /// <returns></returns>
-        public static float Evaluate(this AnimationCurve target, float time, float width)
+        public static float Evaluate(this AnimationCurve target, float progress, float totalProgress)
         {
-            float w = target.CuvreWidth();
-            if (w > 0 && width > 0)
+            float w = target.GetDuration();
+            if (w > 0 && totalProgress > 0)
             {
-                time = time / width * w;
+                progress = progress / totalProgress * w;
             }
-            return target.Evaluate(time);
+            return target.Evaluate(progress);
         }
 
         #endregion

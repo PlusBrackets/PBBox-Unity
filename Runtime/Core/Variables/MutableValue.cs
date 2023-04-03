@@ -8,6 +8,16 @@ using System;
 
 namespace PBBox.Properties
 {
+    /// <summary>
+    /// 可变值的修改类型
+    /// </summary>
+    public enum MutableModType
+    {
+        Flat = 0,
+        Percent = 1,
+        Multiply = 2,
+        Constant = 3
+    }
 
     /// <summary>
     /// 可变值类, Value = Constant || ∏(Multiply) * ( base + ∑(Flat) + base * ∑(Percent) )
@@ -16,13 +26,6 @@ namespace PBBox.Properties
     [Serializable]
     public abstract partial class MutableValue<T> : IReferencePoolItem where T : struct, IEquatable<T>
     {
-        public enum ModType
-        {
-            Flat = 0,
-            Percent = 1,
-            Multiply = 2,
-            Constant = 3
-        }
 
         [Serializable]
         protected struct ConstantMod
@@ -41,7 +44,7 @@ namespace PBBox.Properties
         [UnityEngine.SerializeField]
 #endif
         protected T m_BaseValue = default;
-        
+
         protected T m_ModdedValue = default;
         protected T? m_FlatMod = default;
         protected T? m_PrecentMod = default;
@@ -209,20 +212,20 @@ namespace PBBox.Properties
             m_NeedRecompute = true;
         }
 
-        public void Modify(ModType modType, int key, T modValue, int priority = 0)
+        public void Modify(MutableModType modType, int key, T modValue, int priority = 0)
         {
             switch (modType)
             {
-                case ModType.Flat:
+                case MutableModType.Flat:
                     ModifyFlat(key, modValue);
                     return;
-                case ModType.Percent:
+                case MutableModType.Percent:
                     ModifyPercent(key, modValue);
                     return;
-                case ModType.Multiply:
+                case MutableModType.Multiply:
                     ModifyMult(key, modValue);
                     return;
-                case ModType.Constant:
+                case MutableModType.Constant:
                     ModifyConst(key, modValue, priority);
                     return;
             }
@@ -243,20 +246,20 @@ namespace PBBox.Properties
             }
         }
 
-        public void Unmodify(ModType modType, int key)
+        public void Unmodify(MutableModType modType, int key)
         {
             switch (modType)
             {
-                case ModType.Flat:
+                case MutableModType.Flat:
                     UnmodifyFlat(key);
                     return;
-                case ModType.Percent:
+                case MutableModType.Percent:
                     UnmodifyPercent(key);
                     return;
-                case ModType.Multiply:
+                case MutableModType.Multiply:
                     UnmodifyMult(key);
                     return;
-                case ModType.Constant:
+                case MutableModType.Constant:
                     UnmodifyConst(key);
                     return;
             }
@@ -274,17 +277,17 @@ namespace PBBox.Properties
             m_NeedRecompute = true;
         }
 
-        public bool ContainsMod(ModType modType, int key)
+        public bool ContainsMod(MutableModType modType, int key)
         {
             switch (modType)
             {
-                case ModType.Flat:
+                case MutableModType.Flat:
                     return ContainsInModDict(key, m_FlatMods);
-                case ModType.Percent:
+                case MutableModType.Percent:
                     return ContainsInModDict(key, m_PercentMods);
-                case ModType.Multiply:
+                case MutableModType.Multiply:
                     return ContainsInModDict(key, m_MultMods);
-                case ModType.Constant:
+                case MutableModType.Constant:
                     if (m_ConstMods == null)
                     {
                         return false;
@@ -296,20 +299,20 @@ namespace PBBox.Properties
 
         public bool ContainsAnyMod(int key)
         {
-            return ContainsMod(ModType.Flat, key) || ContainsMod(ModType.Percent, key) || ContainsMod(ModType.Multiply, key) || ContainsMod(ModType.Constant, key);
+            return ContainsMod(MutableModType.Flat, key) || ContainsMod(MutableModType.Percent, key) || ContainsMod(MutableModType.Multiply, key) || ContainsMod(MutableModType.Constant, key);
         }
 
-        public int GetModCount(ModType modType)
+        public int GetModCount(MutableModType modType)
         {
             switch (modType)
             {
-                case ModType.Flat:
+                case MutableModType.Flat:
                     return CountOfModDict(m_FlatMods);
-                case ModType.Percent:
+                case MutableModType.Percent:
                     return CountOfModDict(m_PercentMods);
-                case ModType.Multiply:
+                case MutableModType.Multiply:
                     return CountOfModDict(m_MultMods);
-                case ModType.Constant:
+                case MutableModType.Constant:
                     if (m_ConstMods == null)
                     {
                         return 0;
@@ -468,7 +471,7 @@ namespace PBBox.Properties
 
         void IReferencePoolItem.OnReferenceAcquire()
         {
-            
+
         }
 
         void IReferencePoolItem.OnReferenceRelease()

@@ -27,6 +27,7 @@ namespace PBBox
                         EventArgsReferencePool.Release(EventArgs);
                     }
                 }
+                EventArgsReferencePool = null;
                 EventArgs = default(TEventArgs);
             }
 

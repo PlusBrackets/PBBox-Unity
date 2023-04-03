@@ -25,18 +25,18 @@ namespace PBBox
                     "ReferencePool",
                     Log.PBBoxLoggerName);
             }
-            return Acquire() as T;
+            return CachedCount > 0 ? Acquire() as T : null;
         }
 
         public bool TryAcquire<T>(out T value) where T : class, TContent
         {
-            value = Acquire<T>();
+            value = CachedCount > 0 ? Acquire<T>() : null;
             return value != null;
         }
 
         public bool TryAcquire(out TContent value)
         {
-            value = Acquire();
+            value = CachedCount > 0 ? Acquire() : null;
             return value != null;
         }
 

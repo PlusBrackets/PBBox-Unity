@@ -34,6 +34,7 @@ namespace PBBox.Attributes
         {
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
             {
+                EditorGUI.BeginProperty(position, label, property);
                 if (SerializedPropertyType.Vector2 != property.propertyType)
                 {
                     EditorGUI.PropertyField(position, property);
@@ -44,7 +45,7 @@ namespace PBBox.Attributes
 
                 float min = property.vector2Value.x;
                 float max = property.vector2Value.y;
-                EditorGUI.LabelField(position, property.displayName);
+                EditorGUI.LabelField(position, label);
                 //设置minmax区域
                 float numWidth = Mathf.Clamp(EditorGUIUtility.currentViewWidth / 8, 40, 80);
                 Rect fr = new Rect(position);
@@ -80,7 +81,9 @@ namespace PBBox.Attributes
                 if (isChanged)
                 {
                     property.vector2Value = new Vector2(min, max);
+                    property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
                 }
+                EditorGUI.EndProperty();
 
             }
         }

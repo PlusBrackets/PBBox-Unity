@@ -137,13 +137,13 @@ namespace PBBox
             }
         }
 
-        private void EmitImpl<T>(TKey eventId, object sender, T eventArgs, bool immediately, IReferenceCacheBase releaseReferencePool)
+        private void EmitImpl<T>(TKey eventId, object sender, T eventArgs, bool immediately, IReferenceCacheBase releaseEventArgsPool)
         {
             var _event = ReferencePool.Acquire<Event<T>>();
             _event.EventId = eventId;
             _event.Sender = sender;
             _event.EventArgs = eventArgs;
-            _event.EventArgsReferencePool = releaseReferencePool;
+            _event.EventArgsReferencePool = releaseEventArgsPool;
 
             if (immediately)
             {
@@ -245,7 +245,7 @@ namespace PBBox
         /// <param name="sender"></param>
         /// <param name="eventArgs">事件参数可以继承EventArgsBase获得更多的功能</param>
         /// <typeparam name="T"></typeparam>
-        public void Emit<T>(TKey eventId, object sender, T eventArgs, IReferenceCacheBase releaseToReferenceCache = null) => EmitImpl<T>(eventId, sender, eventArgs, false, releaseToReferenceCache);
+        public void Emit<T>(TKey eventId, object sender, T eventArgs, IReferenceCacheBase releaseEventArgsCache = null) => EmitImpl<T>(eventId, sender, eventArgs, false, releaseEventArgsCache);
 
         /// <summary>
         /// 发送事件，事件会在下一帧触发
@@ -261,7 +261,7 @@ namespace PBBox
         /// <param name="sender"></param>
         /// <param name="eventArgs">事件参数可以继承EventArgsBase获得更多的功能</param>
         /// <typeparam name="T"></typeparam>
-        public void EmitNow<T>(TKey eventId, object sender, T eventArgs, IReferenceCacheBase releaseToReferenceCache = null) => EmitImpl<T>(eventId, sender, eventArgs, true, releaseToReferenceCache);
+        public void EmitNow<T>(TKey eventId, object sender, T eventArgs, IReferenceCacheBase releaseEventArgsCache = null) => EmitImpl<T>(eventId, sender, eventArgs, true, releaseEventArgsCache);
 
         /// <summary>
         /// 立即发送事件，这种事件是非线程安全的

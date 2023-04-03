@@ -24,7 +24,7 @@ namespace PBBox
     /// <summary>
     /// 游戏计时器,使用Time.time计时
     /// </summary>
-    public class GameTimer : IGameTimer
+    public class GameTimer : IGameTimer, IReferencePoolItem
     {
         public delegate void TimerStateChange(GameTimer timer, State state);
 
@@ -97,6 +97,8 @@ namespace PBBox
         public bool isStarted => state == State.Started;
         public bool isStoped => state == State.Stoped;
         public bool isPaused => state == State.Paused;
+
+        bool IReferencePoolItem.IsUsing { get; set; }
 
         /// <summary>
         /// 是否开始计时且计时结束
@@ -193,6 +195,14 @@ namespace PBBox
             {
                 yield return null;
             }
+        }
+
+        void IReferencePoolItem.OnReferenceAcquire(){}
+
+        void IReferencePoolItem.OnReferenceRelease()
+        {
+            Stop();
+            onStateChanged = null;
         }
     }
         

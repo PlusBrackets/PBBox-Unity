@@ -56,7 +56,9 @@ namespace PBBox
         }
     }
 
-    //TODO 等待优化,让其可支持普通类，Monobehaviour，GameObject；
+    /// <summary>
+    /// Unity GameObjectPool
+    /// </summary>
     public sealed class SimplePool
     {
 
