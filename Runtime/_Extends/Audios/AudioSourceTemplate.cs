@@ -77,7 +77,7 @@ namespace PBBox
                     if (!m_Source.isPlaying && isRecycleAtStop)
                     {
                         m_IsPlayed = false;
-                        OnLifeTimeEnd();
+                        EndLife();
                     }
                 }
                 else

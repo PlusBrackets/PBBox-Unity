@@ -84,6 +84,8 @@ namespace PBBox
             }
         }
 
+        public event System.Action<SimplePoolObject> onLifeEndEvent;
+
         ActionQueue m_RecycleDelayAQ;
         bool m_IsInRecycle = false;
 
@@ -102,6 +104,11 @@ namespace PBBox
 
         void IPoolObject.OnDespawned()
         {
+            if (!m_IsInRecycle)
+            {
+                OnLifeEnd();
+                onLifeEndEvent?.Invoke(this);
+            }
             m_IsInRecycle = true;
             m_RecycleDelayAQ?.Cancel();
             lifeTimer.Stop();
@@ -113,7 +120,7 @@ namespace PBBox
         {
             if (lifeTimer.IsOver())
             {
-                OnLifeTimeEnd();
+                EndLife();
                 lifeTimer.Stop();
             }
         }
@@ -126,11 +133,11 @@ namespace PBBox
             }
         }
 
-        protected virtual void OnSpawned(object data){}
+        protected virtual void OnSpawned(object data) { }
 
-        protected virtual void OnDespawned(){}
+        protected virtual void OnDespawned() { }
 
-        protected virtual void OnLifeTimeEnd()
+        public virtual void EndLife()
         {
             if (m_IsInRecycle)
                 return;
@@ -141,10 +148,16 @@ namespace PBBox
                 {
                     m_RecycleDelayAQ = new ActionQueue(this);
                 }
+                OnLifeEnd();
+                onLifeEndEvent?.Invoke(this);
                 m_RecycleDelayAQ.DelayGameTime(recycleDelay, !delayInGameTime).Do(this.RecycleSelf).Execute();
             }
             else
                 this.RecycleSelf();
+        }
+
+        protected virtual void OnLifeEnd(){
+
         }
     }
 }
