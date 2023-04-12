@@ -13,6 +13,6 @@ namespace PBBox.Collections
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     [System.Serializable]
-    public class SReferenceDictionary<TKey, TValue> : KeyValueEntryMap<SReferenceKeyValueEntry<TKey, TValue>, TKey, TValue> { }
+    public sealed class SReferenceDictionary<TKey, TValue> : KeyValueEntryMap<SReferenceKeyValueEntry<TKey, TValue>, TKey, TValue> { }
 
 }
