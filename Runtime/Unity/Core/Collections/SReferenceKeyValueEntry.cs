@@ -13,7 +13,7 @@ namespace PBBox.Collections
     /// 可序列化的KeyValuePair,value添加了[SerializeReference]
     /// </summary>
     [System.Serializable]
-    public struct SRKeyValueEntry<TKey, TValue> : IKeyValueEntry<TKey, TValue>, IEquatable<SRKeyValueEntry<TKey, TValue>>
+    public struct SReferenceKeyValueEntry<TKey, TValue> : IKeyValueEntry<TKey, TValue>, IEquatable<SReferenceKeyValueEntry<TKey, TValue>>
     {
         [SerializeField]
         private TKey m_Key;
@@ -22,7 +22,7 @@ namespace PBBox.Collections
         public TKey Key => m_Key;
         public TValue Value => m_Value;
 
-        public SRKeyValueEntry(TKey key, TValue value)
+        public SReferenceKeyValueEntry(TKey key, TValue value)
         {
             m_Key = key;
             m_Value = value;
@@ -39,7 +39,7 @@ namespace PBBox.Collections
             m_Value = value;
         }
 
-        public bool Equals(SRKeyValueEntry<TKey, TValue> other)
+        public bool Equals(SReferenceKeyValueEntry<TKey, TValue> other)
         {
             return EqualityComparer<TKey>.Default.Equals(Key, other.Key)
             && EqualityComparer<TValue>.Default.Equals(Value, other.Value);
