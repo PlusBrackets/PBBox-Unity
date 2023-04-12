@@ -68,9 +68,9 @@ namespace PBBox.Collections
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() => m_Dict.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => m_Dict.GetEnumerator();
 
+        //TODO 解决创建时Key之冲突的问题
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            Log.Debug("After Deserialize");
             if (m_Dict == null)
             {
                 m_Dict = new Dictionary<TKey, TValue>();
