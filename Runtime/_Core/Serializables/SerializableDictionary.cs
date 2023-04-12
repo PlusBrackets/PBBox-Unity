@@ -146,7 +146,7 @@ namespace PBBox
                 throw new ArgumentException("An element with the same key already exists in the dictionary.");
         }
 
-        public void Add(KeyValuePair<TKey, TValue> kvp)=>Add(kvp.Key, kvp.Value);
+        public void Add(KeyValuePair<TKey, TValue> kvp) => Add(kvp.Key, kvp.Value);
 
         public bool TryGetValue(TKey key, out TValue value)
         {

@@ -65,5 +65,22 @@ namespace PBBox
         {
             return Mathf.Abs(a - b) <= deviation;
         }
+
+        public static bool IsInCycleRange(float value, float min, float max, float length)
+        {
+            if (min > max)
+            {
+                max += length;
+                if (value < min)
+                {
+                    value += length;
+                }
+            }
+            if (value > min && value <= max)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

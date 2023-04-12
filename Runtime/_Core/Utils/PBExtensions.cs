@@ -92,6 +92,20 @@ namespace PBBox
             return target.Evaluate(progress);
         }
 
+        /// <summary>
+        /// 遍历Transform
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="action"></param>
+        public static void ForeachChildren(this Transform target, System.Action<Transform> action)
+        {
+            foreach (Transform _t in target)
+            {
+                action(_t);
+                _t.ForeachChildren(action);
+            }
+        }
+
         #endregion
         #region String
         /// <summary>
