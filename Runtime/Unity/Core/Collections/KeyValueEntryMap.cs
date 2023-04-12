@@ -24,8 +24,8 @@ namespace PBBox.Collections
 
         public TValue this[TKey key] { get => m_Dict[key]; set => m_Dict[key] = value; }
 
-        public Dictionary<TKey,TValue>.KeyCollection Keys => m_Dict.Keys;
-        public Dictionary<TKey,TValue>.ValueCollection Values => m_Dict.Values;
+        public Dictionary<TKey, TValue>.KeyCollection Keys => m_Dict.Keys;
+        public Dictionary<TKey, TValue>.ValueCollection Values => m_Dict.Values;
         ICollection<TKey> IDictionary<TKey, TValue>.Keys => m_Dict.Keys;
         ICollection<TValue> IDictionary<TKey, TValue>.Values => m_Dict.Values;
         public int Count => m_Dict.Count;
@@ -70,6 +70,7 @@ namespace PBBox.Collections
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
+            Log.Debug("After Deserialize");
             if (m_Dict == null)
             {
                 m_Dict = new Dictionary<TKey, TValue>();
@@ -84,16 +85,29 @@ namespace PBBox.Collections
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            m_Maps.Clear();
             if (m_Dict == null)
             {
+                m_Maps.Clear();
                 return;
             }
+            if (m_Dict.Count != m_Maps.Count)
+            {
+                m_Maps.Clear();
+            }
+            int _index = 0;
             foreach (var _kvp in m_Dict)
             {
                 var _entry = new T();
                 _entry.Set(_kvp.Key, _kvp.Value);
-                m_Maps.Add(_entry);
+                if (_index >= m_Maps.Count)
+                {
+                    m_Maps.Add(_entry);
+                }
+                else
+                {
+                    m_Maps[_index] = _entry;
+                }
+                _index++;
             }
         }
     }
