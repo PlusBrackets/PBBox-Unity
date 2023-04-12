@@ -31,18 +31,18 @@ namespace PBBox.Collections
     public partial class SortedMutiLinkedList<TKey, TValue> : IEnumerable<TValue>, IEnumerable where TKey : IComparable<TKey>, IEquatable<TKey>
     {
         //节点cache，减少移除添加时的gc
-        private readonly Lazy<ReferenceTempCache<LinkedListNode<KeyItemPair<TKey, TValue>>>> m_NodeCache;
+        private readonly Lazy<ReferenceTempCache<LinkedListNode<KeyValueEntry<TKey, TValue>>>> m_NodeCache;
         private readonly Lazy<ReferenceTempCache<LinkedListNode<Group>>> m_GroupNodeCache;
 
         //终结节点字典，用于快速查询。
         private Dictionary<TKey, LinkedListNode<Group>> m_GroupLookUp;
         //存储实际数据的链表
-        private LinkedList<KeyItemPair<TKey, TValue>> m_List;
+        private LinkedList<KeyValueEntry<TKey, TValue>> m_List;
         //终结节点链表，用于存放order的排序信息以及终结节点的前后信息
         protected LinkedList<Group> m_SortedGroupList;
 
-        public LinkedListNode<KeyItemPair<TKey, TValue>> First => m_List.First;
-        public LinkedListNode<KeyItemPair<TKey, TValue>> Last => m_List.Last;
+        public LinkedListNode<KeyValueEntry<TKey, TValue>> First => m_List.First;
+        public LinkedListNode<KeyValueEntry<TKey, TValue>> Last => m_List.Last;
 
         public int Count => m_List.Count;
         public int GroupCount => m_SortedGroupList.Count;
@@ -50,18 +50,18 @@ namespace PBBox.Collections
         public SortedMutiLinkedList()
         {
             m_GroupLookUp = new Dictionary<TKey, LinkedListNode<Group>>();
-            m_List = new LinkedList<KeyItemPair<TKey, TValue>>();
+            m_List = new LinkedList<KeyValueEntry<TKey, TValue>>();
             m_SortedGroupList = new LinkedList<Group>();
-            m_NodeCache = new Lazy<ReferenceTempCache<LinkedListNode<KeyItemPair<TKey, TValue>>>>();
+            m_NodeCache = new Lazy<ReferenceTempCache<LinkedListNode<KeyValueEntry<TKey, TValue>>>>();
             m_GroupNodeCache = new Lazy<ReferenceTempCache<LinkedListNode<Group>>>();
         }
 
-        private LinkedListNode<KeyItemPair<TKey, TValue>> TryAcquireNode(KeyItemPair<TKey, TValue> item)
+        private LinkedListNode<KeyValueEntry<TKey, TValue>> TryAcquireNode(KeyValueEntry<TKey, TValue> item)
         {
             //从缓存中取LinkedListNode，若无则创建
             if (!m_NodeCache.IsValueCreated || !m_NodeCache.Value.TryAcquire(out var _node))
             {
-                _node = new LinkedListNode<KeyItemPair<TKey, TValue>>(item);
+                _node = new LinkedListNode<KeyValueEntry<TKey, TValue>>(item);
             }
             else
             {
@@ -89,13 +89,13 @@ namespace PBBox.Collections
             return Comparer<TKey>.Default.Compare(orderKey, m_SortedGroupList.Last.Value.OrderKey) > 0;
         }
 
-        private void InsertNewGroupNode(TKey orderKey, LinkedListNode<KeyItemPair<TKey, TValue>> newNode)
+        private void InsertNewGroupNode(TKey orderKey, LinkedListNode<KeyValueEntry<TKey, TValue>> newNode)
         {
             var _newGroupNode = TryAcquireGroupNode(new Group(orderKey, newNode, newNode));
             //若没有数据，则直接放到第一位
             if (m_SortedGroupList.Count == 0)
             {
-                m_List.AddFirst((LinkedListNode<KeyItemPair<TKey, TValue>>)newNode);
+                m_List.AddFirst((LinkedListNode<KeyValueEntry<TKey, TValue>>)newNode);
                 m_SortedGroupList.AddFirst(_newGroupNode);
             }
             //判定顺序遍历还是逆序遍历
@@ -128,19 +128,19 @@ namespace PBBox.Collections
             m_GroupLookUp.Add(orderKey, _newGroupNode);
         }
 
-        public LinkedListRange<KeyItemPair<TKey, TValue>> GetGroup(TKey orderKey)
+        public LinkedListRange<KeyValueEntry<TKey, TValue>> GetGroup(TKey orderKey)
         {
             if (m_GroupLookUp.TryGetValue(orderKey, out var _group))
             {
-                return new LinkedListRange<KeyItemPair<TKey, TValue>>(
+                return new LinkedListRange<KeyValueEntry<TKey, TValue>>(
                     _group.Value.Start,
                     _group.Value.End,
                     _group.Value.Count);
             }
-            return LinkedListRange<KeyItemPair<TKey, TValue>>.Empty;
+            return LinkedListRange<KeyValueEntry<TKey, TValue>>.Empty;
         }
 
-        public bool Contains(KeyItemPair<TKey, TValue> orderItem)
+        public bool Contains(KeyValueEntry<TKey, TValue> orderItem)
         {
             if (m_GroupLookUp.TryGetValue(orderItem.Key, out var _group))
             {
@@ -149,7 +149,7 @@ namespace PBBox.Collections
             return false;
         }
 
-        public bool Contains(TKey orderKey, TValue item) => Contains(new KeyItemPair<TKey, TValue>(orderKey, item));
+        public bool Contains(TKey orderKey, TValue item) => Contains(new KeyValueEntry<TKey, TValue>(orderKey, item));
 
         public bool ContainsKey(TKey orderKey)
         {
@@ -160,7 +160,7 @@ namespace PBBox.Collections
         {
             for (var _n = First; _n != null; _n = _n.Next)
             {
-                if (EqualityComparer<TValue>.Default.Equals(_n.Value.Item, item))
+                if (EqualityComparer<TValue>.Default.Equals(_n.Value.Value, item))
                 {
                     return true;
                 }
@@ -168,12 +168,12 @@ namespace PBBox.Collections
             return false;
         }
 
-        public void Add(TKey orderKey, TValue item) => Add(new KeyItemPair<TKey, TValue>(orderKey, item));
+        public void Add(TKey orderKey, TValue item) => Add(new KeyValueEntry<TKey, TValue>(orderKey, item));
 
-        public void Add(KeyItemPair<TKey, TValue> orderItem)
+        public void Add(KeyValueEntry<TKey, TValue> orderItem)
         {
             LinkedListNode<Group> _groupNode = null;
-            LinkedListNode<KeyItemPair<TKey, TValue>> _node = TryAcquireNode(orderItem);
+            LinkedListNode<KeyValueEntry<TKey, TValue>> _node = TryAcquireNode(orderItem);
 
             if (!m_GroupLookUp.TryGetValue(orderItem.Key, out _groupNode))
             {
@@ -193,14 +193,14 @@ namespace PBBox.Collections
         /// <typeparam name="TKey"></typeparam>
         /// <typeparam name="TValue"></typeparam>
         /// <returns></returns>
-        public bool Remove(TKey orderKey, TValue item) => Remove(new KeyItemPair<TKey, TValue>(orderKey, item));
+        public bool Remove(TKey orderKey, TValue item) => Remove(new KeyValueEntry<TKey, TValue>(orderKey, item));
 
         /// <summary>
         /// 移除项目，需要遍历列表获取节点
         /// </summary>
         /// <param name="orderItem"></param>
         /// <returns></returns>
-        public bool Remove(KeyItemPair<TKey, TValue> orderItem)
+        public bool Remove(KeyValueEntry<TKey, TValue> orderItem)
         {
             if (m_GroupLookUp.TryGetValue(orderItem.Key, out var _groupNode))
             {
@@ -215,7 +215,7 @@ namespace PBBox.Collections
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public bool Remove(LinkedListNode<KeyItemPair<TKey, TValue>> node)
+        public bool Remove(LinkedListNode<KeyValueEntry<TKey, TValue>> node)
         {
             var orderItem = node.Value;
             if (m_GroupLookUp.TryGetValue(orderItem.Key, out var _groupNode))
@@ -225,7 +225,7 @@ namespace PBBox.Collections
             return false;
         }
 
-        private bool RemoveInternal(LinkedListNode<Group> groupNode, LinkedListNode<KeyItemPair<TKey, TValue>> node)
+        private bool RemoveInternal(LinkedListNode<Group> groupNode, LinkedListNode<KeyValueEntry<TKey, TValue>> node)
         {
             if (node == null)
             {
@@ -242,7 +242,7 @@ namespace PBBox.Collections
                     groupNode.Value = default(Group);
                     m_GroupNodeCache.Value.Release(groupNode);
                 }
-                _removedNode.Value = default(KeyItemPair<TKey, TValue>);
+                _removedNode.Value = default(KeyValueEntry<TKey, TValue>);
                 m_NodeCache.Value.Release(_removedNode);
                 return true;
             }
@@ -278,11 +278,11 @@ namespace PBBox.Collections
         {
             public TValue Current => m_CurrentValue;
             object IEnumerator.Current => m_CurrentValue;
-            private readonly LinkedList<KeyItemPair<TKey, TValue>> m_List;
-            private LinkedListNode<KeyItemPair<TKey, TValue>> m_Current;
+            private readonly LinkedList<KeyValueEntry<TKey, TValue>> m_List;
+            private LinkedListNode<KeyValueEntry<TKey, TValue>> m_Current;
             private TValue m_CurrentValue;
 
-            public Enumerator(LinkedList<KeyItemPair<TKey, TValue>> list)
+            public Enumerator(LinkedList<KeyValueEntry<TKey, TValue>> list)
             {
                 m_List = list;
                 m_Current = m_List.First;
@@ -299,7 +299,7 @@ namespace PBBox.Collections
                 {
                     return false;
                 }
-                m_CurrentValue = m_Current.Value.Item;
+                m_CurrentValue = m_Current.Value.Value;
                 m_Current = m_Current.Next;
                 return true;
             }

@@ -11,7 +11,7 @@ namespace PBBox
     /// <summary>
     /// 可序列化的KeyValuePair
     /// </summary>
-    [System.Serializable]
+    [System.Serializable, System.Obsolete]
     public struct SKeyValuePair<TKey, TValue> : IEquatable<SKeyValuePair<TKey, TValue>>
     {
         public TKey key;

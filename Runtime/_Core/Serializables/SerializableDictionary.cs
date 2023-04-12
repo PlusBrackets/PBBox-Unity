@@ -23,7 +23,7 @@ namespace PBBox
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    [System.Serializable]
+    [System.Serializable, System.Obsolete]
     public class SDictionary<TKey, TValue> : ISerializationCallbackReceiver, IEnumerable<SKeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>
     {
         [SerializeField]

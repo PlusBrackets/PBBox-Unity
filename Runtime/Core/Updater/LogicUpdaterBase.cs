@@ -16,7 +16,7 @@ namespace PBBox
     public abstract class LogicUpdaterBase<TUpdater> : ILogicUpdater<TUpdater> where TUpdater : LogicUpdaterBase<TUpdater>
     {
         private SortedMutiLinkedList<ILogicUpdateHandler<TUpdater>> m_Handlers;
-        private LinkedListNode<KeyItemPair<int, ILogicUpdateHandler<TUpdater>>> m_NextHandler = null;
+        private LinkedListNode<KeyValueEntry<int, ILogicUpdateHandler<TUpdater>>> m_NextHandler = null;
         public bool IsUpdating { get; private set; } = false;
         public int Count => m_Handlers.Count;
 
@@ -47,7 +47,7 @@ namespace PBBox
             if (immediately)
             {
                 //要移除的updatable正好为遍历中的下一个updatable
-                if (m_NextHandler != null && handler == m_NextHandler.Value.Item)
+                if (m_NextHandler != null && handler == m_NextHandler.Value.Value)
                 {
                     m_NextHandler = m_NextHandler.Next;
                     m_Handlers.Remove(m_NextHandler.Previous);
@@ -65,7 +65,7 @@ namespace PBBox
             for (var _node = m_Handlers.First; _node != null; _node = m_NextHandler)
             {
                 m_NextHandler = _node.Next;
-                var _updatable = _node.Value.Item;
+                var _updatable = _node.Value.Value;
                 if (_updatable == null || _updatable.CurrentUpdater != this)
                 {
                     m_Handlers.Remove(_node);
@@ -82,7 +82,7 @@ namespace PBBox
             for (var _node = m_Handlers.First; _node != null; _node = m_NextHandler)
             {
                 m_NextHandler = _node.Next;
-                var _updatable = _node.Value.Item;
+                var _updatable = _node.Value.Value;
                 if (_updatable.CurrentUpdater == this)
                 {
                     _updatable.CurrentUpdater = null;

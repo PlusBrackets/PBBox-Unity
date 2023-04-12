@@ -12,11 +12,11 @@ namespace PBBox.Collections
         protected struct Group
         {
             public TKey OrderKey { get; private set; }
-            public LinkedListNode<KeyItemPair<TKey,TValue>> Start { get; private set; }
-            public LinkedListNode<KeyItemPair<TKey,TValue>> End { get; private set; }
+            public LinkedListNode<KeyValueEntry<TKey,TValue>> Start { get; private set; }
+            public LinkedListNode<KeyValueEntry<TKey,TValue>> End { get; private set; }
             public int Count { get; private set; }
 
-            public Group(TKey key, LinkedListNode<KeyItemPair<TKey,TValue>> startNode, LinkedListNode<KeyItemPair<TKey,TValue>> endNode)
+            public Group(TKey key, LinkedListNode<KeyValueEntry<TKey,TValue>> startNode, LinkedListNode<KeyValueEntry<TKey,TValue>> endNode)
             {
                 OrderKey = key;
                 Start = startNode;
@@ -24,7 +24,7 @@ namespace PBBox.Collections
                 Count = 1;
             }
 
-            public Group AddNode(LinkedListNode<KeyItemPair<TKey,TValue>> node)
+            public Group AddNode(LinkedListNode<KeyValueEntry<TKey,TValue>> node)
             {
                 End.List.AddAfter(End, node);
                 End = node;
@@ -32,13 +32,13 @@ namespace PBBox.Collections
                 return this;
             }
 
-            public Group RemoveNode(KeyItemPair<TKey,TValue> item, out LinkedListNode<KeyItemPair<TKey,TValue>> removedNode)
+            public Group RemoveNode(KeyValueEntry<TKey,TValue> item, out LinkedListNode<KeyValueEntry<TKey,TValue>> removedNode)
             {
                 removedNode = GetNode(item);
                 return RemoveNode(removedNode, out removedNode);
             }
 
-            public Group RemoveNode(LinkedListNode<KeyItemPair<TKey,TValue>> node, out LinkedListNode<KeyItemPair<TKey,TValue>> removedNode)
+            public Group RemoveNode(LinkedListNode<KeyValueEntry<TKey,TValue>> node, out LinkedListNode<KeyValueEntry<TKey,TValue>> removedNode)
             {
                 removedNode = null;
                 if (node != null && OrderKeyEquals(node.Value))
@@ -58,7 +58,7 @@ namespace PBBox.Collections
                 return this;
             }
 
-            public LinkedListNode<KeyItemPair<TKey,TValue>> GetNode(KeyItemPair<TKey,TValue> item)
+            public LinkedListNode<KeyValueEntry<TKey,TValue>> GetNode(KeyValueEntry<TKey,TValue> item)
             {
                 if (!OrderKeyEquals(item))
                 {
@@ -66,7 +66,7 @@ namespace PBBox.Collections
                 }
                 for (var n = Start; n != End.Next; n = n.Next)
                 {
-                    if (EqualityComparer<KeyItemPair<TKey,TValue>>.Default.Equals(item, n.Value))
+                    if (EqualityComparer<KeyValueEntry<TKey,TValue>>.Default.Equals(item, n.Value))
                     {
                         return n;
                     }
@@ -74,7 +74,7 @@ namespace PBBox.Collections
                 return null;
             }
 
-            private bool OrderKeyEquals(KeyItemPair<TKey,TValue> orderItem)
+            private bool OrderKeyEquals(KeyValueEntry<TKey,TValue> orderItem)
             {
                 return EqualityComparer<TKey>.Default.Equals(orderItem.Key, OrderKey);
             }

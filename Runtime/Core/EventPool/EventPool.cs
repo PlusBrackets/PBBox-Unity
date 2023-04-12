@@ -20,7 +20,7 @@ namespace PBBox
         /// <summary>
         /// 下一个要触发的EventHandler的链表节点，用于解决遍历EventHandler链表时移除节点的一些问题。
         /// </summary>
-        private readonly Dictionary<Event, LinkedListNode<KeyItemPair<int, Delegate>>> m_NextTriggerHandlers;
+        private readonly Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>> m_NextTriggerHandlers;
 
         bool IReferencePoolItem.IsUsing { get; set; }
         public bool IsUsing => ((IReferencePoolItem)this).IsUsing;
@@ -29,7 +29,7 @@ namespace PBBox
         {
             m_EventHandlerDict = new Dictionary<TKey, SortedMutiLinkedList<Delegate>>();
             m_EventQueue = new Queue<Event>();
-            m_NextTriggerHandlers = new Dictionary<Event, LinkedListNode<KeyItemPair<int, Delegate>>>();
+            m_NextTriggerHandlers = new Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>>();
         }
 
         public void Update()
@@ -59,7 +59,7 @@ namespace PBBox
                 while (_currentHandler != null && _keepSending)
                 {
                     m_NextTriggerHandlers[e] = _currentHandler.Next;
-                    _keepSending = e.Trigger(_currentHandler.Value.Item);
+                    _keepSending = e.Trigger(_currentHandler.Value.Value);
 
 
                     _currentHandler = m_NextTriggerHandlers[e];
@@ -99,16 +99,16 @@ namespace PBBox
                 //如果有正准备触发的handler
                 if (m_NextTriggerHandlers.Count > 0)
                 {
-                    Dictionary<Event, LinkedListNode<KeyItemPair<int, Delegate>>> _temp = null;
+                    Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>> _temp = null;
                     foreach (var kvp in m_NextTriggerHandlers)
                     {
                         //检测正准备触发的handler是否和要移除的handler相同
-                        if (EqualityComparer<TKey>.Default.Equals(kvp.Key.EventId, eventId) && kvp.Value != null && kvp.Value.Value.Item == handler)
+                        if (EqualityComparer<TKey>.Default.Equals(kvp.Key.EventId, eventId) && kvp.Value != null && kvp.Value.Value.Value == handler)
                         {
                             //有则将next存在temp中
                             if (_temp == null)
                             {
-                                _temp = ReferencePool.Acquire<Dictionary<Event, LinkedListNode<KeyItemPair<int, Delegate>>>>();
+                                _temp = ReferencePool.Acquire<Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>>>();
                             }
                             _temp[kvp.Key] = kvp.Value.Next;
                         }
