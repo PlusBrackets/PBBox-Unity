@@ -54,7 +54,7 @@ namespace PBBox.Collections
             for (int i = 0; i < m_Maps.Count; i++)
             {
                 var _entry = m_Maps[i];
-                if (!Dictionary.TryAdd(_entry.Key, _entry.Value))
+                if (!m_Dict.TryAdd(_entry.Key, _entry.Value))
                 {
                     Log.Error($"There has same key [{_entry.Key}] in {GetType()}, will pass this entry.", "KeyValueEntryMap");
                 }
