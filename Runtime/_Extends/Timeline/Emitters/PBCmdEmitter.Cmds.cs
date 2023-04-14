@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Timeline;
 using UnityEngine.Playables;
+using PBBox.Collections;
 
 namespace PBBox.Timeline
 {
@@ -204,7 +205,7 @@ namespace PBBox.Timeline
             // var keys = extraParams.referencesMap.Keys;
             foreach (var kvp in extraParams.referencesMap)
             {
-                var key = kvp.key;
+                var key = kvp.Key;
                 var obj = extraParams.GetReference<GameObject>(key);
                 if (obj == null || obj.GetInstanceID() < 0)
                     continue;

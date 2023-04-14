@@ -19,8 +19,8 @@ namespace PBBox.Collections
 
         public KeyValueEntry(TKey key, TValue value)
         {
-            Key = key;
-            Value = value;
+            this.Key = key;
+            this.Value = value;
         }
 
         public KeyValuePair<TKey, TValue> ToPair()

@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using PBBox;
+using PBBox.Collections;
 using PBBox.Properties;
 
 namespace PBBox.UI

@@ -122,7 +122,7 @@ namespace PBBox.Collections
 
         public void TrimExcess(int capacity) => Dictionary.TrimExcess(capacity);
 
-        public void TryAdd(TKey key, TValue value) => Dictionary.TryAdd(key, value);
+        public bool TryAdd(TKey key, TValue value) => Dictionary.TryAdd(key, value);
 
         public bool TryGetValue(TKey key, out TValue value) => Dictionary.TryGetValue(key, out value);
 
