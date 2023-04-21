@@ -28,7 +28,7 @@ namespace PBBox
 
         void ISingletonLifecycle.OnDestroyAsSingleton()
         {
-            LogicUpdater.Unattach(this);
+            LogicUpdater.Detach(this);
             ReferencePool.Release(m_EventPoolInt);
             ReferencePool.Release(m_EventPoolString);
         }

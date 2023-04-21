@@ -32,6 +32,10 @@ namespace PBBox.Unity.UI
         [Tooltip("动态原点模式中是否忽略StickBackground自身的点击")]
         [SerializeField]
         private bool m_DynamicOriginModeIgnoreSelfTouch = false;
+        [Tooltip("如果设置，当Drag时如果PointerEventData中hover不包括此GameObject，则中断输入")]
+        [SerializeField]
+        private RectTransform m_DragInterruptChecker;
+
         private Vector3 m_BackgroundDefaultPos;
         private int? m_CurPointerId;
 
@@ -70,10 +74,20 @@ namespace PBBox.Unity.UI
             m_StickHandle.SetLocalPositionAndRotation(Vector2.zero, m_StickHandle.localRotation);
         }
 
+        private void OnDisable()
+        {
+            Interrupt();
+        }
+
         void IDragHandler.OnDrag(PointerEventData eventData)
         {
             if (!m_CurPointerId.HasValue || m_CurPointerId.Value != eventData.pointerId)
             {
+                return;
+            }
+            if (eventData.hovered.Count > 0 && m_DragInterruptChecker != null && !eventData.hovered.Contains(m_DragInterruptChecker.gameObject))
+            {
+                Interrupt();
                 return;
             }
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(m_StickBackground, eventData.position, eventData.pressEventCamera, out var _localPoint))
@@ -113,11 +127,25 @@ namespace PBBox.Unity.UI
             {
                 return;
             }
+            EndInput();
+        }
+
+        private void EndInput()
+        {
             m_CurPointerId = null;
             m_StickHandle.SetLocalPositionAndRotation(Vector2.zero, m_StickHandle.localRotation);
             m_StickBackground.anchoredPosition3D = m_BackgroundDefaultPos;
             InputVector = Vector2.zero;
             IsInputting = false;
+        }
+
+        public void Interrupt()
+        {
+            if (!m_CurPointerId.HasValue)
+            {
+                return;
+            }
+            EndInput();
         }
 
 #if UNITY_EDITOR

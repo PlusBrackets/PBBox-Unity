@@ -31,6 +31,12 @@ namespace PBBox
         {
             m_SubjectExit?.OnNext(other);
         }
+
+        private void OnDestroy()
+        {
+            m_SubjectEnter?.OnCompleted();
+            m_SubjectExit?.OnCompleted();
+        }
     }
 
     public static partial class SimpleObservedExtensions

@@ -156,8 +156,8 @@ namespace PBBox
         [UnityEditor.Callbacks.OnOpenAsset(-1)]
         private static bool OnOpenAsset(int instance, int line)
         {
-            var _target = EditorUtility.InstanceIDToObject(instance) as MonoScript;
-            if (_target == null || !_target.name.StartsWith(typeof(Log).Name, StringComparison.OrdinalIgnoreCase))
+            string _checkPath = AssetDatabase.GetAssetPath(EditorUtility.InstanceIDToObject(instance));
+            if (!_checkPath.Contains("/Log."))
             {
                 return false;
             }

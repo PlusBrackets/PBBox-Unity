@@ -10,7 +10,7 @@ namespace PBBox
     public static partial class LogicUpdater
     {
         public class Default : LogicUpdaterBase<Default> { }
-        
+
         private static Default s_DefaultUpdater { get; set; } = new Default();
 
         private static Action<bool> s_SetDefaultUpdateEnable;
@@ -25,9 +25,9 @@ namespace PBBox
             }
         }
 
-        public static void Unattach(ILogicUpdateHandler<Default> handler)
+        public static void Detach(ILogicUpdateHandler<Default> handler, bool immediately = false)
         {
-            s_DefaultUpdater.Unattach(handler);
+            s_DefaultUpdater.Detach(handler, immediately);
         }
 
         private static void UpdateDefault(float deltaTime)

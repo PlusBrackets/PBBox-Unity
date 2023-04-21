@@ -137,7 +137,7 @@ namespace PBBox
         /// <param name="poolSize">对象池大小</param>
         /// <param name="canExpand">是否可以扩展对象池</param>
         /// <param name="recycleUnactive">是否允许回收非active的对象</param>
-        public SimplePool(GameObject original, Transform parent = null, int preInit = 1, int poolSize = 10, bool canExpand = true, bool recycleUnactive = false)
+        public SimplePool(GameObject original, Transform parent = null, int preInit = 1, int poolSize = 10, bool canExpand = true, bool recycleUnactive = true)
         {
             m_Parent = parent;
             m_PoolObjectList = new List<PoolObject>();

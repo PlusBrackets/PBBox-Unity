@@ -8,5 +8,6 @@ namespace PBBox.Unity.Input
     {
         Vector2 InputVector { get; }
         bool IsInputting { get; }
+        void Interrupt();
     }
 }

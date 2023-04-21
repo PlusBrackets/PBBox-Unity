@@ -157,18 +157,24 @@ namespace PBBox
             }
         }
 
-        public static void DrawCircle(Vector3 center, float radius, int segment = 36)
+        public static void DrawCircle(Vector3 center, Vector3 normal, float radius, int segment = 36)
         {
-            Vector3[] pos = new Vector3[segment + 1];
+            Vector3[] posList = new Vector3[segment + 1];
             float delta = 2 * Mathf.PI / segment;
+            var _quat = Quaternion.LookRotation(normal, Vector3.up);
             for (int i = 0; i < segment; i++)
             {
                 float x = radius * Mathf.Cos(delta * i);
-                float z = radius * Mathf.Sin(delta * i);
-                pos[i] = new Vector3(x, 0, z);
+                float y = radius * Mathf.Sin(delta * i);
+                posList[i] = _quat * new Vector3(x, y, 0) + center;
             }
-            pos[segment] = pos[0];
-            DrawLines(pos);
+            posList[segment] = posList[0];
+            DrawLines(posList);
+        }
+
+        public static void DrawCircle(Vector3 center, float radius, int segment = 36)
+        {
+            DrawCircle(center, Vector3.up, radius, segment);
         }
     }
 

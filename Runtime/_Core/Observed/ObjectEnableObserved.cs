@@ -44,4 +44,31 @@ namespace PBBox
         }
 
     }
+    
+    public static partial class SimpleObservedExtensions
+    {
+        /// <summary>
+        /// 观察Enable
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="onNext"></param>
+        /// <param name="onComplete"></param>
+        /// <returns></returns>
+        public static SimpleObservable<GameObject>.Subscription ObservedEnable(this GameObject target, Action<GameObject> onNext, Action onComplete = null)
+        {
+            return target.GetOrAddComponent<ObjectEnableObserved>().GetEnableObserved().Subscribe(onNext, onComplete);
+        }
+
+        /// <summary>
+        /// 观察Disable
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="onNext"></param>
+        /// <param name="onComplete"></param>
+        /// <returns></returns>
+        public static SimpleObservable<GameObject>.Subscription ObservedDisable(this GameObject target, Action<GameObject> onNext, Action onComplete = null)
+        {
+            return target.GetOrAddComponent<ObjectEnableObserved>().GetDisableObserved().Subscribe(onNext, onComplete);
+        }
+    }
 }

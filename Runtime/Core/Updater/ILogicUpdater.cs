@@ -14,7 +14,7 @@ namespace PBBox
         bool IsUpdating { get; }
         void UpdateHandlers(float deltaTime);
         void Attach(ILogicUpdateHandler<TUpdater> handler);
-        void Unattach(ILogicUpdateHandler<TUpdater> handler, bool immediately = false);
+        void Detach(ILogicUpdateHandler<TUpdater> handler, bool immediately = false);
     }
 
 }

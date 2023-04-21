@@ -55,4 +55,31 @@ namespace PBBox
         }
 
     }
+
+    public static partial class SimpleObservedExtensions
+    {
+        /// <summary>
+        /// 观察Destroy,当GameObejct Destroy时触发回调
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="onNext"></param>
+        /// <returns></returns>
+        public static SimpleObservable<GameObject>.Subscription ObservedDestroy(this GameObject target, Action<GameObject> onNext)
+        {
+            return target.GetOrAddComponent<ObjectDestroyObserved>().GetObserved().Subscribe(onNext);
+        }
+
+        /// <summary>
+        /// 当对应的Object Destroy时销毁此观察订阅
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="obj"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static SimpleObservable<T>.Subscription DisposeWhenObjectDestroy<T>(this SimpleObservable<T>.Subscription target, GameObject obj)
+        {
+            obj.GetOrAddComponent<ObjectDestroyObserved>().AddDisposableOnDestroy(target);
+            return target;
+        }
+    }
 }

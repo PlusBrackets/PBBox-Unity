@@ -80,9 +80,9 @@ namespace PBBox
             }
         }
 
-        public static void Unattach(ILogicUpdateHandler<Fixed> handler)
+        public static void Detach(ILogicUpdateHandler<Fixed> handler, bool immediately = false)
         {
-            s_FixedUpdater.Unattach(handler);
+            s_FixedUpdater.Detach(handler, immediately);
         }
         #endregion
 
@@ -119,9 +119,9 @@ namespace PBBox
             }
         }
 
-        public static void Unattach(ILogicUpdateHandler<Late> handler)
+        public static void Detach(ILogicUpdateHandler<Late> handler, bool immediately = false)
         {
-            s_LateUpdater.Unattach(handler);
+            s_LateUpdater.Detach(handler, immediately);
         }
         #endregion
     }

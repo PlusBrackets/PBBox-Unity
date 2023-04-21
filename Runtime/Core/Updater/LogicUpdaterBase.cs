@@ -36,7 +36,7 @@ namespace PBBox
             handler.CurrentUpdater = (TUpdater)this;
         }
 
-        public void Unattach(ILogicUpdateHandler<TUpdater> handler, bool immediately = false)
+        public void Detach(ILogicUpdateHandler<TUpdater> handler, bool immediately = false)
         {
             if (handler.CurrentUpdater != this)
             {

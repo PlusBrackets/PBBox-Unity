@@ -1,23 +1,16 @@
 /*--------------------------------------------------------
- *Copyright (c) 2022 PlusBrackets
- *@update: 2022.03.29
+ *Copyright (c) 2016-2023 PlusBrackets
+ *@update: 2023.04.21
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System.Collections.Generic;
+using System.Collections;
+using PBBox.Collections;
 
 namespace PBBox
 {
-    public interface IWeightsItem
-    {
-        float Weights { get; set; }
-    }
 
-    public interface IWeightsItem<TContent> : IWeightsItem
-    {
-        TContent Content { get; }
-    }
-
-    public static class WeightsItemExtensions
+    public static partial class PBExtensions
     {
         #region IWeightsItem
 
@@ -28,9 +21,9 @@ namespace PBBox
         /// <param name="totalWeights"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T GetWeightsItem<T>(this IEnumerable<T> target, float totalWeights = -1, System.Func<T, bool> canGet = null) where T : IWeightsItem
+        public static T GetRandomWeightedItem<T>(this IEnumerable<T> target, float totalWeights = -1, System.Func<T, bool> canGet = null) where T : IWeightedItem
         {
-            var items = GetWeightsItems(target, 1, true, totalWeights, canGet);
+            var items = GetRandomWeightedItems(target, 1, true, totalWeights, canGet);
             if (items.Count > 0)
                 return items[0];
             return default(T);
@@ -46,7 +39,7 @@ namespace PBBox
         /// <param name="canGet"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static List<T> GetWeightsItems<T>(this IEnumerable<T> target, int count, bool canRepeat = true, float totalWeights = -1, System.Func<T, bool> canGet = null) where T : IWeightsItem
+        public static List<T> GetRandomWeightedItems<T>(this IEnumerable<T> target, int count, bool canRepeat = true, float totalWeights = -1, System.Func<T, bool> canGet = null) where T : IWeightedItem
         {
             List<T> items = new List<T>();
             var _target = target;
@@ -101,7 +94,7 @@ namespace PBBox
         /// <param name="target"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static float GetTotalWeight<T>(this IEnumerable<T> target) where T : IWeightsItem
+        public static float GetTotalWeight<T>(this IEnumerable<T> target) where T : IWeightedItem
         {
             float total = 0;
             foreach (T item in target)
@@ -119,7 +112,7 @@ namespace PBBox
         /// <param name="canRepeat"></param>
         /// <param name="totalWeights"></param>
         /// <returns></returns>
-        public static List<int> GetWeightsIndexs(this IList<float> target, int count = 1, bool canRepeat = true, float totalWeights = -1)
+        public static List<int> GetRandomWeightedIndexs(this IList<float> target, int count = 1, bool canRepeat = true, float totalWeights = -1)
         {
             List<int> indexs = new List<int>();
             var _target = target;
@@ -130,7 +123,8 @@ namespace PBBox
             if (totalWeights < 0)
             {
                 totalWeights = 0;
-                foreach(float f in _target){
+                foreach (float f in _target)
+                {
                     totalWeights += f;
                 }
             }
@@ -170,9 +164,9 @@ namespace PBBox
         /// <param name="target"></param>
         /// <param name="totalWeights"></param>
         /// <returns></returns>
-        public static int GetWeightsIndex(this IList<float> target, float totalWeights = -1)
+        public static int GetRandomWeightedIndex(this IList<float> target, float totalWeights = -1)
         {
-            var indexs = GetWeightsIndexs(target, 1, true, totalWeights);
+            var indexs = GetRandomWeightedIndexs(target, 1, true, totalWeights);
             if (indexs.Count > 0)
             {
                 return indexs[0];
