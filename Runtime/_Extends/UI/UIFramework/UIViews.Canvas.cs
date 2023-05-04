@@ -62,14 +62,20 @@ namespace PBBox.UI
                 canvasID = DEFAULT_CANVAS_ID;
             }
             UIViewCanvas uiCanvas = null;
-            Instance.m_ViewCanvas.TryGetValue(canvasID,out uiCanvas);
+            Instance.m_ViewCanvas.TryGetValue(canvasID, out uiCanvas);
             return uiCanvas;
         }
 
-        public static GameObject GetViewContainer(string canvasID, string containerName){
+        public static GameObject GetViewContainer(string canvasID, string containerName)
+        {
             UIViewCanvas viewCanvas = GetViewCanvas(canvasID);
-            if(viewCanvas == null) return null;
+            if (viewCanvas == null) return null;
             return viewCanvas.GetContainer(containerName);
+        }
+
+        public static GameObject GetViewContainer(string containerName)
+        {
+            return GetViewContainer(null, containerName);
         }
 
     }

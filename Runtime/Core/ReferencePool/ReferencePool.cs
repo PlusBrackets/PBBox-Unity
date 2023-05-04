@@ -33,6 +33,10 @@ namespace PBBox
 
         public static void Release(object reference)
         {
+            if (reference == null)
+            {
+                return;
+            }
             var _type = reference.GetType();
             CheckTypeLegality(_type);
             GetCache(_type).Release(reference);

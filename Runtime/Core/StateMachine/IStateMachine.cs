@@ -18,6 +18,7 @@ namespace PBBox.FSM
         bool TryGetValue<T>(int key, out T value);
         void SetValue<T>(int key, T value);
         void RemoveValue(int key);
+        bool RemoveValue(int key, out object value);
         bool ContainsValue(int key);
         
         IEnumerator<KeyValuePair<int, IState>> GetAllStates();

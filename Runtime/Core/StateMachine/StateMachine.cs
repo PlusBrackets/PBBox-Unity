@@ -268,6 +268,16 @@ namespace PBBox.FSM
             m_Values.Remove(key);
         }
 
+        public bool RemoveValue(int key, out object value)
+        {
+            if (m_Values == null)
+            {
+                value = null;
+                return false;
+            }
+            return m_Values.Remove(key, out value);
+        }
+
         public bool ContainsValue(int key)
         {
             if (m_Values == null)

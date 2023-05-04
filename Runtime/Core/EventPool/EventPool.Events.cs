@@ -37,9 +37,9 @@ namespace PBBox
                 {
                     _handler(Sender, EventArgs);
                 }
-                else if (listener is Func<object, TEventArgs, bool> __handler)
+                else if (listener is Func<object, TEventArgs, bool> _handler2)
                 {
-                    return __handler(Sender, EventArgs);
+                    return _handler2(Sender, EventArgs);
                 }
                 else
                 {
@@ -87,9 +87,17 @@ namespace PBBox
                 {
                     _handler(Sender);
                 }
-                else if (listener is Func<object, bool> __handler)
+                else if (listener is Func<object, bool> _handler2)
                 {
-                    return __handler(Sender);
+                    return _handler2(Sender);
+                }
+                else if (listener is Action _handler3)
+                {
+                    _handler3();
+                }
+                else if (listener is Func<bool> _handler4)
+                {
+                    return _handler4();
                 }
                 else
                 {

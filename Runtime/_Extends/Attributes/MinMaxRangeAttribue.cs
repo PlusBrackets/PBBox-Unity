@@ -81,7 +81,7 @@ namespace PBBox.Attributes
                 if (isChanged)
                 {
                     property.vector2Value = new Vector2(min, max);
-                    property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+                    property.serializedObject.ApplyModifiedProperties();
                 }
                 EditorGUI.EndProperty();
 
