@@ -6,7 +6,7 @@
 using System;
 using System.Reflection;
 
-namespace PBBox
+namespace PBBox.Attributes
 {
     /// <summary>
     /// 给一些利用反射获取数据的工具提供自定义的显示功能

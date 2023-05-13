@@ -3,7 +3,7 @@
  *@update: 2022.03.29
  *@author: PlusBrackets
  --------------------------------------------------------*/
-namespace PBBox
+namespace PBBox.Utils
 {
     /// <summary>
     /// 读取操作的结果

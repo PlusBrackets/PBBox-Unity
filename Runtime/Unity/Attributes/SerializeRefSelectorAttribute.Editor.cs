@@ -15,8 +15,9 @@ using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using Sirenix.Utilities;
 #endif
+using PBBox.Attributes;
 
-namespace PBBox.Unity
+namespace PBBox.Attributes
 {
     /// <summary>
     /// 给[SerializeReference]特性提供一个类型选择器

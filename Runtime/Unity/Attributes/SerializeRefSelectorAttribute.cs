@@ -10,7 +10,7 @@ using UnityEngine;
 using System;
 using System.Linq;
 
-namespace PBBox.Unity
+namespace PBBox.Attributes
 {
     /// <summary>
     /// 给[SerializeReference]特性提供一个类型选择器

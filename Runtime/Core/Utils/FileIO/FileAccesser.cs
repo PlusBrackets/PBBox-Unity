@@ -12,7 +12,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace PBBox
+namespace PBBox.Utils
 {
 
     /// <summary>
@@ -178,7 +178,7 @@ namespace PBBox
                 GetSemaphroe(filePath).Release();
                 if (_code != FileResultCode.SUCCESS)
                 {
-                    DebugUtils.Internal.LogError($"[ERROR_{_code.ToString()}]:{_message}\n\tpath:{filePath}");
+                    Log.Error($"[ERROR_{_code.ToString()}]:{_message}\n\tpath:{filePath}", "FileAccesser", Log.PBBoxLoggerName);
                 }
             }
             FileLoadResult<T> _result = new FileLoadResult<T> { code = _code, data = data, message = _message };
@@ -296,7 +296,7 @@ namespace PBBox
             SaveByAccesser(filePath, Instance.m_FA_Binary, data, callBack);
         }
         #endregion
-        
+
         #region Access By Text Type
         /// <summary>
         /// 读取字符串
@@ -360,7 +360,7 @@ namespace PBBox
         //     return Directory.Exists(path);
         // }
         // #endregion
-        
+
         #region File Thread Protection
         private Thread m_ProtectThread;
         private bool m_IsProtecting = false;
@@ -368,7 +368,7 @@ namespace PBBox
         //test
         public void StartProtectThread()
         {
-            DebugUtils.Internal.Log("开始文件存取保护线程");
+            Log.Debug("开始文件存取保护线程", "FileAccesser", Log.PBBoxLoggerName);
             if (m_ProtectThread == null)
             {
                 m_ProtectThread = new Thread(() =>
@@ -383,14 +383,14 @@ namespace PBBox
             }
             else
             {
-                DebugUtils.Internal.LogWarning("保护线程已经存在了");
+                Log.Warning("保护线程已经存在了", "FileAccesser", Log.PBBoxLoggerName);
             }
         }
 
         //test
         public void FinishProtectThread()
         {
-            DebugUtils.Internal.Log("结束文件存取保护线程");
+            Log.Debug("结束文件存取保护线程", "FileAccesser", Log.PBBoxLoggerName);
             m_IsProtecting = false;
             m_ProtectThread = null;
         }

@@ -10,8 +10,15 @@ using PBBox;
 
 namespace PBBox.CEditor
 {
+    /// <summary>
+    /// Unity 新版搜索窗口拓展
+    /// </summary>
     public static class PBSearchExtensions
     {
+        /// <summary>
+        /// 找到所有依赖该脚本的Prefab，格式csref:[deep:(optional)][ClassName/FullName] 例如csref:deep:Animator
+        /// </summary>
+        /// <returns></returns>
         private static readonly Regex REGEX_OPTIONS = new Regex(@"(\:\s*)");
         [SearchItemProvider]
         internal static SearchProvider SearchSrciptReferences()
@@ -33,6 +40,7 @@ namespace PBBox.CEditor
                     options.RemoveAt(options.Count - 1);
 
                     bool isDeepSearch = options.Contains("deep");
+                    //TODO 拓展选项可以搜索子类 subclass:
 
                     string[] guids = AssetDatabase.FindAssets("t:Prefab");
                     foreach (var guid in guids)
