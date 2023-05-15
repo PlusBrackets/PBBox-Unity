@@ -157,7 +157,8 @@ namespace PBBox.Unity.UI
                 var _tempMatrix = Gizmos.matrix;
                 Gizmos.color = Color.green;
                 Gizmos.matrix = m_StickBackground.localToWorldMatrix;
-                Gizmos.DrawWireSphere(Vector3.zero, m_CustomRadius);
+                GizmosUtils.DrawCircle(Vector3.zero, Vector3.forward, m_CustomRadius);
+                // Gizmos.DrawWireSphere(Vector3.zero, m_CustomRadius);
                 Gizmos.color = _tempColor;
                 Gizmos.matrix = _tempMatrix;
             }
