@@ -86,7 +86,7 @@ namespace PBBox
 #if UNITY_EDITOR
                             .Append("<color=#").Append(m_TagColorString).Append(">")
 #endif
-                            .Append('[').Append(tag).Append(']')
+                            .Append('[').Append(tag)
 #if UNITY_EDITOR
                             .Append("]</color>");
 #else

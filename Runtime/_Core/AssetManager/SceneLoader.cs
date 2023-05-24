@@ -83,12 +83,13 @@ namespace PBBox
         {
             if (isLoadingScene)
             {
-                DebugUtils.LogError("正在加载场景流程中，请等待加载完毕");
+                Log.Error("正在加载场景流程中，请等待加载完毕", "SceneLoader", Log.PBBoxLoggerName);
                 return;
             }
+            m_IsAutoActiveAfterLoaded = isAutoActive;
             loadingProgress = 0f;
             isLoadingScene = true;
-            isEnterLoadingScene = isEnterLoadingScene && String.IsNullOrEmpty(loadingSceneName);
+            isEnterLoadingScene = isEnterLoadingScene && !String.IsNullOrEmpty(loadingSceneName);
             AsyncOperation op = null;
             AsyncOperationHandle<SceneInstance> aop = default;
             if (isEnterLoadingScene)

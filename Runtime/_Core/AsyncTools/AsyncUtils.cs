@@ -20,6 +20,11 @@ namespace PBBox
     {
         private static readonly TaskFactory _taskFactory = new TaskFactory(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
 
+        public static TaskFactory GetFactory()
+        {
+            return _taskFactory;
+        }
+
         public static T RunSync<T>(this Func<Task<T>> func)
         {
             return _taskFactory.StartNew(func).Unwrap().GetAwaiter().GetResult();

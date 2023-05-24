@@ -60,17 +60,16 @@ namespace PBBox.UI
                     }
                     else
                     {
-                        DebugUtils.LogError($"{t.FullName} 无法绑定UIID: {a.uiid}，请检查是否有重复的绑定");
+                        Log.Error($"{t.FullName} 无法绑定UIID: {a.uiid}，请检查是否有重复的绑定", "UIViews", Log.PBBoxLoggerName);
                     }
                 }
             }
 #if UNITY_EDITOR || GAME_TEST
             testCost.Stop();
-            DebugUtils.Internal.Info<UIViews>($"UIViewCtrl绑定结束,已绑定:{bindCount},耗时{testCost.Elapsed.TotalMilliseconds}ms"
-                + logs.ToString());
+            Log.Debug($"UIViewCtrl绑定结束,已绑定:{bindCount},耗时{testCost.Elapsed.TotalMilliseconds}ms"
+                + logs.ToString(), "UIViews", Log.PBBoxLoggerName);
 #else
-                            
-             DebugUtils.Internal.Info<UIViews>($"UIViewCtrl绑定结束,已绑定:{bindCount}");
+            Log.Debug($"UIViewCtrl绑定结束,已绑定:{bindCount}", "UIViews", Log.PBBoxLoggerName);
 #endif
         }
         #region controllers
@@ -107,7 +106,7 @@ namespace PBBox.UI
             {
                 if (self.m_HoldingViews.HasInstantiatedView(uiid, uniqueID))
                 {
-                    DebugUtils.Log($"UIID:[{uiid}] ViewCtrl占用中，请先将对应的UIView销毁");
+                    Log.Debug($"UIID:[{uiid}] ViewCtrl占用中，请先将对应的UIView销毁", "UIViews", Log.PBBoxLoggerName);
                     return false;
                 }
                 else

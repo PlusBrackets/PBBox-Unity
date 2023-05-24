@@ -23,7 +23,6 @@ namespace PBBox.Utils
         public abstract class Accesser
         {
             internal abstract Task FileWriter<T>(string path, T data);
-
             internal abstract Task<T> FileReader<T>(string path);
         }
         #region private File Accesser
@@ -103,6 +102,8 @@ namespace PBBox.Utils
         /// await锁，保持对同一个文件同时只有一个读写操作在进行
         /// </summary>
         private Dictionary<string, SemaphoreSlim> m_Semaphroes;
+        private uint m_AccessingFileAmount = 0;
+        public bool IsFileAccessing => m_AccessingFileAmount > 0;
 
         private _FA_Binary m_FA_Binary;
         private _FA_Text m_FA_Text;
@@ -137,6 +138,7 @@ namespace PBBox.Utils
             string _message = null;
             try
             {
+                m_AccessingFileAmount++;
                 await GetSemaphroe(filePath).WaitAsync();
                 string _directory = filePath.Substring(0, filePath.LastIndexOf('/') + 1);
                 if (!Directory.Exists(_directory))
@@ -175,6 +177,7 @@ namespace PBBox.Utils
             }
             finally
             {
+                m_AccessingFileAmount--;
                 GetSemaphroe(filePath).Release();
                 if (_code != FileResultCode.SUCCESS)
                 {
@@ -361,39 +364,41 @@ namespace PBBox.Utils
         // }
         // #endregion
 
-        #region File Thread Protection
-        private Thread m_ProtectThread;
-        private bool m_IsProtecting = false;
+        // #region File Thread Protection
+        // // private Thread m_ProtectThread;
+        // // private bool m_IsProtecting = false;
 
-        //test
-        public void StartProtectThread()
-        {
-            Log.Debug("开始文件存取保护线程", "FileAccesser", Log.PBBoxLoggerName);
-            if (m_ProtectThread == null)
-            {
-                m_ProtectThread = new Thread(() =>
-                {
-                    while (m_IsProtecting)
-                    {
-                        Thread.Sleep(500);
-                    }
-                });
-                m_IsProtecting = true;
-                m_ProtectThread.Start();
-            }
-            else
-            {
-                Log.Warning("保护线程已经存在了", "FileAccesser", Log.PBBoxLoggerName);
-            }
-        }
+        // public void WaitAllAccessFinishSync()
+        // {
+        //     WaitAllAccessingFinish().GetAwaiter().GetResult();
+        // }
 
-        //test
-        public void FinishProtectThread()
-        {
-            Log.Debug("结束文件存取保护线程", "FileAccesser", Log.PBBoxLoggerName);
-            m_IsProtecting = false;
-            m_ProtectThread = null;
-        }
-        #endregion
+        // //test
+        // private async Task WaitAllAccessingFinish()
+        // {
+        //     while (IsFileAccessing)
+        //     {
+        //         await Task.Delay(10);
+        //     }
+        //     Log.Debug("All file access finished", "FileAccesser", Log.PBBoxLoggerName);
+        //     // Log.Debug("开始文件存取保护线程", "FileAccesser", Log.PBBoxLoggerName);
+        //     // if (m_ProtectThread == null)
+        //     // {
+        //     //     m_ProtectThread = new Thread(() =>
+        //     //     {
+        //     //         while (m_IsProtecting)
+        //     //         {
+        //     //             Thread.Sleep(500);
+        //     //         }
+        //     //     });
+        //     //     m_IsProtecting = true;
+        //     //     m_ProtectThread.Start();
+        //     // }
+        //     // else
+        //     // {
+        //     //     Log.Warning("保护线程已经存在了", "FileAccesser", Log.PBBoxLoggerName);
+        //     // }
+        // }
+        // #endregion
     }
 }
