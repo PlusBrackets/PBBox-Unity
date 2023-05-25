@@ -21,14 +21,14 @@ namespace PBBox
         private static string[] s_LogLevelDefineSymbols = new string[]{
             "PB_LOG_0", "PB_LOG_1", "PB_LOG_2", "PB_LOG_3"
         };
-        private static string s_LogInReleaseDefineSymbol = "PB_LOG_IN_RELEASE";
+        private static string s_LogLevelReleaseOnlyDefineSymbol = "PB_LOG_LEVEL_EDITOR_USE";
 
         #region Menu
         private const string STR_MENU_LOG_LEVEL_0 = "Tools/PBBox/Debug/Logging/Lv0 Log Any";
         private const string STR_MENU_LOG_LEVEL_1 = "Tools/PBBox/Debug/Logging/Lv1 No Debug";
         private const string STR_MENU_LOG_LEVEL_2 = "Tools/PBBox/Debug/Logging/Lv2 Warning And Error";
         private const string STR_MENU_LOG_LEVEL_3 = "Tools/PBBox/Debug/Logging/Lv3 Error Only";
-        private const string STR_MENU_LOG_IN_RELEASE = "Tools/PBBox/Debug/Logging/Log In Release";
+        private const string STR_MENU_LOG_IN_EDITOR = "Tools/PBBox/Debug/Logging/Log Level In Editory";
 
         [InitializeOnLoadMethod]
         private static void InitDefineSymbols()
@@ -58,14 +58,14 @@ namespace PBBox
         {
             PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, out var defines);
             List<string> _temps = new List<string>(defines);
-            int _idx = _temps.IndexOf(s_LogInReleaseDefineSymbol);
+            int _idx = _temps.IndexOf(s_LogLevelReleaseOnlyDefineSymbol);
             if (_idx >= 0)
             {
                 _temps.RemoveAt(_idx);
             }
             else
             {
-                _temps.Add(s_LogInReleaseDefineSymbol);
+                _temps.Add(s_LogLevelReleaseOnlyDefineSymbol);
             }
             PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, _temps.ToArray());
         }
@@ -105,7 +105,7 @@ namespace PBBox
         private static bool InitLoggingMenuStates()
         {
             PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, out var symbols);
-            Menu.SetChecked(STR_MENU_LOG_IN_RELEASE, Array.IndexOf<string>(symbols, s_LogInReleaseDefineSymbol) >= 0);
+            Menu.SetChecked(STR_MENU_LOG_IN_EDITOR, Array.IndexOf<string>(symbols, s_LogLevelReleaseOnlyDefineSymbol) >= 0);
             Menu.SetChecked(STR_MENU_LOG_LEVEL_0, Array.IndexOf<string>(symbols, s_LogLevelDefineSymbols[0]) >= 0);
             Menu.SetChecked(STR_MENU_LOG_LEVEL_1, Array.IndexOf<string>(symbols, s_LogLevelDefineSymbols[1]) >= 0);
             Menu.SetChecked(STR_MENU_LOG_LEVEL_2, Array.IndexOf<string>(symbols, s_LogLevelDefineSymbols[2]) >= 0);
@@ -137,7 +137,7 @@ namespace PBBox
             SetLogLevelDefine(3);
         }
 
-        [MenuItem(STR_MENU_LOG_IN_RELEASE, false, 10001)]
+        [MenuItem(STR_MENU_LOG_IN_EDITOR, false, 10001)]
         private static void SwitchLogLevelDisable()
         {
             SwitchLogInReleaseDefine();

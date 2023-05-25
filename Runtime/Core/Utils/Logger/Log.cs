@@ -55,13 +55,13 @@ namespace PBBox
             return _logger;
         }
 
-        [Conditional("PB_LOG_IN_RELEASE"), Conditional("UNITY_EDITOR")]
+        // [Conditional("PB_LOG_LEVEL_EDITOR_USE"), Conditional("UNITY_EDITOR")]
         public static void Enable(string loggerName = null)
         {
             GetLogger(loggerName).Enable = true;
         }
 
-        [Conditional("PB_LOG_IN_RELEASE"), Conditional("UNITY_EDITOR")]
+        // [Conditional("PB_LOG_LEVEL_EDITOR_USE"), Conditional("UNITY_EDITOR")]
         public static void Disable(string loggerName = null)
         {
             GetLogger(loggerName).Enable = false;
@@ -83,10 +83,10 @@ namespace PBBox
         }
 
         #region Log Functions    
-#if PB_LOG_IN_RELEASE || UNITY_EDITOR
+#if PB_LOG_LEVEL_EDITOR_USE || !UNITY_EDITOR
         [Conditional("PB_LOG_0")]
 #else
-        [Conditional("PB_LOG_ALL")]
+        [Conditional("UNITY_EDITOR")]
 #endif
 #if UNITY_2022_2_OR_NEWER 
         [HideInCallstack] //Unity 2022中加入了HideInCallStack的特性，可以从trace中隐藏
@@ -97,10 +97,10 @@ namespace PBBox
             if (CheckCanLog(_logger, 0)) _logger.LogDebug(_logger.DecoMessage(0, tag, message));
         }
 
-#if PB_LOG_IN_RELEASE || UNITY_EDITOR
+#if PB_LOG_LEVEL_EDITOR_USE || !UNITY_EDITOR
         [Conditional("PB_LOG_0"), Conditional("PB_LOG_1")]
 #else
-        [Conditional("PB_LOG_ALL")]
+        [Conditional("UNITY_EDITOR")]
 #endif
 #if UNITY_2022_2_OR_NEWER 
         [HideInCallstack]
@@ -111,10 +111,10 @@ namespace PBBox
             if (CheckCanLog(_logger, 1)) _logger.LogInfo(_logger.DecoMessage(1, tag, message));
         }
 
-#if PB_LOG_IN_RELEASE || UNITY_EDITOR
+#if PB_LOG_LEVEL_EDITOR_USE || !UNITY_EDITOR
         [Conditional("PB_LOG_0"), Conditional("PB_LOG_1"), Conditional("PB_LOG_2")]
 #else
-        [Conditional("PB_LOG_ALL")]
+        [Conditional("UNITY_EDITOR")]
 #endif
 #if UNITY_2022_2_OR_NEWER 
         [HideInCallstack]
@@ -125,10 +125,10 @@ namespace PBBox
             if (CheckCanLog(_logger, 2)) _logger.LogWarning(_logger.DecoMessage(2, tag, message));
         }
 
-#if PB_LOG_IN_RELEASE || UNITY_EDITOR
+#if PB_LOG_LEVEL_EDITOR_USE || !UNITY_EDITOR
         [Conditional("PB_LOG_0"), Conditional("PB_LOG_1"), Conditional("PB_LOG_2"), Conditional("PB_LOG_3")]
 #else
-        [Conditional("PB_LOG_ALL")]
+        [Conditional("UNITY_EDITOR")]
 #endif
 #if UNITY_2022_2_OR_NEWER 
         [HideInCallstack]
