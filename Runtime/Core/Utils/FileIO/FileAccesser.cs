@@ -102,8 +102,6 @@ namespace PBBox.Utils
         /// await锁，保持对同一个文件同时只有一个读写操作在进行
         /// </summary>
         private Dictionary<string, SemaphoreSlim> m_Semaphroes;
-        private uint m_AccessingFileAmount = 0;
-        public bool IsFileAccessing => m_AccessingFileAmount > 0;
 
         private _FA_Binary m_FA_Binary;
         private _FA_Text m_FA_Text;
@@ -138,7 +136,6 @@ namespace PBBox.Utils
             string _message = null;
             try
             {
-                m_AccessingFileAmount++;
                 await GetSemaphroe(filePath).WaitAsync();
                 string _directory = filePath.Substring(0, filePath.LastIndexOf('/') + 1);
                 if (!Directory.Exists(_directory))
@@ -177,7 +174,6 @@ namespace PBBox.Utils
             }
             finally
             {
-                m_AccessingFileAmount--;
                 GetSemaphroe(filePath).Release();
                 if (_code != FileResultCode.SUCCESS)
                 {
