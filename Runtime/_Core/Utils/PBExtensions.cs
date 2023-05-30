@@ -70,7 +70,7 @@ namespace PBBox
         {
             if (target.length >= 2)
             {
-                return target.keys[target.length - 1].time - target.keys[0].time;
+                return target[target.length - 1].time - target[0].time;
             }
             return 0;
         }
