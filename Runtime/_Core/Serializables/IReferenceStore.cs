@@ -27,10 +27,19 @@ namespace PBBox
         public static T GetReference<T>(this IReferenceStore target, string key) where T : Object
         {
             var map = target.GetReferenceMap();
-            if (map == null) return null;
+            if (map == null)
+            {
+                return null;
+            }
             if (map.TryGetValue(key, out var r))
             {
                 return r as T;
+            }
+            else{
+                Log.Error(map.Count);
+                foreach(var kvp in map){
+                    Log.Error(kvp);
+                }
             }
             return null;
         }
