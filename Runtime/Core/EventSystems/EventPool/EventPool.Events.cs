@@ -48,15 +48,13 @@ namespace PBBox
                 return true;
             }
 
-            protected override void TriggerFallback(Delegate listener)
+            protected override void CanNotTriggerFallback(Delegate listener)
             {
-#if UNITY_EDITOR
                 Log.Warning(
                     "Type mismatch, please check if the passed-in args and event handler match."
                     + $"\n( {EventId},  {typeof(TEventArgs)},  {listener.GetType()} )\n",
                     "EventPool",
                     Log.PBBoxLoggerName);
-#endif
             }
         }
 
@@ -83,7 +81,7 @@ namespace PBBox
                 EventId = default(TKey);
             }
 
-            protected virtual void OnReferenceReleaseImpl() { }
+            protected virtual void OnReferenceReleaseImpl(){}
 
             public virtual bool Trigger(Delegate listener)
             {
@@ -97,20 +95,18 @@ namespace PBBox
                 }
                 else
                 {
-                    TriggerFallback(listener);
+                    CanNotTriggerFallback(listener);
                 }
                 return true;
             }
 
-            protected virtual void TriggerFallback(Delegate listener)
+            protected virtual void CanNotTriggerFallback(Delegate listener)
             {
-#if UNITY_EDITOR
                 Log.Warning(
                     "Type mismatch, please check if the passed-in args and event handler match."
                     + $"\n( {EventId},  No args,  {listener.GetType()} )\n",
                     "EventPool",
                     Log.PBBoxLoggerName);
-#endif
             }
         }
     }

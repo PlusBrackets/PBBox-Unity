@@ -1,33 +1,30 @@
 /*--------------------------------------------------------
  *Copyright (c) 2016-2023 PlusBrackets
- *@update: 2023.04.21
+ *@update: 2023.06.20
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace PBBox.Collections
 {
     /// <summary>
-    /// 带权重的项，一般用于权重随机
+    /// Content添加了SerializeReference特性的WeightedItem
     /// </summary>
     [Serializable]
-    public struct WeightedItem<TContent> : IWeightedItem<TContent>, IEquatable<WeightedItem<TContent>>
+    public struct ReferenceWeightedItem<TContent> : IWeightedItem<TContent>, IEquatable<ReferenceWeightedItem<TContent>>
     {
-#if UNITY_5_3_OR_NEWER
-        [UnityEngine.SerializeField]
-#endif
+        [SerializeField, SerializeReference]
         private TContent m_Content;
-#if UNITY_5_3_OR_NEWER
-        [UnityEngine.SerializeField, UnityEngine.Range(0f, 100f)]
-#endif
+        [SerializeField, Range(0f, 100f)]
         private float m_Weights;
 
         public TContent Content => m_Content;
         public float Weights { get => m_Weights; set => m_Weights = value; }
 
-        public bool Equals(WeightedItem<TContent> other)
+        public bool Equals(ReferenceWeightedItem<TContent> other)
         {
             return EqualityComparer<TContent>.Default.Equals(m_Content, other.Content) && m_Weights - other.m_Weights < float.Epsilon;
         }
