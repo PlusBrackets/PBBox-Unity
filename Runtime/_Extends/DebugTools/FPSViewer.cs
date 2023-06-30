@@ -25,7 +25,7 @@ namespace PBBox.Tools
         public Color badColor = Color.red;
         public float badGoodDivide = 30f;
         public Color goodColor = Color.yellow;
-        public float goodBestDivide = 60f;
+        public float goodBestDivide = 58f;
         public Color bestColor = Color.green;
         public float fpsMeasuringDelta = 2.0f;
 

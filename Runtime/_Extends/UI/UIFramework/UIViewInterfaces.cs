@@ -127,7 +127,7 @@ namespace PBBox.UI
             return UIViews.Resume(view);
         }
 
-        public static T GetController<T>(this IUIView view) where T : class,IUIViewController
+        public static T GetController<T>(this IUIView view) where T : class, IUIViewController
         {
             return view.controller as T;
         }

@@ -50,11 +50,11 @@ namespace PBBox.Collections
 
         private Dictionary<TKey, TValue> CreateDict()
         {
-            var m_Dict = new Dictionary<TKey, TValue>();
+            var _dict = new Dictionary<TKey, TValue>();
             for (int i = 0; i < m_Maps.Count; i++)
             {
                 var _entry = m_Maps[i];
-                if (!m_Dict.TryAdd(_entry.Key, _entry.Value))
+                if (!_dict.TryAdd(_entry.Key, _entry.Value))
                 {
                     Log.Error($"There has same key [{_entry.Key}] in {GetType()}, will pass this entry.", "KeyValueEntryMap");
                 }
@@ -63,7 +63,7 @@ namespace PBBox.Collections
             //非编辑器模式下会把数据清除掉，节省空间
             m_Maps.Clear();
 #endif
-            return m_Dict;
+            return _dict;
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
@@ -71,6 +71,14 @@ namespace PBBox.Collections
             if (m_Dict == null)
             {
                 m_Dict = new Lazy<Dictionary<TKey, TValue>>(CreateDict);
+            }
+            else if (m_Dict.IsValueCreated)
+            {
+                m_Dict.Value.Clear();
+                foreach (var _kvp in m_Maps)
+                {
+                    m_Dict.Value.Add(_kvp.Key, _kvp.Value);
+                }
             }
         }
 

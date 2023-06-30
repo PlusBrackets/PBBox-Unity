@@ -36,10 +36,7 @@ namespace PBBox
                 return r as T;
             }
             else{
-                Log.Error(map.Count);
-                foreach(var kvp in map){
-                    Log.Error(kvp);
-                }
+                Log.Error($"Reference not found:{key}, map count:{map.Count}", "IReferenceStore", Log.PBBoxLoggerName);
             }
             return null;
         }
