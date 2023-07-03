@@ -29,7 +29,9 @@ namespace PBBox
         {
             if (handler.CurrentUpdater != null)
             {
+#if UNITY_EDITOR
                 Log.Warning("Handler has already attached!", "Updater", Log.PBBoxLoggerName);
+#endif
                 return;
             }
             m_Handlers.Add(handler.SortedOrder, handler);
@@ -40,7 +42,9 @@ namespace PBBox
         {
             if (handler.CurrentUpdater != this)
             {
+#if UNITY_EDITOR
                 Log.Warning("Handler and Updater is not match! Can not unattach", "Updater", Log.PBBoxLoggerName);
+#endif
                 return;
             }
             handler.CurrentUpdater = null;
