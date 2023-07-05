@@ -70,7 +70,7 @@ namespace PBBox
         /// </summary>
         /// <param name="v2"></param>
         /// <returns></returns>
-        public static Vector3 PraseXYToXZ(Vector2 v2)
+        public static Vector3 PraseXYToXZ(this Vector2 v2)
         {
             Vector3 v3;
             v3.x = v2.x;
@@ -79,12 +79,21 @@ namespace PBBox
             return v3;
         }
 
-        public static Vector2 PraseXZToXY(Vector3 v3)
+        public static Vector2 PraseXZToXY(this Vector3 v3)
         {
             Vector2 v2;
             v2.x = v3.x;
             v2.y = v3.z;
             return v2;
+        }
+
+        public static Vector3Int PraseXYToXZ(this Vector2Int v2)
+        {
+            return new Vector3Int(v2.x, 0, v2.y);
+        }
+
+        public static Vector2Int PraseXZToXY(this Vector3Int v3){
+            return new Vector2Int(v3.x, v3.z);
         }
 
         /// <summary>
