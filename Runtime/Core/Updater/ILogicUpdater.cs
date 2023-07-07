@@ -6,7 +6,7 @@
 namespace PBBox
 {
     /// <summary>
-    /// 更新器
+    /// 更新器，处理LogicUpdateHandler的更新
     /// </summary>
     /// <typeparam name="TUpdater"></typeparam>
     public interface ILogicUpdater<TUpdater> where TUpdater : ILogicUpdater<TUpdater>
