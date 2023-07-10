@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using PBBox.Unity.Input;
+using UnityEngine.Events;
+using System;
 
 namespace PBBox.Unity.UI
 {
@@ -36,15 +38,19 @@ namespace PBBox.Unity.UI
         [SerializeField]
         private RectTransform m_DragInterruptChecker;
         [SerializeField, Space]
-        private UnityEngine.Events.UnityEvent m_OnInputBegin;
+        private UnityEvent m_OnInputBegin;
         [SerializeField]
-        private UnityEngine.Events.UnityEvent m_OnInputEnd;
+        private UnityEvent m_OnInputEnd;
 
         private Vector3 m_BackgroundDefaultPos;
         private int? m_CurPointerId;
 
         public Vector2 InputVector { get; protected set; }
         public bool IsInputting { get; private set; }
+
+        public event Action<IStickInput> OnInputBegin;
+
+        public event Action<IStickInput> OnInputEnd;
 
         public bool DynamicOriginMode
         {
@@ -124,6 +130,7 @@ namespace PBBox.Unity.UI
             if (!IsInputting)
             {
                 m_OnInputBegin?.Invoke();
+                OnInputBegin?.Invoke(this);
             }
             IsInputting = true;
             ((IDragHandler)this).OnDrag(eventData);
@@ -147,6 +154,7 @@ namespace PBBox.Unity.UI
             if (IsInputting)
             {
                 m_OnInputEnd?.Invoke();
+                OnInputEnd?.Invoke(this);
             }
             IsInputting = false;
         }
