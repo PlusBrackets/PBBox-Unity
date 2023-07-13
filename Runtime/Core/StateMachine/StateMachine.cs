@@ -71,11 +71,14 @@ namespace PBBox.FSM
         public static void Release(StateMachine machine, bool tryReleaseState)
         {
             machine.Stop();
-            foreach (var _stateKvp in machine.m_States)
+            if (tryReleaseState)
             {
-                if (_stateKvp.Value is IReferencePoolItem _state)
+                foreach (var _stateKvp in machine.m_States)
                 {
-                    ReferencePool.Release(_state);
+                    if (_stateKvp.Value is IReferencePoolItem _state)
+                    {
+                        ReferencePool.Release(_state);
+                    }
                 }
             }
             ReferencePool.Release(machine);
@@ -89,6 +92,14 @@ namespace PBBox.FSM
 
         public virtual void ChangeToState(int stateKey)
         {
+            if (!CurrentState.HasValue)
+            {
+                Log.Warning(
+                    $"This Machine[{(!string.IsNullOrEmpty(Name) ? Name : this.GetType())}] has not started yet.",
+                    "FSM",
+                    Log.PBBoxLoggerName);
+                return;
+            }
             IState _nextState = GetState(stateKey);
             if (_nextState == null)
             {
