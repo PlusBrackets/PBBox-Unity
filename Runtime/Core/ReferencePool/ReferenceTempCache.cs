@@ -14,7 +14,7 @@ namespace PBBox
     {
         public ReferenceTempCache() : base() { }
 
-        public ReferenceTempCache(Type referenceType) : base(referenceType) { }
+        private ReferenceTempCache(Type referenceType) : base(referenceType) { }
 
         public T Acquire<T>() where T : class, TContent
         {

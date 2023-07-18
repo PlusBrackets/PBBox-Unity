@@ -68,6 +68,9 @@ namespace PBBox
                         __instance.OnCreateAsSingleton();
                     }
                 }
+                else{
+                    Log.Warning($"Singleton<{typeof(T).Name}> Instance Already Exists", "Singleton");
+                }
             }
         }
 

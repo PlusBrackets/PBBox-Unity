@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 namespace PBBox
 {
+    //TODO 优化-可以单独实例化一个ReferencePool，进行模块化管理
     /// <summary>
     /// 引用池
     /// </summary>

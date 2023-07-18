@@ -17,7 +17,7 @@ namespace PBBox.Unity.UI
     /// 虚拟摇杆UI
     /// </summary>
     [AddComponentMenu("PBBox/UI/Components/Virtual Stick")]
-    public class VirtualStick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler, IStickInput
+    public class VirtualStick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler, IStickInput, ILogicUpdateHandler<LogicUpdater.Default>
     {
         [Tooltip("虚拟摇杆背景组件")]
         [SerializeField]
@@ -44,6 +44,7 @@ namespace PBBox.Unity.UI
 
         private Vector3 m_BackgroundDefaultPos;
         private int? m_CurPointerId;
+        private PointerEventData m_CurEventData;
 
         public Vector2 InputVector { get; protected set; }
         public bool IsInputting { get; private set; }
@@ -79,14 +80,31 @@ namespace PBBox.Unity.UI
             }
         }
 
+        LogicUpdater.Default ILogicUpdateHandler<LogicUpdater.Default>.CurrentUpdater { get; set; }
+
+        int ILogicUpdateHandler<LogicUpdater.Default>.SortedOrder => 0;
+
         private void Start()
         {
             m_StickHandle.SetLocalPositionAndRotation(Vector2.zero, m_StickHandle.localRotation);
         }
 
+        private void OnEnable()
+        {
+            if (m_DragInterruptChecker != null)
+            {
+                LogicUpdater.Attach(this);
+            }
+        }
+
         private void OnDisable()
         {
             Interrupt();
+            var _updater = ((ILogicUpdateHandler<LogicUpdater.Default>)this).CurrentUpdater;
+            if (_updater != null)
+            {
+                _updater.Detach(this);
+            }
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
@@ -100,6 +118,7 @@ namespace PBBox.Unity.UI
                 Interrupt();
                 return;
             }
+            m_CurEventData = eventData;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(m_StickBackground, eventData.position, eventData.pressEventCamera, out var _localPoint))
             {
                 Vector2 _range = m_CustomRadius > 0 ? new Vector2(m_CustomRadius, m_CustomRadius) : m_StickBackground.sizeDelta / 2f;
@@ -148,6 +167,7 @@ namespace PBBox.Unity.UI
         private void EndInput()
         {
             m_CurPointerId = null;
+            m_CurEventData = null;
             m_StickHandle.SetLocalPositionAndRotation(Vector2.zero, m_StickHandle.localRotation);
             m_StickBackground.anchoredPosition3D = m_BackgroundDefaultPos;
             InputVector = Vector2.zero;
@@ -168,6 +188,14 @@ namespace PBBox.Unity.UI
             EndInput();
         }
 
+        void ILogicUpdateHandler<LogicUpdater.Default>.OnUpdate(float deltaTime)
+        {
+            if (m_CurEventData != null && m_DragInterruptChecker != null && !m_CurEventData.hovered.Contains(m_DragInterruptChecker.gameObject))
+            {
+                Interrupt();
+            }
+        }
+
 #if UNITY_EDITOR
         void OnDrawGizmosSelected()
         {
@@ -183,6 +211,7 @@ namespace PBBox.Unity.UI
                 Gizmos.matrix = _tempMatrix;
             }
         }
+
 #endif
     }
 }
