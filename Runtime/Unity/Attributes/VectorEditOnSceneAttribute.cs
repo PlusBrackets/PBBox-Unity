@@ -39,7 +39,7 @@ namespace PBBox.Attributes
 
             ~VectorEditOnSceneDrawer()
             {
-                Log.Debug("VectorEditOnSceneDrawer Destroy");
+                Log.Debug("VectorEditOnSceneDrawer Destroy", "VectorEditOnScene", Log.PBBoxLoggerName);
                 SceneView.duringSceneGui -= OnSceneGUI;
                 Selection.selectionChanged -= OnSelectionChanged;
             }
@@ -56,9 +56,9 @@ namespace PBBox.Attributes
                     EditorGUI.PropertyField(position, property, label);
                     return;
                 }
-                
+
                 EditorGUI.BeginProperty(position, label, property);
-                
+
                 //考虑Indented的宽度
                 // var _labelWidth = EditorGUIUtility.labelWidth;    
 

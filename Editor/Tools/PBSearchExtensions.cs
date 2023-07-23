@@ -16,7 +16,7 @@ namespace PBBox.CEditor
     public static class PBSearchExtensions
     {
         /// <summary>
-        /// 找到所有依赖该脚本的Prefab，格式csref:[deep:(optional)][ClassName/FullName] 例如csref:deep:Animator
+        /// 找到所有依赖该脚本的Prefab，格式csref:[deep:(optional)][unactive:(optional)][ClassName/FullName] 例如csref:deep:Animator
         /// </summary>
         /// <returns></returns>
         private static readonly Regex REGEX_OPTIONS = new Regex(@"(\:\s*)");
@@ -40,6 +40,7 @@ namespace PBBox.CEditor
                     options.RemoveAt(options.Count - 1);
 
                     bool isDeepSearch = options.Contains("deep");
+                    bool isIncludeUnactive = options.Contains("unactive");
                     //TODO 拓展选项可以搜索子类 subclass:
 
                     string[] guids = AssetDatabase.FindAssets("t:Prefab");
@@ -52,7 +53,7 @@ namespace PBBox.CEditor
                         Component[] components;
                         if (isDeepSearch)
                         {
-                            components = prefab.GetComponentsInChildren<Component>();
+                            components = prefab.GetComponentsInChildren<Component>(isIncludeUnactive);
                         }
                         else
                         {
