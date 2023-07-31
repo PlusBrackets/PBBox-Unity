@@ -1,8 +1,9 @@
 /*--------------------------------------------------------
- *Copyright (c) 2022 PlusBrackets
- *@update: 2022.03.29
+ *Copyright (c) 2016-2023 PlusBrackets
+ *@update: 2023.07.27
  *@author: PlusBrackets
  --------------------------------------------------------*/
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -26,7 +27,8 @@ namespace PBBox
     [AddComponentMenu("PBBox/Pool/Simple Pool Object")]
     public class SimplePoolObject : MonoBehaviour, IPoolObject
     {
-        public class PoolObjectEvent : UnityEvent<SimplePoolObject> { }
+        // [System.Serializable]
+        // public class PoolObjectEvent : UnityEvent<SimplePoolObject> { }
 
         SimplePool IPoolObject.Pool { get; set; }
         [SerializeField]
@@ -57,34 +59,38 @@ namespace PBBox
         public bool recycleInDisable = false;
         [SerializeField]
         protected GameDualityTimer lifeTimer = new GameDualityTimer();
-        [SerializeField]
-        protected PoolObjectEvent m_OnSpawnedEvent;
-        public PoolObjectEvent onSpawnedEvent
-        {
-            get
-            {
-                if (m_OnSpawnedEvent == null)
-                {
-                    m_OnSpawnedEvent = new PoolObjectEvent();
-                }
-                return m_OnSpawnedEvent;
-            }
-        }
-        [SerializeField]
-        protected PoolObjectEvent m_OnDespawnedEvent;
-        public PoolObjectEvent onDespawnedEvent
-        {
-            get
-            {
-                if (m_OnDespawnedEvent == null)
-                {
-                    m_OnDespawnedEvent = new PoolObjectEvent();
-                }
-                return m_OnDespawnedEvent;
-            }
-        }
+        // [SerializeField]
+        // protected PoolObjectEvent m_OnSpawnedEvent;
+        // public PoolObjectEvent onSpawnedEvent
+        // {
+        //     get
+        //     {
+        //         if (m_OnSpawnedEvent == null)
+        //         {
+        //             m_OnSpawnedEvent = new PoolObjectEvent();
+        //         }
+        //         return m_OnSpawnedEvent;
+        //     }
+        // }
+        // [SerializeField]
+        // protected PoolObjectEvent m_OnDespawnedEvent;
+        // public PoolObjectEvent onDespawnedEvent
+        // {
+        //     get
+        //     {
+        //         if (m_OnDespawnedEvent == null)
+        //         {
+        //             m_OnDespawnedEvent = new PoolObjectEvent();
+        //         }
+        //         return m_OnDespawnedEvent;
+        //     }
+        // }
 
-        public event System.Action<SimplePoolObject> onLifeEndEvent;
+        public event Action<SimplePoolObject> OnLifeEndEvent;
+        public event Action<SimplePoolObject> OnSpawnedEvent;
+        public event Action<SimplePoolObject> OnDespawnedEvent;
+
+        public bool IsSpawned { get; private set; }
 
         ActionQueue m_RecycleDelayAQ;
         bool m_IsInRecycle = false;
@@ -99,7 +105,8 @@ namespace PBBox
 
             // this.pool = pool;
             OnSpawned(data);
-            m_OnSpawnedEvent?.Invoke(this);
+            OnSpawnedEvent?.Invoke(this);
+            IsSpawned = true;
         }
 
         void IPoolObject.OnDespawned()
@@ -107,13 +114,14 @@ namespace PBBox
             if (!m_IsInRecycle)
             {
                 OnLifeEnd();
-                onLifeEndEvent?.Invoke(this);
+                OnLifeEndEvent?.Invoke(this);
             }
             m_IsInRecycle = true;
             m_RecycleDelayAQ?.Cancel();
             lifeTimer.Stop();
+            OnDespawnedEvent?.Invoke(this);
             OnDespawned();
-            m_OnDespawnedEvent?.Invoke(this);
+            IsSpawned = false;
         }
 
         protected virtual void LateUpdate()
@@ -149,7 +157,7 @@ namespace PBBox
                     m_RecycleDelayAQ = new ActionQueue(this);
                 }
                 OnLifeEnd();
-                onLifeEndEvent?.Invoke(this);
+                OnLifeEndEvent?.Invoke(this);
                 m_RecycleDelayAQ.DelayGameTime(recycleDelay, !delayInGameTime).Do(this.RecycleSelf).Execute();
             }
             else

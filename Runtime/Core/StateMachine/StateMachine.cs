@@ -39,7 +39,7 @@ namespace PBBox.FSM
             }
         }
 
-        public static StateMachine Create(object owner = null, int? entryState = null, IDictionary<int, IState> states = null, IDictionary<int, object> values = null)
+        public static StateMachine Create(object owner, int entryState, IDictionary<int, IState> states = null, IDictionary<int, object> values = null)
         {
             var _machine = ReferencePool.Acquire<StateMachine>();
             _machine.Owner = owner;
@@ -161,10 +161,12 @@ namespace PBBox.FSM
             if (_state == null)
             {
                 Log.Error(
-                    $"Can not start! State[{stateKey}] is not found.",
+                    $"State[{stateKey}] is not found. Fall back to the entry state[{EntryState}]",
                     "FSM",
                     Log.PBBoxLoggerName);
-                return;
+                // return;
+                stateKey = EntryState;
+                _state = GetState(stateKey.Value);
             }
             CurrentState = stateKey;
             _state.Enter(this, null);

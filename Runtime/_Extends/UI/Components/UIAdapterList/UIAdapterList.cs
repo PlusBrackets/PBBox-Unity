@@ -47,10 +47,10 @@ namespace PBBox.UI
         [SerializeField]
         protected Transform m_ItemContain;
         public Transform ItemContain => m_ItemContain;
-        
+
         public List<TData> Datas { get; protected set; }
         // public List<UIAdapterItem<TData>> items { get; protected set; }
-        
+
         public List<IUIAdapterItem> Items { get; protected set; }
         protected SimplePool m_ItemPool;
         int m_Selected = -1;
@@ -95,7 +95,8 @@ namespace PBBox.UI
 
         public event System.Action<int, string> onItemEvent;
 
-        public UIAdapterList(GameObject itemPrefab, Transform itemContain){
+        public UIAdapterList(GameObject itemPrefab, Transform itemContain)
+        {
             m_ItemPrefab = itemPrefab;
             m_ItemContain = itemContain;
             Items = new List<IUIAdapterItem>();
@@ -152,7 +153,8 @@ namespace PBBox.UI
 
         protected virtual void OnItemEvent(int index, string eventKey) { }
 
-        void IUIAdapterList.SelectItem(int index){
+        void IUIAdapterList.SelectItem(int index)
+        {
             Selected = index;
         }
 
@@ -171,7 +173,8 @@ namespace PBBox.UI
                 return;
             IsDisposed = true;
             if (isDisposing)
-            {   Clear();
+            {
+                Clear();
                 m_ItemPool?.Clean();
                 m_ItemPool?.DestoryPool();
             }
