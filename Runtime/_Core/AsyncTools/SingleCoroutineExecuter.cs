@@ -34,7 +34,10 @@ namespace PBBox
                 return;
             else
             {
-                handler?.StopCoroutine(coroutine);
+                if (handler != null)
+                {
+                    handler.StopCoroutine(coroutine);
+                }
                 coroutine = null;
                 handler = null;
             }
