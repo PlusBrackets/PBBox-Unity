@@ -25,7 +25,7 @@ namespace PBBox.Attributes
         private Type[] m_IncludeTypes = null;
 
         private Type[] m_SelectableTypes = null;
-        private string[] m_SelectableTypeNames = null;
+        // private string[] m_SelectableTypeNames = null;
         public Type[] SelectableTypes
         {
             get
