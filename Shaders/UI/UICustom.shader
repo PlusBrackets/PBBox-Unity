@@ -4,6 +4,8 @@ Shader "PBBox/UI/Custom"
 {
     Properties
     {
+        [Enum(UnityEngine.Rendering.BlendMode)] _BlendSrc("Blend Src", Float) = 5
+        [Enum(UnityEngine.Rendering.BlendMode)] _BlendDst("Blend Dst", Float) = 10
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1, 1, 1, 1)
         
@@ -52,7 +54,7 @@ Shader "PBBox/UI/Custom"
         Lighting Off
         ZWrite Off
         ZTest [unity_GUIZTestMode]
-        Blend SrcAlpha OneMinusSrcAlpha
+        Blend [_BlendSrc] [_BlendDst]
         ColorMask [_ColorMask]
         
         Pass

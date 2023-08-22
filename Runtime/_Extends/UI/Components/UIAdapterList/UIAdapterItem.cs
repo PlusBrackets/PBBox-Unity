@@ -49,7 +49,7 @@ namespace PBBox.UI
             }
             else
             {
-                DebugUtils.LogError("数值类型不匹配");
+                Log.Error($"Data type not match, {typeof(TData)} != {typeof(T)}");
             }
         }
 
@@ -110,14 +110,17 @@ namespace PBBox.UI
         protected virtual void OnClearData() { }
         protected virtual void OnSelected() { }
         protected virtual void OnDeselected() { }
+        protected virtual void OnSpawned(){}
+        protected virtual void OnDespawned(){}
 
         void IPoolObject.OnSpawned(object data)
         {
-
+            OnSpawned();
         }
 
         void IPoolObject.OnDespawned()
         {
+            OnDespawned();
             // OnClearData();
             Data = default(TData);
         }
