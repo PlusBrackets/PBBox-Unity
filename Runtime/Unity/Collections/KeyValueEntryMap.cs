@@ -17,7 +17,7 @@ namespace PBBox.Collections
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     [System.Serializable]
-    public class KeyValueEntryMap<T, TKey, TValue> : IDictionary<TKey, TValue>, ISerializationCallbackReceiver where T : IKeyValueEntry<TKey, TValue>, new()
+    public class KeyValueEntryMap<T, TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>, ISerializationCallbackReceiver where T : IKeyValueEntry<TKey, TValue>, new()
     {
         [SerializeField, UnityEngine.Serialization.FormerlySerializedAs("maps")]
         protected List<T> m_Maps = new List<T>();
@@ -32,6 +32,9 @@ namespace PBBox.Collections
         ICollection<TValue> IDictionary<TKey, TValue>.Values => Dictionary.Values;
         public int Count => Dictionary.Count;
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => ((ICollection<KeyValuePair<TKey, TValue>>)Dictionary).IsReadOnly;
+
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => ((IReadOnlyDictionary<TKey, TValue>)Dictionary).Keys;
+        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => ((IReadOnlyDictionary<TKey, TValue>)Dictionary).Values;
 
         public KeyValueEntryMap()
         {

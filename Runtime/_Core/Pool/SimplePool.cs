@@ -66,10 +66,12 @@ namespace PBBox
         {
             public Transform parent;
             public Vector3? position;
+            public bool localPosition;
             public Quaternion? rotation;
+            public bool localRotation;
             public Vector3? scale;
             public Vector3? scaleMultiply;
-            public bool? worldPosStay;
+            public bool? worldSpaceStay;
         }
 
         private struct PoolObject
@@ -145,8 +147,8 @@ namespace PBBox
             this.poolSize = poolSize;
             this.canExpand = canExpand;
             this.recycleUnactive = recycleUnactive;
-            m_ObjDefaultPos = original.transform.position;
-            m_ObjDefaultRot = original.transform.rotation;
+            m_ObjDefaultPos = original.transform.localPosition;
+            m_ObjDefaultRot = original.transform.localRotation;
             m_ObjDefaultScale = original.transform.localScale;
             for (int i = 0; i < preInit; i++)
             {
@@ -251,7 +253,7 @@ namespace PBBox
         {
             if (isDestroyed)
             {
-                DebugUtils.LogError("对象池已被销毁");
+                Log.Error("对象池已被销毁", "SimplePool", Log.PBBoxLoggerName);
                 return null;
             }
             int index = GetASpawnableIndex();
@@ -265,103 +267,125 @@ namespace PBBox
             po.isSpawned = true;
             m_PoolObjectList.Add(po);
             var obj = po.obj;
-            obj.transform.position = m_ObjDefaultPos;
-            obj.transform.rotation = m_ObjDefaultRot;
+            obj.transform.localPosition = m_ObjDefaultPos;
+            obj.transform.localRotation = m_ObjDefaultRot;
             obj.transform.localScale = m_ObjDefaultScale;
             if (spawnParam.HasValue)
             {
                 var sp = spawnParam.Value;
                 if (sp.scale.HasValue) obj.transform.localScale = sp.scale.Value;
                 if (sp.scaleMultiply.HasValue) obj.transform.localScale = Vector3.Scale(obj.transform.localScale, sp.scaleMultiply.Value);
-                if (sp.parent) obj.transform.SetParent(sp.parent, sp.worldPosStay.HasValue ? sp.worldPosStay.Value : false);
-                if (sp.position.HasValue) obj.transform.position = sp.position.Value;
-                if (sp.rotation.HasValue) obj.transform.rotation = sp.rotation.Value;
+                if (sp.parent) obj.transform.SetParent(sp.parent, sp.worldSpaceStay.HasValue ? sp.worldSpaceStay.Value : false);
+                if (sp.position.HasValue)
+                {
+                    if (sp.localPosition)
+                    {
+                        obj.transform.localPosition = sp.position.Value;
+                    }
+                    else
+                    {
+                        obj.transform.position = sp.position.Value;
+                    }
+                }
+                if (sp.rotation.HasValue)
+                {
+                    if (sp.localRotation)
+                    {
+                        obj.transform.localRotation = sp.rotation.Value;
+                    }
+                    else
+                    {
+                        obj.transform.rotation = sp.rotation.Value;
+                    }
+                }
             }
+
             obj.SetActive(true);
-            // obj.SendMessage("OnSpawned", datas, SendMessageOptions.DontRequireReceiver);
-            foreach (var component in po.componentCaches)
-            {
-                if (component is IPoolObject<T> _component)
+                // obj.SendMessage("OnSpawned", datas, SendMessageOptions.DontRequireReceiver);
+                foreach (var component in po.componentCaches)
                 {
-                    component._Spawn(this, null);
-                    _component._Spawn(this, data);
+                    if (component is IPoolObject<T> _component)
+                    {
+                        component._Spawn(this, null);
+                        _component._Spawn(this, data);
+                    }
+                    else
+                    {
+                        component._Spawn(this, data);
+                    }
                 }
-                else
+                return obj;
+            }
+
+            public void Recycle(GameObject obj)
+            {
+                int index = m_PoolObjectList.FindIndex(po => po.obj == obj);
+                if (index >= 0)
                 {
-                    component._Spawn(this, data);
+                    Recycle(index);
                 }
             }
-            return obj;
-        }
 
-        public void Recycle(GameObject obj)
-        {
-            int index = m_PoolObjectList.FindIndex(po => po.obj == obj);
-            if (index >= 0)
+            private void Recycle(int index)
             {
-                Recycle(index);
-            }
-        }
-
-        private void Recycle(int index)
-        {
-            var po = m_PoolObjectList[index];
-            if (po.obj.transform.parent != objectParent && po.obj.transform.parent.gameObject.activeInHierarchy)
-            {
-                po.obj.transform.SetParent(objectParent, false);
-                // po.obj.transform.parent = objectParent;
-            }
-            po.isSpawned = false;
-            m_PoolObjectList[index] = po;
-            foreach (var component in po.componentCaches)
-            {
-                component._Despawn();
-            }
-            po.obj.SetActive(false);
-        }
-
-        /// <summary>
-        /// 清空pool对象
-        /// </summary>
-        public void Clear()
-        {
-            Remain(m_PoolObjectList.Count);
-        }
-
-        /// <summary>
-        /// 清理pool对象，最多留下poolsize的数量
-        /// </summary>
-        public void Clean()
-        {
-            Remain(m_PoolObjectList.Count - poolSize);
-        }
-
-        /// <summary>
-        /// 留下count的数量的对象，其余的destory
-        /// </summary>
-        /// <param name="count"></param>
-        public void Remain(int count)
-        {
-            count = Mathf.Clamp(count, 0, m_PoolObjectList.Count);
-            if (count == 0)
-                return;
-            int startIndex = m_PoolObjectList.Count - count;
-            for (int i = startIndex; i < m_PoolObjectList.Count; i++)
-            {
-                var po = m_PoolObjectList[i];
-                if(po.obj){
-                    GameObject.Destroy(po.obj);
+                var po = m_PoolObjectList[index];
+                if (po.obj.transform.parent != objectParent && po.obj.transform.parent.gameObject.activeInHierarchy)
+                {
+                    po.obj.transform.SetParent(objectParent, false);
+                    // po.obj.transform.parent = objectParent;
                 }
+                po.isSpawned = false;
+                m_PoolObjectList[index] = po;
+                foreach (var component in po.componentCaches)
+                {
+                    component._Despawn();
+                }
+                po.obj.SetActive(false);
             }
-            m_PoolObjectList.RemoveRange(startIndex, count);
-        }
 
-        public void DestoryPool()
-        {
-            m_Original = null;
-            m_PoolObjectList.Clear();
-            isDestroyed = true;
-        }
+            /// <summary>
+            /// 清空pool对象
+            /// </summary>
+            public void Clear()
+            {
+                Remain(m_PoolObjectList.Count);
+            }
 
+            /// <summary>
+            /// 清理pool对象，最多留下poolsize的数量
+            /// </summary>
+            public void Clean()
+            {
+                Remain(m_PoolObjectList.Count - poolSize);
+            }
+
+            /// <summary>
+            /// 留下count的数量的对象，其余的destory
+            /// </summary>
+            /// <param name="count"></param>
+            public void Remain(int count)
+            {
+                count = Mathf.Clamp(count, 0, m_PoolObjectList.Count);
+                if (count == 0)
+                    return;
+                int startIndex = m_PoolObjectList.Count - count;
+                for (int i = startIndex; i < m_PoolObjectList.Count; i++)
+                {
+                    var po = m_PoolObjectList[i];
+                    if (po.obj)
+                    {
+                        GameObject.Destroy(po.obj);
+                    }
+                }
+                m_PoolObjectList.RemoveRange(startIndex, count);
+            }
+
+            public void DestoryPool()
+            {
+                m_Original = null;
+                m_PoolObjectList.Clear();
+                isDestroyed = true;
+            }
+
+        }
     }
-}

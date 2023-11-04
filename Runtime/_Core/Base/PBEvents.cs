@@ -20,6 +20,8 @@ namespace PBBox
     public class UEvent_Int : UnityEvent<int> { }
     [Serializable]
     public class UEvent_Float : UnityEvent<float> { }
+    [Serializable]
+    public class UEvent_Bool : UnityEvent<bool> { }
     #endregion
 
     /// <summary>

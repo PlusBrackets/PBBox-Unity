@@ -118,10 +118,10 @@ namespace PBBox
             }
             m_IsInRecycle = true;
             m_RecycleDelayAQ?.Cancel();
-            lifeTimer.Stop();
             OnDespawnedEvent?.Invoke(this);
             OnDespawned();
             IsSpawned = false;
+            lifeTimer.Stop();
         }
 
         protected virtual void LateUpdate()

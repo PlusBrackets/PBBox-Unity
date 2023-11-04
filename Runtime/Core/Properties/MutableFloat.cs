@@ -47,7 +47,7 @@ namespace PBBox.Properties
             }
             if (m_PrecentMod.HasValue)
             {
-                _tempValue *= m_PrecentMod.Value;
+                _tempValue += otherBaseValue * m_PrecentMod.Value;
             }
             if (m_MultMod.HasValue)
             {
@@ -76,7 +76,7 @@ namespace PBBox.Properties
             }
             if (m_PrecentMod.HasValue)
             {
-                _tempValue *= m_PrecentMod.Value;
+                _tempValue += otherBaseValue * m_PrecentMod.Value;
             }
             if (m_MultMod.HasValue)
             {
