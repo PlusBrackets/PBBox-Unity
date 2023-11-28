@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 /*--------------------------------------------------------
  *Copyright (c) 2022 PlusBrackets
  *@update: 2022.04.26
@@ -48,7 +49,7 @@ namespace PBBox
         }
 
         #endregion
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float RemapClamp(this float value, float srcMin, float srcMax, float dstMin, float dstMax)
         {
             float v = (value - srcMin) / (srcMax - srcMin) * (dstMax - dstMin) + dstMin;
@@ -62,9 +63,43 @@ namespace PBBox
         /// <param name="b"></param>
         /// <param name="deviation"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAlmostEqual(this float a, float b, float deviation = 0.00001f)//float.Epsilon)
         {
             return Mathf.Abs(a - b) <= deviation;
+        }
+
+        public static bool IsAlmostEqual(this Vector2 a, Vector2 b, float deviation = 0.00001f)//float.Epsilon)
+        {
+            return a.x.IsAlmostEqual(b.x, deviation) && a.y.IsAlmostEqual(b.y, deviation);
+        }
+
+        public static bool IsAlmostEqual(this Vector3 a, Vector3 b, float deviation = 0.00001f)//float.Epsilon)
+        {
+            return a.x.IsAlmostEqual(b.x, deviation) && a.y.IsAlmostEqual(b.y, deviation) && a.z.IsAlmostEqual(b.z, deviation);
+        }
+
+        public static bool IsAlmostEqual(this Vector4 a, Vector4 b, float deviation = 0.00001f)//float.Epsilon)
+        {
+            return a.x.IsAlmostEqual(b.x, deviation) && a.y.IsAlmostEqual(b.y, deviation) && a.z.IsAlmostEqual(b.z, deviation) && a.w.IsAlmostEqual(b.w, deviation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsAlmostEqualBySqrManitude(this Vector2 a, Vector2 b, float deviation = 0.00001f)//float.Epsilon)
+        {
+            return (a - b).sqrMagnitude <= deviation;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsAlmostEqualBySqrManitude(this Vector3 a, Vector3 b, float deviation = 0.00001f)//float.Epsilon)
+        {
+            return (a - b).sqrMagnitude <= deviation;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsAlmostEqualBySqrManitude(this Vector4 a, Vector4 b, float deviation = 0.00001f)//float.Epsilon)
+        {
+            return (a - b).sqrMagnitude <= deviation;
         }
 
     }

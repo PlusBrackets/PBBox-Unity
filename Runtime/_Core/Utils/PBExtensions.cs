@@ -106,6 +106,26 @@ namespace PBBox
             }
         }
 
+        public static Transform SearchChildren(this Transform target, System.Predicate<Transform> predicate)
+        {
+            foreach (Transform _t in target)
+            {
+                if (predicate(_t))
+                {
+                    return _t;
+                }
+            }
+            foreach (Transform _t in target)
+            {
+                Transform _result = _t.SearchChildren(predicate);
+                if (_result != null)
+                {
+                    return _result;
+                }
+            }
+            return null;
+        }
+
         #endregion
         #region String
         /// <summary>

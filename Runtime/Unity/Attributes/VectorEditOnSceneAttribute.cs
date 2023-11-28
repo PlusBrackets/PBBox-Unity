@@ -27,7 +27,8 @@ namespace PBBox.Attributes
         private class VectorEditOnSceneDrawer : PropertyDrawer
         {
             private SerializedProperty m_EditingProperty = null;
-            private bool m_IsEditing => m_EditingProperty != null;
+            private string m_EditingPropertyPath = null;
+            private string m_EditingPropertyDisplayName = null;
             private Lazy<GUIStyle> m_EditingButtonStyle = new Lazy<GUIStyle>(
                 () =>
                 {
@@ -39,10 +40,42 @@ namespace PBBox.Attributes
 
             ~VectorEditOnSceneDrawer()
             {
-                Log.Debug("VectorEditOnSceneDrawer Destroy", "VectorEditOnScene", Log.PBBoxLoggerName);
-                SceneView.duringSceneGui -= OnSceneGUI;
-                Selection.selectionChanged -= OnSelectionChanged;
+                StopEdit();
+                //Log.Debug("VectorEditOnSceneDrawer Destroy "+ testCC, "VectorEditOnScene", Log.PBBoxLoggerName);
             }
+
+            private bool IsEditingPropertyEditable()
+            {
+                return IsEditableProperty(m_EditingProperty);
+            }
+
+            private bool IsEditableProperty(SerializedProperty property)
+            {
+                try
+                {
+                    if (property == null || property.serializedObject == null || property.serializedObject.targetObject == null)
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception)
+                {
+                    //Log.Debug($"Property is not editable", "VectorEditOnScene", Log.PBBoxLoggerName);
+                    return false;
+                }
+                switch (property.propertyType)
+                {
+                    case SerializedPropertyType.Vector3:
+                    case SerializedPropertyType.Vector2:
+                    case SerializedPropertyType.Vector4:
+                    case SerializedPropertyType.Vector3Int:
+                    case SerializedPropertyType.Vector2Int:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
 
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
@@ -78,10 +111,7 @@ namespace PBBox.Attributes
                     if (GUI.Button(_buttonRect, "Editing", m_EditingButtonStyle.Value))
                     {
                         GUI.color = _color;
-                        Log.Debug($"Stop Edit {property.displayName}", property.serializedObject.targetObject, "VectorEditOnScene", Log.PBBoxLoggerName);
-                        m_EditingProperty = null;
-                        SceneView.duringSceneGui -= OnSceneGUI;
-                        Selection.selectionChanged -= OnSelectionChanged;
+                        StopEdit();
                     }
                     GUI.color = _color;
                 }
@@ -90,12 +120,7 @@ namespace PBBox.Attributes
                     if (GUI.Button(_buttonRect, "Edit"))
                     {
                         // Log.Debug("Start Edit Vector");
-                        Log.Debug($"Start Edit {property.displayName}", property.serializedObject.targetObject, "VectorEditOnScene", Log.PBBoxLoggerName);
-                        m_EditingProperty = property;
-                        Selection.selectionChanged -= OnSelectionChanged;
-                        Selection.selectionChanged += OnSelectionChanged;
-                        SceneView.duringSceneGui -= OnSceneGUI;
-                        SceneView.duringSceneGui += OnSceneGUI;
+                        StartEdit(property);
                     }
                 }
 
@@ -109,25 +134,41 @@ namespace PBBox.Attributes
                 EditorGUI.EndProperty();
             }
 
-            private void OnSelectionChanged()
+            private void StartEdit(SerializedProperty property)
             {
-                if (m_IsEditing && Selection.activeObject != null && m_EditingProperty.serializedObject != null && Selection.activeObject == m_EditingProperty.serializedObject.targetObject)
+                m_EditingProperty = property;
+                m_EditingPropertyPath = property.propertyPath;
+                m_EditingPropertyDisplayName = property.displayName;
+                Log.Debug($"Start Edit: '{m_EditingPropertyDisplayName}', Path: '{m_EditingPropertyPath}'", property.serializedObject.targetObject, "VectorEditOnScene", Log.PBBoxLoggerName);
+                Selection.selectionChanged -= OnSelectionChanged;
+                Selection.selectionChanged += OnSelectionChanged;
+                SceneView.duringSceneGui -= OnSceneGUI;
+                SceneView.duringSceneGui += OnSceneGUI;
+            }
+
+            private void StopEdit()
+            {
+                if (m_EditingProperty != null)
                 {
-                    // Log.Debug("Is Same Object");
-                    return;
+                    Log.Debug($"Stop Edit: '{m_EditingPropertyDisplayName}', Path: '{m_EditingPropertyPath}'", "VectorEditOnScene", Log.PBBoxLoggerName);
+                    m_EditingProperty = null;
+                    m_EditingPropertyPath = null;
+                    m_EditingPropertyDisplayName = null;
                 }
-                Log.Debug($"Stop Edit", "VectorEditOnScene", Log.PBBoxLoggerName);
-                m_EditingProperty = null;
                 SceneView.duringSceneGui -= OnSceneGUI;
                 Selection.selectionChanged -= OnSelectionChanged;
-                // Log.Debug("Stop Vector Scene Edit");
+            }
+
+            private void OnSelectionChanged()
+            {
+                StopEdit();
             }
 
             private void OnSceneGUI(SceneView view)
             {
-                if (!m_IsEditing)
+                if (!IsEditingPropertyEditable())
                 {
-                    UnityEditor.SceneView.duringSceneGui -= OnSceneGUI;
+                    StopEdit();
                     return;
                 }
                 var _value = GetPropertyValue(m_EditingProperty);
@@ -142,34 +183,11 @@ namespace PBBox.Attributes
 
             private bool IsSameProperty(SerializedProperty property)
             {
-                return m_EditingProperty != null && property.serializedObject != null && m_EditingProperty.serializedObject != null && property.serializedObject.targetObject == m_EditingProperty.serializedObject.targetObject && property.propertyPath == m_EditingProperty.propertyPath;
-            }
-
-            private bool IsEditableProperty(SerializedProperty property)
-            {
-                if (property == null || property.serializedObject == null || property.serializedObject.targetObject == null)
-                {
-                    return false;
-                }
-                switch (property.propertyType)
-                {
-                    case SerializedPropertyType.Vector3:
-                    case SerializedPropertyType.Vector2:
-                    case SerializedPropertyType.Vector4:
-                    case SerializedPropertyType.Vector3Int:
-                    case SerializedPropertyType.Vector2Int:
-                        return true;
-                    default:
-                        return false;
-                }
+                return IsEditingPropertyEditable() && property.serializedObject != null && property.serializedObject.targetObject == m_EditingProperty.serializedObject.targetObject && property.propertyPath == m_EditingProperty.propertyPath;
             }
 
             private Vector3 GetPropertyValue(SerializedProperty property)
             {
-                if (property == null || property.serializedObject == null || property.serializedObject.targetObject == null)
-                {
-                    return Vector3.zero;
-                }
                 switch (property.propertyType)
                 {
                     case SerializedPropertyType.Vector3:
@@ -183,7 +201,7 @@ namespace PBBox.Attributes
                     case SerializedPropertyType.Vector2Int:
                         return new Vector3(property.vector2IntValue.x, property.vector2IntValue.y, 0f);
                     default:
-                        throw new Log.FetalErrorException("Not Support Property Type", "VectorEditOnScene", Log.PBBoxLoggerName);
+                        throw new Log.FetalErrorException($"Not Support Property Type, Property:{property.displayName}", "VectorEditOnScene", Log.PBBoxLoggerName);
                 }
             }
 
@@ -207,7 +225,7 @@ namespace PBBox.Attributes
                         property.vector2IntValue = new Vector2Int((int)value.x, (int)value.y);
                         break;
                     default:
-                        throw new Log.FetalErrorException("Not Support Property Type", "VectorEditOnScene", Log.PBBoxLoggerName);
+                        throw new Log.FetalErrorException($"Not Support Property Type, Property:{property.displayName}", "VectorEditOnScene", Log.PBBoxLoggerName);
                 }
                 property.serializedObject.ApplyModifiedProperties();
             }

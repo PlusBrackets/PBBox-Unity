@@ -1,3 +1,4 @@
+using System;
 /*--------------------------------------------------------
  *Copyright (c) 2022 PlusBrackets
  *@update: 2022.05.21
@@ -7,15 +8,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace PBBox.UI
 {
     /// <summary>
     /// 根据容器的变化调整RectTransfrom
     /// </summary>
+    [ExecuteAlways]
     [RequireComponent(typeof(RectTransform))]
     [AddComponentMenu("PBBox/UI/Components/Rect Fit Container")]
-    public class RectFitContainer : MonoBehaviour
+    public class RectFitContainer : UIBehaviour
     {
         public enum FitType
         {
@@ -28,89 +31,312 @@ namespace PBBox.UI
             Canvas = 0,
             Parent = 1
         }
-        public FitContainer fitContainer = FitContainer.Canvas;
 
-        public bool fitWidth = true;
-        public bool fitHeight = false;
-        public bool compareLarge = false;
-        public FitType fitType = FitType.Size;
-        public float scalePow = 1f;
-        [Tooltip("保持设计大小，按容器的占比。false则填充容器")]
-        public bool keepDesignSize = true;
-        public bool resizeEverEnable = true;
-        public bool clampScale = true;
-        [Attributes.MinMaxRangeAttribute(0f, 10f)]
-        public Vector2 scaleRange = new Vector2(0, 3);
+        [SerializeField]
+        protected FitContainer m_FitContainer = FitContainer.Parent;
 
-        public Vector2 defaultSize{get;set;} = Vector2.zero;
-        public Vector3 defalutScale{get;set;} = Vector3.one;
+        [SerializeField, Tooltip("是否适应宽度")]
+        protected bool m_FitWidth = true;
+        [SerializeField, Tooltip("是否适应高度")]
+        protected bool m_FitHeight = false;
+        [SerializeField, Tooltip("若全适应则选取更大的scale，否则选取更小的scale")]
+        protected bool m_CompareLarge = false;
+        [SerializeField, Tooltip("改变自身Transform的Size还是Scale")]
+        protected FitType m_FitType = FitType.Size;
+        //[Tooltip("缩放指数")]
+        //public float scalePow = 1f;
+        [SerializeField, Tooltip("是否保持在容器中的大小比例。false则填充容器")]
+        protected bool m_KeepOriginDesignSize = true;
+        //public bool resizeEverEnable = true;
+        [SerializeField, Tooltip("是否使用ScaleRange来限制改变程度")]
+        protected bool m_ClampScale = true;
+        [SerializeField, Attributes.MinMaxRangeAttribute(0f, 50f), Tooltip("缩放范围")]
+        protected Vector2 m_ScaleRange = new Vector2(0, 3);
+        [SerializeField]
+        protected bool m_IsObservedParent = false;
+        [SerializeField]
+        protected bool m_ExecultInEditor = false;
+
         private RectTransform m_RectTransform;
+        public RectTransform RectTransform
+        {
+            get
+            {
+                if (m_RectTransform == null)
+                {
+                    m_RectTransform = transform as RectTransform;
+                }
+                return m_RectTransform;
+            }
+        }
+
+        public Vector2? DefaultSize { get; protected set; } = null;
+        public Vector3? DefaultScale { get; protected set; } = null;
+
         private Canvas m_Canvas;
         private CanvasScaler m_CanvasScaler;
-        private bool isStarted = false;
+        private Vector2? m_ParentOriginSize;
+        private IDisposable m_ParentSizeChangeSubscription;
 
-        private Vector2 m_ParentDesignSize;
-
-        private void Awake()
+#if UNITY_EDITOR
+        protected override void OnValidate()
         {
-            m_Canvas = GetComponentInParent<Canvas>();
-            m_CanvasScaler = m_Canvas.GetComponent<CanvasScaler>();
-            m_RectTransform = transform as RectTransform;
-            defalutScale = m_RectTransform.localScale;
-            defaultSize = m_RectTransform.rect.size;
-            m_ParentDesignSize = (m_RectTransform.parent as RectTransform).rect.size;
-        }
-
-        private void OnEnable()
-        {
-            if (isStarted && resizeEverEnable)
-                Resize();
-        }
-
-        private void Start()
-        {
-            isStarted = true;
-            Resize();
-        }
-
-        public void UpdateFitContainer(Vector2? fitTargetDesignSize = null)
-        {
-            if(fitContainer == FitContainer.Canvas)
-            m_Canvas = GetComponentInParent<Canvas>();
-            m_CanvasScaler = m_Canvas.GetComponent<CanvasScaler>();
-            if (fitTargetDesignSize != null)
+            base.OnValidate();
+            //Log.Debug($"OnValidate {name}");
+            if (!CheckCanExecuteInEditor())
             {
-                m_ParentDesignSize = fitTargetDesignSize.Value;
+                DefaultScale = null;
+                DefaultSize = null;
+                m_Canvas = null;
+                m_CanvasScaler = null;
+                m_ParentOriginSize = null;
+                m_ParentSizeChangeSubscription?.Dispose();
+                m_ParentSizeChangeSubscription = null;
             }
             else
             {
-                m_ParentDesignSize = (m_RectTransform.parent as RectTransform).rect.size;
+                TryInit();
             }
         }
 
-        public void Resize()
+        private bool CheckCanExecuteInEditor()
         {
-            // var scale = compareLarge ? 0 : float.MaxValue;
-            if(m_RectTransform==null)
+            return m_ExecultInEditor || UnityEditor.EditorApplication.isPlaying;
+        }
+#endif
+
+        protected override void Awake()
+        {
+            base.Awake();
+#if UNITY_EDITOR
+            if (!CheckCanExecuteInEditor())
             {
-                m_RectTransform = transform as RectTransform;
+                return;
+            }
+#endif
+            //Log.Debug($"Awake {name}");
+            TryInit();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+#if UNITY_EDITOR
+            if (!CheckCanExecuteInEditor())
+            {
+                return;
+            }
+#endif
+            //Log.Debug($"OnEnable {name}");
+            TryResize();
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            if (m_ParentSizeChangeSubscription != null)
+            {
+                m_ParentSizeChangeSubscription?.Dispose();
+                m_ParentSizeChangeSubscription = null;
+            }
+        }
+
+        private bool TryInit()
+        {
+            //Log.Debug($"InitParam {name}");
+            bool _result = true;
+            TryInitDefaultSize();
+            _result = TryInitCanvasData();
+            _result = TryInitParentOriginSize() && _result;
+
+            if (m_IsObservedParent && m_ParentSizeChangeSubscription == null)
+            {
+                var _parentRect = RectTransform.parent as RectTransform;
+                m_ParentSizeChangeSubscription = _parentRect.ObservedRectDemensionsChange(OnParentSizeChanged);
+            }
+            return _result;
+        }
+
+        private void TryInitDefaultSize()
+        {
+            if (DefaultSize == null)
+            {
+                DefaultSize = RectTransform.rect.size;
+            }
+            if (DefaultScale == null)
+            {
+                DefaultScale = RectTransform.localScale;
             }
 
-            Vector2 designSize = Vector2.one;
-            RectTransform fitTarget = null;
-            if (fitContainer == FitContainer.Canvas)
+        }
+
+        private bool TryInitCanvasData()
+        {
+            if (m_FitContainer != FitContainer.Canvas)
             {
-                designSize = m_CanvasScaler.referenceResolution;
-                fitTarget = m_Canvas.transform as RectTransform;
+                return true;
             }
-            else if (fitContainer == FitContainer.Parent)
+            if (m_Canvas == null)
             {
-                designSize = m_ParentDesignSize;
-                fitTarget = m_RectTransform.parent as RectTransform;
+                m_Canvas = GetComponentInParent<Canvas>();
             }
-            if (!keepDesignSize)
+            if (m_CanvasScaler == null && m_Canvas != null)
             {
-                designSize = defaultSize;
+                m_CanvasScaler = m_Canvas.GetComponent<CanvasScaler>();
+            }
+            return m_CanvasScaler && m_Canvas;
+        }
+
+        private bool TryInitParentOriginSize()
+        {
+            if (m_ParentOriginSize == null)
+            {
+                m_ParentOriginSize = (RectTransform.parent as RectTransform).rect.size;
+            }
+            if (m_ParentOriginSize.Value.IsAlmostEqual(Vector2.zero))
+            {
+                m_ParentOriginSize = null;
+            }
+            return m_ParentOriginSize != null;
+        }
+
+        //#if UNITY_EDITOR
+        //        protected override void OnRectTransformDimensionsChange()
+        //        {
+        //            base.OnRectTransformDimensionsChange();
+        //            if (!CheckCanExecuteInEditor())
+        //            {
+        //                return;
+        //            }
+        //            if (UnityEditor.Selection.Contains(gameObject))
+        //            {
+        //                Log.Debug("Reset Default Size:" + Time.frameCount);
+        //                DefaultSize = null;
+        //                DefaultScale = null;
+        //                TryInitDefaultSize();
+        //            }
+        //            //Log.Debug($"OnRectTransformDimensionsChange {name}");
+        //        }
+        //#endif
+
+        protected override void OnBeforeTransformParentChanged()
+        {
+            base.OnBeforeTransformParentChanged();
+            //Log.Debug($"OnBeforeTransformParentChanged {name}");
+#if UNITY_EDITOR
+            if (!CheckCanExecuteInEditor())
+            {
+                return;
+            }
+#endif
+            m_ParentOriginSize = null;
+            if (m_ParentSizeChangeSubscription != null)
+            {
+                m_ParentSizeChangeSubscription?.Dispose();
+                m_ParentSizeChangeSubscription = null;
+            }
+        }
+
+        protected override void OnTransformParentChanged()
+        {
+            base.OnTransformParentChanged();
+            //Log.Debug($"OnTransformParentChanged {name}");
+#if UNITY_EDITOR
+            if (!CheckCanExecuteInEditor())
+            {
+                return;
+            }
+#endif
+            TryInitParentOriginSize();
+            if (m_IsObservedParent && m_ParentSizeChangeSubscription == null)
+            {
+                var _parentRect = RectTransform.parent as RectTransform;
+                m_ParentSizeChangeSubscription = _parentRect.ObservedRectDemensionsChange(OnParentSizeChanged);
+            }
+        }
+
+        protected override void OnCanvasGroupChanged()
+        {
+            base.OnCanvasGroupChanged();
+#if UNITY_EDITOR
+            if (!CheckCanExecuteInEditor())
+            {
+                return;
+            }
+#endif
+            m_Canvas = null;
+            m_CanvasScaler = null;
+            TryInitCanvasData();
+            //m_Canvas = GetComponentInParent<Canvas>();
+            //if (m_Canvas != null)
+            //{
+            //    m_CanvasScaler = m_Canvas.GetComponent<CanvasScaler>();
+            //}
+            //Log.Debug($"OnCanvasGroupChanged {name}");
+        }
+
+        protected void OnParentSizeChanged(RectTransform parent)
+        {
+            if (!m_IsObservedParent)
+            {
+                return;
+            }
+            if (m_FitContainer == FitContainer.Parent)
+            {
+                TryResize();
+            }
+        }
+
+        public void UpdateFitContainer(Vector2? fitTargetOriginSize = null)
+        {
+            if (m_FitContainer == FitContainer.Canvas)
+            {
+                m_Canvas = GetComponentInParent<Canvas>();
+                m_CanvasScaler = m_Canvas.GetComponent<CanvasScaler>();
+            }
+            if (fitTargetOriginSize != null)
+            {
+                m_ParentOriginSize = fitTargetOriginSize.Value;
+            }
+            else
+            {
+                m_ParentOriginSize = (RectTransform.parent as RectTransform).rect.size;
+            }
+        }
+
+        public void TryResize()
+        {
+#if UNITY_EDITOR
+            if (!CheckCanExecuteInEditor())
+            {
+                return;
+            }
+#endif
+            if (!TryInit())
+            {
+                return;
+            }
+            // var scale = compareLarge ? 0 : float.MaxValue;
+            //if (m_RectTransform == null)
+            //{
+            //    m_RectTransform = transform as RectTransform;
+            //}
+
+            RectTransform _fitTarget = null;
+            Vector2? _targetOriginSize = Vector2.one;
+            if (m_FitContainer == FitContainer.Canvas)
+            {
+                _targetOriginSize = m_CanvasScaler.referenceResolution;
+                _fitTarget = m_Canvas.transform as RectTransform;
+            }
+            else if (m_FitContainer == FitContainer.Parent)
+            {
+                _targetOriginSize = m_ParentOriginSize;
+                _fitTarget = RectTransform.parent as RectTransform;
+            }
+            if (!m_KeepOriginDesignSize)
+            {
+                _targetOriginSize = DefaultSize;
             }
             // if (fitWidth)
             // {
@@ -128,20 +354,21 @@ namespace PBBox.UI
             //     scale = Mathf.Clamp(scale, scaleRange.x, scaleRange.y);
             // Debug.Log(designSize);
             Vector2? _scaleRange = null;
-            if (clampScale)
-                _scaleRange = scaleRange;
-            var scale = GetFitScale(m_RectTransform, fitTarget, fitWidth, fitHeight, compareLarge, designSize, scalePow, _scaleRange);
-            switch (fitType)
+            if (m_ClampScale)
+                _scaleRange = m_ScaleRange;
+            var scale = GetFitScale(RectTransform, _fitTarget, m_FitWidth, m_FitHeight, m_CompareLarge, _targetOriginSize, 1, _scaleRange);
+            switch (m_FitType)
             {
                 case FitType.Size:
-                    var toSize = defaultSize * scale;
-                    m_RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, toSize.x);
-                    m_RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, toSize.y);
+                    var toSize = DefaultSize.Value * scale;
+                    RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, toSize.x);
+                    RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, toSize.y);
                     break;
                 case FitType.Scale:
-                    m_RectTransform.localScale = defalutScale * scale;
+                    RectTransform.localScale = DefaultScale.Value * scale;
                     break;
             }
+            Log.Debug($"Resize {name} {scale} , {Time.frameCount}", this, "RectFitContainer", Log.PBBoxLoggerName);
         }
 
         /// <summary>
@@ -152,31 +379,33 @@ namespace PBBox.UI
         /// <param name="fitWidth">是否适应宽度</param>
         /// <param name="fitHeight">是否适应高度</param>
         /// <param name="compareLarge">若全适应择是否取较大的scale，否择取较小</param>
-        /// <param name="designSize">设计大小，使用fitTarget.size/designSize取scale大小，为空则取rect的size作为designSize</param>
+        /// <param name="targetOriginSize">设计大小，使用fitTarget.size/designSize取scale大小，为空则取rect的size作为designSize</param>
         /// <param name="scalePow">缩放指数</param>
         /// <param name="scaleRange">缩放范围，为空则不使用</param>
         /// <returns></returns>
-        public static float GetFitScale(RectTransform rect, RectTransform fitTarget, bool fitWidth = true, bool fitHeight = true, bool compareLarge = true, Vector2? designSize = null, float scalePow = 1f, Vector2? scaleRange = null)
+        protected static float GetFitScale(RectTransform rect, RectTransform fitTarget, bool fitWidth = true, bool fitHeight = true, bool compareLarge = true, Vector2? targetOriginSize = null, float scalePow = 1f, Vector2? scaleRange = null)
         {
-            var scale = compareLarge ? 0 : float.MaxValue;
-            if (designSize == null)
+            var _scale = compareLarge ? 0 : float.MaxValue;
+            if (targetOriginSize == null || targetOriginSize.Value.IsAlmostEqual(Vector2.zero))
             {
-                designSize = rect.rect.size;
+                targetOriginSize = rect.rect.size;
             }
             if (fitWidth)
             {
-                float scaleW = fitTarget.rect.width / designSize.Value.x;
-                scale = scaleW;
+                float _scaleW = targetOriginSize.Value.x.IsAlmostEqual(0) ? 1 : (fitTarget.rect.width / targetOriginSize.Value.x);
+                _scale = _scaleW;
             }
             if (fitHeight)
             {
-                float scaleH = fitTarget.rect.height / designSize.Value.y;
-                if (compareLarge && scale < scaleH || !compareLarge && scale > scaleH)
-                    scale = scaleH;
+                float _scaleH = targetOriginSize.Value.y.IsAlmostEqual(0) ? 1 : (fitTarget.rect.height / targetOriginSize.Value.y);
+                if (compareLarge && _scale < _scaleH || !compareLarge && _scale > _scaleH)
+                    _scale = _scaleH;
             }
             if (scaleRange != null)
-                scale = Mathf.Clamp(scale, scaleRange.Value.x, scaleRange.Value.y);
-            return scale;
+            {
+                _scale = Mathf.Clamp(_scale, scaleRange.Value.x, scaleRange.Value.y);
+            }
+            return _scale;
         }
     }
 }

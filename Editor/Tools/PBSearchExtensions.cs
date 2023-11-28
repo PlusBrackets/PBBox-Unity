@@ -40,10 +40,10 @@ namespace PBBox.CEditor
                     options.RemoveAt(options.Count - 1);
 
                     bool isDeepSearch = options.Contains("deep");
-                    bool isIncludeUnactive = options.Contains("unactive");
+                    bool isIncludeUnactive = options.Contains("inactive");
                     //TODO 拓展选项可以搜索子类 subclass:
 
-                    string[] guids = AssetDatabase.FindAssets("t:Prefab");
+                    string[] guids = AssetDatabase.FindAssets("t:Scene t:Prefab");
                     foreach (var guid in guids)
                     {
                         var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -62,6 +62,10 @@ namespace PBBox.CEditor
                         bool isContains = false;
                         foreach (var c in components)
                         {
+                            if (c == null)
+                            {
+                                continue;
+                            }
                             if (c.name.Contains(searchText, System.StringComparison.OrdinalIgnoreCase)
                                 || c.GetType().FullName.Contains(searchText, System.StringComparison.OrdinalIgnoreCase))
                             {
