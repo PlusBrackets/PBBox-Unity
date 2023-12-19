@@ -5,6 +5,8 @@
  --------------------------------------------------------*/
 using System.Collections.Generic;
 using UnityEngine;
+using PBBox;
+using System;
 
 namespace PBBox
 {
@@ -18,6 +20,12 @@ namespace PBBox
         SimplePool Pool { get; set; }
         void OnSpawned(object data);
         void OnDespawned();
+    }
+
+    public interface IPoolObjectSpawnEvent
+    {
+        event Action<IPoolObject> OnSpawnedEvent;
+        event Action<IPoolObject> OnDespawnedEvent;
     }
 
     public static class IPoolObjectExtensions

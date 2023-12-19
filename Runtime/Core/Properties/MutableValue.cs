@@ -13,9 +13,21 @@ namespace PBBox.Properties
     /// </summary>
     public enum MutableModType
     {
+        /// <summary>
+        /// 增加值
+        /// </summary>
         Flat = 0,
+        /// <summary>
+        /// 增加百分比，通常1f表示增加100%
+        /// </summary>
         Percent = 1,
+        /// <summary>
+        /// 乘数
+        /// </summary>
         Multiply = 2,
+        /// <summary>
+        /// 替换常量
+        /// </summary>
         Constant = 3
     }
 

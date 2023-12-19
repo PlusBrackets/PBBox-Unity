@@ -25,7 +25,7 @@ namespace PBBox
     }
 
     [AddComponentMenu("PBBox/Pool/Simple Pool Object")]
-    public class SimplePoolObject : MonoBehaviour, IPoolObject
+    public class SimplePoolObject : MonoBehaviour, IPoolObject, IPoolObjectSpawnEvent
     {
         // [System.Serializable]
         // public class PoolObjectEvent : UnityEvent<SimplePoolObject> { }
@@ -59,6 +59,7 @@ namespace PBBox
         public bool recycleInDisable = false;
         [SerializeField]
         protected GameDualityTimer lifeTimer = new GameDualityTimer();
+        public GameDualityTimer LifeTimer => lifeTimer;
         // [SerializeField]
         // protected PoolObjectEvent m_OnSpawnedEvent;
         // public PoolObjectEvent onSpawnedEvent
@@ -87,8 +88,8 @@ namespace PBBox
         // }
 
         public event Action<SimplePoolObject> OnLifeEndEvent;
-        public event Action<SimplePoolObject> OnSpawnedEvent;
-        public event Action<SimplePoolObject> OnDespawnedEvent;
+        public event Action<IPoolObject> OnSpawnedEvent;
+        public event Action<IPoolObject> OnDespawnedEvent;
 
         public bool IsSpawned { get; private set; }
 

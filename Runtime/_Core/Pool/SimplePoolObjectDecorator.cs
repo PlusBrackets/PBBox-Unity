@@ -42,8 +42,8 @@ namespace PBBox
             m_Target.OnLifeEndEvent -= OnEndLife;
         }
 
-        protected virtual void OnSpawned(SimplePoolObject target) { }
-        protected virtual void OnDespawned(SimplePoolObject target) { }
+        protected virtual void OnSpawned(IPoolObject target) { }
+        protected virtual void OnDespawned(IPoolObject target) { }
         protected virtual void OnEndLife(SimplePoolObject target) { }
 
     }
