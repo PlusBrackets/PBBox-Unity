@@ -19,11 +19,12 @@ namespace PBBox
         /// </summary>
         /// <param name="target"></param>
         /// <param name="totalWeights"></param>
+        /// <param name="filter">筛选可以进行选择的item</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T GetRandomWeightedItem<T>(this IEnumerable<T> target, float totalWeights = -1, System.Func<T, bool> canGet = null) where T : IWeightedItem
+        public static T GetRandomWeightedItem<T>(this IEnumerable<T> target, float totalWeights = -1, System.Func<T, bool> filter = null) where T : IWeightedItem
         {
-            var items = GetRandomWeightedItems(target, 1, true, totalWeights, canGet);
+            var items = GetRandomWeightedItems(target, 1, true, totalWeights, filter);
             if (items.Count > 0)
                 return items[0];
             return default(T);
@@ -36,14 +37,14 @@ namespace PBBox
         /// <param name="totalWeights"></param>
         /// <param name="count"></param>
         /// <param name="canRepeat"></param>
-        /// <param name="canGet"></param>
+        /// <param name="filter">筛选可以进行选择的item</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static List<T> GetRandomWeightedItems<T>(this IEnumerable<T> target, int count, bool canRepeat = true, float totalWeights = -1, System.Func<T, bool> canGet = null) where T : IWeightedItem
+        public static List<T> GetRandomWeightedItems<T>(this IEnumerable<T> target, int count, bool canRepeat = true, float totalWeights = -1, System.Func<T, bool> filter = null) where T : IWeightedItem
         {
             List<T> items = new List<T>();
             var _target = target;
-            if (!canRepeat || canGet != null)
+            if (!canRepeat || filter != null)
             {
                 _target = new List<T>(target);
             }
@@ -63,7 +64,7 @@ namespace PBBox
                     float w = item.Weights;
                     if (w + baseWeights >= rand)
                     {
-                        if (canGet == null || canGet.Invoke(item))
+                        if (filter == null || filter.Invoke(item))
                         {
                             items.Add(item);
                             break;

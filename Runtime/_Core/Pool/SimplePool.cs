@@ -229,7 +229,7 @@ namespace PBBox
 
         private bool CheckDespawned(PoolObject po)
         {
-            return !po.isSpawned || (recycleUnactive && !po.obj.activeInHierarchy);
+            return !po.isSpawned || (recycleUnactive && !po.obj.activeInHierarchy && !po.obj.activeSelf);
         }
 
         // public T Spawn<T>(params object[] datas)

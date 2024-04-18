@@ -54,6 +54,11 @@ namespace PBBox.Properties
         /// 当值改变时，Action(oldValue, newValue);
         /// </summary>
         private event Action<T, T> m_OnValueChangedWithOldValue;
+        /// <summary>
+        /// 当值改变时，Action(oldValue, newValue, sender);
+        /// </summary>
+        private event Action<T, T, BindableProperty<T>> m_OnValueChangedWithOldValueAndSender;
+
         bool IReferencePoolItem.IsUsing { get; set; }
 
         public BindableProperty() { }
@@ -65,6 +70,7 @@ namespace PBBox.Properties
 
         private void InvokeEventImpl(T oldValue, T newValue)
         {
+            m_OnValueChangedWithOldValueAndSender?.Invoke(oldValue, newValue, this);
             m_OnValueChangedWithOldValue?.Invoke(oldValue, newValue);
             m_OnValueChanged?.Invoke(newValue);
         }
@@ -87,14 +93,30 @@ namespace PBBox.Properties
         }
 
         /// <summary>
-        /// 绑定
+        /// 绑定<oldVal, newVal, sender>
+        /// </summary>
+        /// <param name="action"><oldVal, newVal, sender></param>
+        /// <param name="InvokeImmediately"></param>
+        public void Bind(Action<T, T, BindableProperty<T>> action, bool InvokeImmediately = true)
+        {
+            m_OnValueChangedWithOldValueAndSender += action;
+            if (InvokeImmediately)
+            {
+                action(Value, Value, this);
+            }
+        }
+
+        /// <summary>
+        /// 绑定<oldVal, newVal>
         /// </summary>
         /// <param name="action">(OldValue,NewValue)</param>
         public void Bind(Action<T, T> action, bool InvokeImmediately = true)
         {
             m_OnValueChangedWithOldValue += action;
             if (InvokeImmediately)
+            {
                 action(Value, Value);
+            }
         }
 
         /// <summary>
@@ -105,7 +127,18 @@ namespace PBBox.Properties
         {
             m_OnValueChanged += action;
             if (InvokeImmediately)
+            {
                 action(Value);
+            }
+        }
+
+        /// <summary>
+        /// 解绑
+        /// </summary>
+        /// <param name="action"></param>
+        public void UnBind(Action<T, T, BindableProperty<T>> action)
+        {
+            m_OnValueChangedWithOldValueAndSender -= action;
         }
 
         /// <summary>

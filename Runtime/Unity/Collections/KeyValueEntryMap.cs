@@ -20,7 +20,7 @@ namespace PBBox.Collections
     public class KeyValueEntryMap<T, TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>, ISerializationCallbackReceiver where T : IKeyValueEntry<TKey, TValue>, new()
     {
         [SerializeField, UnityEngine.Serialization.FormerlySerializedAs("maps")]
-        protected List<T> m_Maps = new List<T>();
+        protected List<T> m_Maps = new List<T>();//TODO 优化为Keys和Values两个数组，减少序列化数据量；非OdinInspector环境需要自定义Inspector
         protected Lazy<Dictionary<TKey, TValue>> m_Dict;
         public Dictionary<TKey, TValue> Dictionary => m_Dict.Value;
 

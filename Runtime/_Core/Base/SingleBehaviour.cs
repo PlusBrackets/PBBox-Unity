@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace PBBox
 {
+    [System.Obsolete("Use PBBox.Singleton<T> instead")]
     /// <summary>
     /// 简单的单例,不会自动创建，用于方便访问
     /// </summary>
@@ -63,6 +64,7 @@ namespace PBBox
     /// 单例脚本
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [System.Obsolete("Use PBBox.Singleton<T> instead")]
     public abstract class SingleBehaviour<T> : MonoBehaviour where T : SingleBehaviour<T>
     {
         private static T _instance = null;
