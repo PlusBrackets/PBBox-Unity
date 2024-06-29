@@ -27,6 +27,12 @@ namespace PBBox.Collections
         public TContent Content => m_Content;
         public float Weights { get => m_Weights; set => m_Weights = value; }
 
+        public WeightedItem(TContent content, float weights)
+        {
+            m_Content = content;
+            m_Weights = weights;
+        }
+
         public bool Equals(WeightedItem<TContent> other)
         {
             return EqualityComparer<TContent>.Default.Equals(m_Content, other.Content) && m_Weights - other.m_Weights < float.Epsilon;
