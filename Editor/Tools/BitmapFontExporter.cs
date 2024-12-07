@@ -89,6 +89,8 @@ namespace PBBox.CEditor
             Shader shader = Shader.Find("Unlit/Transparent");
             Material material = new Material(shader);
             material.mainTexture = textureFile;
+            //检测是否存在同名文件
+            //覆盖同名文件
             AssetDatabase.CreateAsset(material, exportPath + ".mat");
 
 

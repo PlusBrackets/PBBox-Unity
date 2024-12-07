@@ -7,10 +7,12 @@ using System.IO;
 using System.Collections.Generic;
 using System;
 using UnityEngine;
-#if UNITY_EDITOR && !UNITY_2022_1_OR_NEWER
+#if UNITY_EDITOR 
 using UnityEditor;
+#if !UNITY_2022_1_OR_NEWER
 using System.Reflection;
 using System.Text.RegularExpressions;
+#endif
 #endif
 
 namespace PBBox

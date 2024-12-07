@@ -55,7 +55,7 @@ namespace PBBox.UI
 
         public virtual void SetData(TData data, IUIAdapterList list, int index)
         {
-            OnClearData();
+            BeforeClearData();
             this.Data = data;
             this.AdapterList = list;
             this.Index = index;
@@ -65,7 +65,7 @@ namespace PBBox.UI
 
         public virtual void ClearData()
         {
-            OnClearData();
+            BeforeClearData();
             this.Data = default(TData);
             this.AdapterList = null;
             this.Index = -1;
@@ -107,7 +107,7 @@ namespace PBBox.UI
         /// <summary>
         /// 数据清理前调用
         /// </summary>
-        protected virtual void OnClearData() { }
+        protected virtual void BeforeClearData() { }
         protected virtual void OnSelected() { }
         protected virtual void OnDeselected() { }
         protected virtual void OnSpawned(){}

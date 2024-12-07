@@ -15,6 +15,8 @@ namespace PBBox.UI
     {
         public const string DEFAULT_CANVAS_ID = "Canvas";
         Dictionary<string, UIViewCanvas> m_ViewCanvas;
+        public static event System.Action<string> OnCanvasRegisteredEvent;
+        public static event System.Action<string> OnCanvasUnregisteredEvent;
 
         void InitViewCanvas()
         {
@@ -29,6 +31,7 @@ namespace PBBox.UI
                 DebugUtils.LogError($"[{Instance.GetType().Name}] Canvas字典中已存在ID为[{c.canvasID}]的Canvas");
                 return false;
             }
+            OnCanvasRegisteredEvent?.Invoke(c.canvasID);
             return true;
         }
 
@@ -39,7 +42,6 @@ namespace PBBox.UI
             if (viewCanvas.ContainsValue(c))
             {
                 UnregisterCanvas(c.canvasID);
-                viewCanvas.Remove(c.canvasID);
                 return true;
             }
             return false;
@@ -49,6 +51,7 @@ namespace PBBox.UI
         {
             if (!HasInstance) return;
             Instance.m_ViewCanvas.Remove(cid);
+            OnCanvasUnregisteredEvent?.Invoke(cid);
             // var allInCanvasView = Instance.m_HoldingViews.Views.Where(v => v.canvasID == cid);
             // foreach(var v in allInCanvasView){
             //     Instance.m_HoldingViews.RemoveHoldingView(v);

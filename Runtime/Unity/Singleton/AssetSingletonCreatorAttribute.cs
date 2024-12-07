@@ -34,7 +34,9 @@ namespace PBBox
             }
             else if (!string.IsNullOrEmpty(LoadFromAddressableKey))
             {
+                //Log.Debug($"Load AssetSingleton from Addressable:{LoadFromAddressableKey} Start.");
                 _asset = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<T>(LoadFromAddressableKey).WaitForCompletion();
+                //Log.Debug($"Load AssetSingleton from Addressable:{LoadFromAddressableKey} Done.");
             }
             return _asset;
         }

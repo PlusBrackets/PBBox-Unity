@@ -6,6 +6,9 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System;
+#if UNITY_2022_2_OR_NEWER
+using UnityEngine;
+#endif
 
 namespace PBBox
 {
@@ -88,7 +91,7 @@ namespace PBBox
 #else
         [Conditional("UNITY_EDITOR")]
 #endif
-#if UNITY_2022_2_OR_NEWER 
+#if UNITY_2022_2_OR_NEWER
         [HideInCallstack] //Unity 2022中加入了HideInCallStack的特性，可以从trace中隐藏
 #endif
         public static void Debug(object message, string tag = null, string loggerName = null)
@@ -102,7 +105,7 @@ namespace PBBox
 #else
         [Conditional("UNITY_EDITOR")]
 #endif
-#if UNITY_2022_2_OR_NEWER 
+#if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
         public static void Info(object message, string tag = null, string loggerName = null)
@@ -116,7 +119,7 @@ namespace PBBox
 #else
         [Conditional("UNITY_EDITOR")]
 #endif
-#if UNITY_2022_2_OR_NEWER 
+#if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
         public static void Warning(object message, string tag = null, string loggerName = null)
@@ -130,7 +133,7 @@ namespace PBBox
 #else
         [Conditional("UNITY_EDITOR")]
 #endif
-#if UNITY_2022_2_OR_NEWER 
+#if UNITY_2022_2_OR_NEWER
         [HideInCallstack]
 #endif
         public static void Error(object message, string tag = null, string loggerName = null)

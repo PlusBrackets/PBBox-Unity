@@ -46,6 +46,8 @@ namespace PBBox.Properties
                 }
             }
         }
+
+        private event Action m_OnChanged;
         /// <summary>
         /// 当值改变时
         /// </summary>
@@ -73,6 +75,7 @@ namespace PBBox.Properties
             m_OnValueChangedWithOldValueAndSender?.Invoke(oldValue, newValue, this);
             m_OnValueChangedWithOldValue?.Invoke(oldValue, newValue);
             m_OnValueChanged?.Invoke(newValue);
+            m_OnChanged?.Invoke();
         }
 
         /// <summary>
@@ -133,6 +136,20 @@ namespace PBBox.Properties
         }
 
         /// <summary>
+        /// 绑定
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="InvokeImmediately"></param>
+        public void Bind(Action action, bool InvokeImmediately = true)
+        {
+            m_OnChanged += action;
+            if (InvokeImmediately)
+            {
+                action();
+            }
+        }
+
+        /// <summary>
         /// 解绑
         /// </summary>
         /// <param name="action"></param>
@@ -159,6 +176,15 @@ namespace PBBox.Properties
             m_OnValueChanged -= action;
         }
 
+        /// <summary>
+        /// 解绑
+        /// </summary>
+        /// <param name="action"></param>
+        public void UnBind(Action action)
+        {
+            m_OnChanged -= action;
+        }
+
         void IReferencePoolItem.OnReferenceAcquire() { }
 
         void IReferencePoolItem.OnReferenceRelease()
@@ -166,6 +192,7 @@ namespace PBBox.Properties
             m_Value = default;
             m_OnValueChanged = null;
             m_OnValueChangedWithOldValue = null;
+            m_OnChanged = null;
         }
 
         public static bool operator ==(BindableProperty<T> left, T right)

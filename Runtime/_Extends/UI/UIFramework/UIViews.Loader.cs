@@ -162,6 +162,10 @@ namespace PBBox.UI
         /// <param name="uiPrefab"></param>
         public static void UnregisterUIPrefab(GameObject uiPrefab)
         {
+            if (uiPrefab == null)
+            {
+                return;
+            }
             IUIView view = uiPrefab.GetComponent<IUIView>();
             if (view != null)
             {

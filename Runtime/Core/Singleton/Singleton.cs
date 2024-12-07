@@ -15,7 +15,7 @@ namespace PBBox
     public abstract class Singleton<T> : ISingleton where T : class, ISingleton, new()
     {
         private static T s_Instance;
-        private static readonly object s_Locker = new object();
+        public static readonly object s_Locker = new object();
         public static T Instance
         {
             get

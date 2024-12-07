@@ -314,8 +314,8 @@ namespace PBBox
                 {
                     if (component is IPoolObject<T> _component)
                     {
-                        component._Spawn(this, null);
                         _component._Spawn(this, data);
+                        component._Spawn(this, null);
                     }
                     else
                     {
@@ -333,6 +333,14 @@ namespace PBBox
                     Recycle(index);
                 }
             }
+
+        public void RecycleAll()
+        {
+            for (int i = 0; i < m_PoolObjectList.Count; i++)
+            {
+                Recycle(i);
+            }
+        }
 
             private void Recycle(int index)
             {

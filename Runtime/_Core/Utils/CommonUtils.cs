@@ -79,6 +79,21 @@ namespace PBBox
             return v3;
         }
 
+        /// <summary>
+        /// vector2转化为vector3，并将Y配置为Z
+        /// </summary>
+        /// <param name="v2"></param>
+        /// <param name="v3y">转换成vector3时，y的值</param>
+        /// <returns></returns>
+        public static Vector3 PraseXYToXZ(this Vector2 v2, float v3y)
+        {
+            Vector3 v3;
+            v3.x = v2.x;
+            v3.y = v3y;
+            v3.z = v2.y;
+            return v3;
+        }
+
         public static Vector2 PraseXZToXY(this Vector3 v3)
         {
             Vector2 v2;

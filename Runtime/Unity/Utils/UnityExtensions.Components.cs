@@ -12,6 +12,18 @@ namespace PBBox
             return component.gameObject.GetOrAddComponent<T>();
         }
 
+        public static T ParseOrGetComponent<T>(this Component component)
+        {
+            if (component is T _t)
+            {
+                return _t;
+            }
+            else
+            {
+                return component.GetComponent<T>();
+            }
+        }
+
         public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
         {
             var component = gameObject.GetComponent<T>();

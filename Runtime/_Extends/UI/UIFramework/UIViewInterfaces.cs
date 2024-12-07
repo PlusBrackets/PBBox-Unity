@@ -129,6 +129,10 @@ namespace PBBox.UI
 
         public static T GetController<T>(this IUIView view) where T : class, IUIViewController
         {
+            if (view == null)
+            {
+                return null;
+            }
             return view.controller as T;
         }
 
