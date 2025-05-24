@@ -17,9 +17,9 @@ namespace PBBox
 
         public static void Attach(ILogicUpdateHandler<Default> handler)
         {
-            bool _isNoHandler = s_DefaultUpdater.Count == 0;
+            bool isNoHandler = s_DefaultUpdater.Count == 0;
             s_DefaultUpdater.Attach(handler);
-            if (_isNoHandler && s_DefaultUpdater.Count > 0)
+            if (isNoHandler && s_DefaultUpdater.Count > 0)
             {
                 s_SetDefaultUpdateEnable(true);
             }

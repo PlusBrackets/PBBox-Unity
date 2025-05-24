@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using PBBox.Collections;
-using UnityEngine;
 
 namespace PBBox
 {
@@ -15,7 +14,7 @@ namespace PBBox
     /// </summary>
     public sealed partial class EventPool
     {
-        internal class EventCollections
+        private class EventCollections
         {
             //触发事件时立刻调用
             private RefPoolObject<SortedMutiLinkedList<Delegate>> m_Events;
@@ -45,7 +44,7 @@ namespace PBBox
                     return m_Events.Value;
                 }
             }
-            
+
             /// <summary>
             /// 获取事件列表，如果没有则创建一个新的
             /// </summary>
@@ -64,37 +63,24 @@ namespace PBBox
                     return m_Events.Value;
                 }
             }
-        }
-
-        /// <summary>
-        /// 订阅事件的返回值，Disposse方法会自动取消订阅
-        /// </summary>
-        public struct Subscription : IDisposable
-        {
-            private readonly EventPool m_Handler;
-            private readonly int m_EventId;
-            private readonly Delegate m_Listener;
-            private readonly int m_Order;
-            private readonly bool m_IsLateEvent;
-
-            public int EventId => m_EventId;
-
-            internal Subscription(EventPool handler, int eventId, Delegate listener, int order, bool isLateEvent)
+            
+            public void ReleaseValue(bool isLateEvent)
             {
-                m_Handler = handler;
-                m_EventId = eventId;
-                m_Listener = listener;
-                m_Order = order;
-                m_IsLateEvent = isLateEvent;
-            }
-
-            public void Dispose()
-            {
-                if (m_Handler != null)
+                if (isLateEvent)
                 {
-                    m_Handler.UnsubscribeImpl(m_EventId, m_Listener, m_Order, m_IsLateEvent);
+                    m_LateEvents.Release();
+                }
+                else
+                {
+                    m_Events.Release();
                 }
             }
+        }
+
+        private class EventTriggerContext
+        {
+            public LinkedListNode<KeyValueEntry<int, Delegate>> currentNode;
+            //public LinkedListNode<KeyValueEntry<int, Delegate>> nextNode;
         }
 
         /// <summary>
@@ -121,11 +107,11 @@ namespace PBBox
 
             public override bool Dispatch(Delegate listener)
             {
-                if (listener is Handler<TArgs> handler)
+                if (listener is Action<object, TArgs> handler)
                 {
                     handler(Sender, EventArgs);
                 }
-                else if (listener is EventFilter<TArgs> handler2)
+                else if (listener is Func<object, TArgs, bool> handler2)
                 {
                     return handler2(Sender, EventArgs);
                 }
@@ -175,11 +161,11 @@ namespace PBBox
 
             public virtual bool Dispatch(Delegate listener)
             {
-                if (listener is Handler handler)
+                if (listener is Action<object> handler)
                 {
                     handler(Sender);
                 }
-                else if (listener is EventFilter handler2)
+                else if (listener is Func<object, bool> handler2)
                 {
                     return handler2(Sender);
                 }

@@ -158,6 +158,15 @@ namespace PBBox.Collections
             return LinkedListRange<KeyValueEntry<TKey, TValue>>.Empty;
         }
 
+        public LinkedListNode<KeyValueEntry<TKey, TValue>> GetNode(TKey orderKey, TValue item)
+        {
+            if (m_GroupLookUp.TryGetValue(orderKey, out var group))
+            {
+                return group.Value.GetNode(new KeyValueEntry<TKey, TValue>(orderKey, item));
+            }
+            return null;
+        }
+
         public bool Contains(KeyValueEntry<TKey, TValue> orderItem)
         {
             if (m_GroupLookUp.TryGetValue(orderItem.Key, out var group))
@@ -184,6 +193,15 @@ namespace PBBox.Collections
                 }
             }
             return false;
+        }
+
+        public bool ContainsNode(LinkedListNode<KeyValueEntry<TKey, TValue>> node)
+        {
+            if (node == null)
+            {
+                return false;
+            }
+            return m_List == node.List;
         }
 
         public void Add(TKey orderKey, TValue item) => Add(new KeyValueEntry<TKey, TValue>(orderKey, item));

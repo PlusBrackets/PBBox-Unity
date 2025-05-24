@@ -71,9 +71,9 @@ namespace PBBox
 
         public static void Attach(ILogicUpdateHandler<Fixed> handler)
         {
-            bool _isNoHandler = s_FixedUpdater.Count == 0;
+            bool isNoHandler = s_FixedUpdater.Count == 0;
             s_FixedUpdater.Attach(handler);
-            if (_isNoHandler && s_FixedUpdater.Count > 0)
+            if (isNoHandler && s_FixedUpdater.Count > 0)
             {
                 SetFixedUpdateEnable(true);
             }
@@ -110,9 +110,9 @@ namespace PBBox
 
         public static void Attach(ILogicUpdateHandler<Late> handler)
         {
-            bool _isNoHandler = s_LateUpdater.Count == 0;
+            bool isNoHandler = s_LateUpdater.Count == 0;
             s_LateUpdater.Attach(handler);
-            if (_isNoHandler && s_LateUpdater.Count > 0)
+            if (isNoHandler && s_LateUpdater.Count > 0)
             {
                 SetLateUpdateEnable(true);
             }

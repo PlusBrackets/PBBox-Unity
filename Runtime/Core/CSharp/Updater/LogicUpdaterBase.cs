@@ -66,16 +66,16 @@ namespace PBBox
         public void UpdateHandlers(float deltaTime)
         {
             IsUpdating = true;
-            for (var _node = m_Handlers.First; _node != null; _node = m_NextHandler)
+            for (var node = m_Handlers.First; node != null; node = m_NextHandler)
             {
-                m_NextHandler = _node.Next;
-                var _updatable = _node.Value.Value;
-                if (_updatable == null || _updatable.CurrentUpdater != this)
+                m_NextHandler = node.Next;
+                var updatable = node.Value.Value;
+                if (updatable == null || updatable.CurrentUpdater != this)
                 {
-                    m_Handlers.Remove(_node);
+                    m_Handlers.Remove(node);
                     continue;
                 }
-                _updatable.OnUpdate(deltaTime);
+                updatable.OnUpdate(deltaTime);
             }
             m_NextHandler = null;
             IsUpdating = false;
@@ -83,13 +83,13 @@ namespace PBBox
 
         public void Clear()
         {
-            for (var _node = m_Handlers.First; _node != null; _node = m_NextHandler)
+            for (var node = m_Handlers.First; node != null; node = m_NextHandler)
             {
-                m_NextHandler = _node.Next;
-                var _updatable = _node.Value.Value;
-                if (_updatable.CurrentUpdater == this)
+                m_NextHandler = node.Next;
+                var updatable = node.Value.Value;
+                if (updatable.CurrentUpdater == this)
                 {
-                    _updatable.CurrentUpdater = null;
+                    updatable.CurrentUpdater = null;
                 }
             }
             m_NextHandler = null;

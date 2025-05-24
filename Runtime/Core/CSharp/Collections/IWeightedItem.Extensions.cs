@@ -57,8 +57,8 @@ namespace PBBox
                 count--;
                 float baseWeights = 0;
                 float rand = RandomUtils.Range(0f, totalWeights);
-                int _index = 0;
-                bool _removeItem = false;
+                int index = 0;
+                bool isRemoveItem = false;
                 foreach (T item in targetTemp)
                 {
                     float w = item.Weights;
@@ -71,17 +71,17 @@ namespace PBBox
                         }
                         else
                         {
-                            _removeItem = true;
+                            isRemoveItem = true;
                             count++;
                             break;
                         }
                     }
-                    _index++;
+                    index++;
                     baseWeights += w;
                 }
-                if ((_removeItem || !canRepeat) && _index < (targetTemp as List<T>).Count)
+                if ((isRemoveItem || !canRepeat) && index < (targetTemp as List<T>).Count)
                 {
-                    (targetTemp as List<T>).RemoveAt(_index);
+                    (targetTemp as List<T>).RemoveAt(index);
                     totalWeights = targetTemp.GetTotalWeight();
                 }
             }

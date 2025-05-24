@@ -45,10 +45,10 @@ namespace PBBox
             reference = reference ?? new T();
             UsingCount++;
 
-            if (reference is IReferencePoolItem __reference)
+            if (reference is IReferencePoolItem poolItem)
             {
-                __reference.IsUsing = true;
-                __reference.OnReferenceAcquire();
+                poolItem.IsUsing = true;
+                poolItem.OnReferenceAcquire();
             }
             return reference;
         }

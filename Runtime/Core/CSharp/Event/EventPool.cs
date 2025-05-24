@@ -6,51 +6,46 @@
 using System;
 using System.Collections.Generic;
 using PBBox.Collections;
-using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace PBBox
 {
 
     /// <summary>
     /// 事件处理器
-    /// 如果要OnLate方法生效，调用Update方法来触发Later事件，否则请关闭Later事件
     /// </summary>
-    public sealed partial class EventPool : IReferencePoolItem
+    [SingletonPriority(1)]
+    public sealed partial class EventPool : IReferencePoolItem, IEventManager, ISingletonLifecycle, ILogicUpdateHandler<LogicUpdater.Default>
     {
-        private readonly Dictionary<int, EventCollections> m_EventHandlerDict;
-        private readonly Queue<Event> m_EventQueue;
+        private readonly Dictionary<int, EventCollections> m_EventHandlerDict = new Dictionary<int, EventCollections>();
+        private readonly Queue<Event> m_EventQueue = new Queue<Event>();
+
         /// <summary>
-        /// 下一个要触发的EventHandler的链表节点，用于解决遍历EventHandler链表时移除节点的一些问题。
+        /// 事件触发上下文栈，用于在触发事件时记录当前处理的节点
         /// </summary>
-        private readonly Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>> m_NextTriggerHandlers;
+        private readonly Stack<EventTriggerContext> m_EventTriggerContextStack = new Stack<EventTriggerContext>();
+        private ReferenceCache<EventTriggerContext> m_EventTriggerContextStackReferencePool = new ReferenceCache<EventTriggerContext>();
+
         /// <summary>
-        /// 是否启用LateEvent，默认启用，如果不需要使用LateEvent，请关闭它，否则会堆积Event对象
+        /// 记录每个事件ID的LateListener数量，用于判断是否需要触发Later事件
         /// </summary>
-        public bool EnableLateEvent { get; set; } = true;
+        private Lazy<Dictionary<int, int>> m_LaterListenerCountDict = new Lazy<Dictionary<int, int>>();
 
         bool IReferencePoolItem.IsUsing { get; set; } = true;
         public bool IsUsing => ((IReferencePoolItem)this).IsUsing;
 
+        LogicUpdater.Default ILogicUpdateHandler<LogicUpdater.Default>.CurrentUpdater { get; set; }
+        int ILogicUpdateHandler<LogicUpdater.Default>.SortedOrder => 0;
+
         public EventPool()
         {
-            m_EventHandlerDict = new Dictionary<int, EventCollections>();
-            m_EventQueue = new Queue<Event>();
-            m_NextTriggerHandlers = new Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>>();
+            
         }
 
-        public EventPool(bool enableLateEvent)
-        {
-            m_EventHandlerDict = new Dictionary<int, EventCollections>();
-            m_EventQueue = new Queue<Event>();
-            m_NextTriggerHandlers = new Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>>();
-            EnableLateEvent = enableLateEvent;
-        }
-
+        /// <summary>
+        /// 如果需要使用LateEvent，请在Update方法中调用此方法来触发Later事件。
+        /// </summary>
         public void Update()
         {
-            if (!EnableLateEvent)
-                return;
             if (m_EventQueue.Count == 0)
                 return;
 #if PB_THREAD_SAFE
@@ -72,27 +67,41 @@ namespace PBBox
         {
             if (m_EventHandlerDict.TryGetValue(e.EventId, out var collections))
             {
-                var curListenerNode = collections.GetValue(isLateEvent)?.First;
+                var eventList = collections.GetValue(isLateEvent);
+                var curListenerNode = eventList?.First;
                 if (curListenerNode == null)
                 {
                     return;
                 }
+
                 bool keepSending = true;//若Handler返回false时，终止传递事件
-                
+                var context = m_EventTriggerContextStackReferencePool.Acquire();
+                m_EventTriggerContextStack.Push(context);
+
                 while (curListenerNode != null && keepSending)
                 {
-                    m_NextTriggerHandlers[e] = curListenerNode.Next;
+                    context.currentNode = curListenerNode;
+                    //m_NextTriggerHandlers[e] = curListenerNode.Next;
                     keepSending = e.Dispatch(curListenerNode.Value.Value);
 
-                    curListenerNode = m_NextTriggerHandlers[e];
+                    if (context.currentNode == null)
+                    {
+                        curListenerNode = eventList.First;
+                    }
+                    else
+                    {
+                        curListenerNode = context.currentNode.Next;
+                    }
+                    //curListenerNode = m_NextTriggerHandlers[e];
                 }
-                m_NextTriggerHandlers.Remove(e);
+                m_EventTriggerContextStack.Pop();
+                //m_NextTriggerHandlers.Remove(e);
             }
         }
 
         private void EnqueueEvent(Event e)
         {
-            if (!EnableLateEvent)
+            if (false == (m_LaterListenerCountDict.IsValueCreated && m_LaterListenerCountDict.Value.TryGetValue(e.EventId, out var count) && count > 0))
             {
                 e.Release();
                 return;
@@ -107,13 +116,8 @@ namespace PBBox
 #endif
         }
 
-        private Subscription SubscribeImpl(int eventId, Delegate listener, int order, bool isLateEvent)
+        private EventSubscription SubscribeImpl(int eventId, Delegate listener, int order, bool isLateEvent)
         {
-            if(isLateEvent && !EnableLateEvent)
-            {
-                Log.Error($"This event is late event, but the late event is disabled, please enable it. EventId: {eventId}", "EventPool", Log.PBBoxLoggerName);
-                return default;
-            }
             //TODO 未进行线程保护
             if (!m_EventHandlerDict.TryGetValue(eventId, out var collections))
             {
@@ -122,11 +126,17 @@ namespace PBBox
             }
             //var eventList = isLateEvent ? collections.m_LateEvents : collections.m_Events;
             //eventList.AcquiredValue.Add(order, listener);
-            collections.AcquireValue(isLateEvent).Add(order, listener);
+            var eventList = collections.AcquireValue(isLateEvent);
+            eventList.Add(order, listener);
+            if (isLateEvent)
+            {
+                m_LaterListenerCountDict.Value[eventId] = eventList.Count;
+            }
             //Log.Debug(eventId + " eventList created: " + eventList.IsCreated);
-            return new Subscription(this, eventId, listener, order, isLateEvent);
+            return new EventSubscription(this, eventId, listener, order, isLateEvent);
         }
 
+        //TODO 进行事件触发时取消订阅的测试
         private void UnsubscribeImpl(int eventId, Delegate listener, int order, bool isLateEvent)
         {
             if (m_EventHandlerDict.TryGetValue(eventId, out var collections))
@@ -137,44 +147,32 @@ namespace PBBox
                 {
                     return;
                 }
-                //如果有正准备触发的handler
-                if (m_NextTriggerHandlers.Count > 0)
+                if (m_EventTriggerContextStack.Count > 0)
                 {
-                    //TODO 尝试优化，使用当前正在触发的Node来判断
-                    Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>> temp = null;
-                    foreach (var kvp in m_NextTriggerHandlers)
+                    //正在触发事件
+                    var targetNode = eventList.GetNode(order, listener);
+                    if (targetNode == null)
                     {
-                        //检测正准备触发的handler是否和要移除的handler相同
-                        if (kvp.Key.EventId == eventId && kvp.Value != null && kvp.Value.Value.Value == listener)
+                        return;
+                    }
+                    foreach (var context in m_EventTriggerContextStack)
+                    {
+                        if (context.currentNode == targetNode)
                         {
-                            //有则将next存在temp中
-                            if (temp == null)
-                            {
-                                temp = ReferencePool.Acquire<Dictionary<Event, LinkedListNode<KeyValueEntry<int, Delegate>>>>();
-                            }
-                            temp[kvp.Key] = kvp.Value.Next;
+                            context.currentNode = targetNode.Previous;
                         }
                     }
-                    //移除handler
-                    eventList.Remove(order, listener);
-                    if (temp != null && temp.Count > 0)
-                    {
-                        foreach (var kvp in temp)
-                        {
-                            //如果下次触发的handler正好被移除，则设置为temp中的值
-                            if (m_NextTriggerHandlers[kvp.Key].List == null)
-                            {
-                                m_NextTriggerHandlers[kvp.Key] = kvp.Value;
-                            }
-                        }
-                        temp.Clear();
-                        ReferencePool.Release(temp);
-                    }
-
+                    eventList.Remove(targetNode);
                 }
                 else
                 {
                     eventList.Remove(order, listener);
+                }
+                m_LaterListenerCountDict.Value[eventId] = eventList.Count;
+                if (eventList.Count == 0)
+                {
+                    collections.ReleaseValue(isLateEvent);
+                    m_EventHandlerDict.Remove(eventId);
                 }
             }
         }
@@ -201,7 +199,9 @@ namespace PBBox
 
         public void Clear()
         {
-            m_NextTriggerHandlers.Clear();
+            //m_NextTriggerHandlers.Clear();
+            m_EventTriggerContextStackReferencePool.Clear();
+            m_EventTriggerContextStack.Clear();
             foreach (var kvp in m_EventHandlerDict)
             {
                 kvp.Value.Clear();
@@ -219,7 +219,7 @@ namespace PBBox
         {
             Clear();
         }
-        
+
         /// <summary>
         /// 从字符串中获取事件ID
         /// </summary>
@@ -239,6 +239,22 @@ namespace PBBox
                 }
                 return hash;
             }
+        }
+
+        void ISingletonLifecycle.OnCreateAsSingleton()
+        {
+            LogicUpdater.Attach(this);
+        }
+
+        void ISingletonLifecycle.OnDestroyAsSingleton()
+        {
+            LogicUpdater.Detach(this, true);
+            Clear();
+        }
+
+        void ILogicUpdateHandler<LogicUpdater.Default>.OnUpdate(float deltaTime)
+        {
+            Update();
         }
     }
 }
