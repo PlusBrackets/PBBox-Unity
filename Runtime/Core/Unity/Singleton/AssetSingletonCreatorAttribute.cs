@@ -27,18 +27,18 @@ namespace PBBox
 
         public override T CreateInstance<T>(Type instanceType)
         {
-            T _asset = null;
+            T asset = null;
             if (!string.IsNullOrEmpty(LoadFromResourcesPath))
             {
-                _asset = Resources.Load(LoadFromResourcesPath, instanceType) as T;
+                asset = Resources.Load(LoadFromResourcesPath, instanceType) as T;
             }
             else if (!string.IsNullOrEmpty(LoadFromAddressableKey))
             {
                 //Log.Debug($"Load AssetSingleton from Addressable:{LoadFromAddressableKey} Start.");
-                _asset = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<T>(LoadFromAddressableKey).WaitForCompletion();
+                asset = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<T>(LoadFromAddressableKey).WaitForCompletion();
                 //Log.Debug($"Load AssetSingleton from Addressable:{LoadFromAddressableKey} Done.");
             }
-            return _asset;
+            return asset;
         }
     }
 }

@@ -137,9 +137,9 @@ namespace PBBox
         public static bool HasInstance()
         {
 #if UNITY_5_3_OR_NEWER
-            if (s_Instance is UnityEngine.Object __instance)
+            if (s_Instance is UnityEngine.Object uObj)
             {
-                return __instance != null;
+                return uObj != null;
             }
 #endif
             return s_Instance != null;
@@ -179,9 +179,9 @@ namespace PBBox
                 }
                 if (s_Instance != null)
                 {
-                    if (s_Instance is ISingletonLifecycle __instance)
+                    if (s_Instance is ISingletonLifecycle lifecycle)
                     {
-                        __instance.OnCreateAsSingleton();
+                        lifecycle.OnCreateAsSingleton();
                     }
                     OnCreateEvent?.Invoke();
                 }
@@ -197,9 +197,9 @@ namespace PBBox
             {
                 if (HasInstance())
                 {
-                    if (s_Instance is ISingletonLifecycle __instance)
+                    if (s_Instance is ISingletonLifecycle lifecycle)
                     {
-                        __instance.OnDestroyAsSingleton();
+                        lifecycle.OnDestroyAsSingleton();
                     }
                     OnDestroyEvent?.Invoke();
                     if (s_InstanceType.IsDefined(typeof(CustomSingletonDestroyerAttribute), false))
@@ -233,9 +233,9 @@ namespace PBBox
                 s_Instance = newInstance;
                 if (s_Instance != null)
                 {
-                    if (s_Instance is ISingletonLifecycle __instance)
+                    if (s_Instance is ISingletonLifecycle lifecycle)
                     {
-                        __instance.OnCreateAsSingleton();
+                        lifecycle.OnCreateAsSingleton();
                     }
                     OnCreateEvent?.Invoke();
                 }

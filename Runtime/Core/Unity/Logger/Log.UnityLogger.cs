@@ -66,10 +66,10 @@ namespace PBBox
             {
                 lock(s_MessageBuilder)
                 {
-                    var _msgBuilder = s_MessageBuilder.Value;
+                    var msgBuilder = s_MessageBuilder.Value;
                     if (!string.IsNullOrEmpty(Name))
                     {
-                        _msgBuilder
+                        msgBuilder
 #if UNITY_EDITOR
                             .Append("<color=#").Append(m_NameColorString).Append(">")
 #endif
@@ -82,7 +82,7 @@ namespace PBBox
                     }
                     if (!string.IsNullOrEmpty(tag))
                     {
-                        _msgBuilder
+                        msgBuilder
 #if UNITY_EDITOR
                             .Append("<color=#").Append(m_TagColorString).Append(">")
 #endif
@@ -96,7 +96,7 @@ namespace PBBox
                     switch (level)
                     {
                         case 0:
-                            _msgBuilder
+                            msgBuilder
 #if UNITY_EDITOR
                                 .Append("<color=#808080>[DEBUG] </color>")
 #else
@@ -112,16 +112,12 @@ namespace PBBox
 // #endif
                             break;
                         case 1:
-                            _msgBuilder
+                            msgBuilder
                                 .Append("[INFO] ")
                                 .Append(message);
-                            // if (_msgBuilder.Length != 0)
-                            // {
-                            //     _msgBuilder.Append(message);
-                            // }
                             break;
                         case 2:
-                            _msgBuilder
+                            msgBuilder
 #if UNITY_EDITOR
                                 .Append("<color=#ffaa00>[WARNING] </color>")
 #else
@@ -130,7 +126,7 @@ namespace PBBox
                                 .Append(message);
                             break;
                         case 3:
-                            _msgBuilder
+                            msgBuilder
 #if UNITY_EDITOR
                                 .Append("<color=#ff0000>[ERROR] </color>")
 #else

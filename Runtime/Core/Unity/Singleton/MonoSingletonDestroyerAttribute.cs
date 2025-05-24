@@ -16,11 +16,11 @@ namespace PBBox
     {
         public override void DestroyInstance<T>(T instance)
         {
-            if (instance != null && instance is Component _instance)
+            if (instance != null && instance is Component component)
             {
-                if (_instance != null && _instance.gameObject != null)
+                if (component != null && component.gameObject != null)
                 {
-                    GameObject.Destroy(_instance.gameObject);
+                    GameObject.Destroy(component.gameObject);
                 }
             }
         }

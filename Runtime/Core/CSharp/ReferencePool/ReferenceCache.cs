@@ -30,27 +30,27 @@ namespace PBBox
                     Log.PBBoxLoggerName);
             }
 
-            T _reference = null;
-#if !PB_THREAD_UNSAFE
+            T reference = null;
+#if PB_THREAD_SAFE
             lock (m_References)
             {
 #endif
                 if (m_References.Count > 0)
                 {
-                    _reference = m_References.Dequeue() as T;
+                    reference = m_References.Dequeue() as T;
                 }
-#if !PB_THREAD_UNSAFE
+#if PB_THREAD_SAFE
             }
 #endif
-            _reference = _reference ?? new T();
+            reference = reference ?? new T();
             UsingCount++;
 
-            if (_reference is IReferencePoolItem __reference)
+            if (reference is IReferencePoolItem __reference)
             {
                 __reference.IsUsing = true;
                 __reference.OnReferenceAcquire();
             }
-            return _reference;
+            return reference;
         }
 
         protected override TContent CreateInstanceFromContentType()

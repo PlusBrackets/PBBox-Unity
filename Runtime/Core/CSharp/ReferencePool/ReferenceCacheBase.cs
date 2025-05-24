@@ -28,44 +28,44 @@ namespace PBBox
 
         protected void TryCallPoolItemAcquire(TContent reference)
         {
-            if (reference is IReferencePoolItem _reference)
+            if (reference is IReferencePoolItem poolItem)
             {
-                _reference.IsUsing = true;
-                _reference.OnReferenceAcquire();
+                poolItem.IsUsing = true;
+                poolItem.OnReferenceAcquire();
             }
         }
 
         protected void TryCallPoolItemRelease(TContent reference){
-            if (reference is IReferencePoolItem _reference)
+            if (reference is IReferencePoolItem poolItem)
             {
-                _reference.IsUsing = false;
-                _reference.OnReferenceRelease();
+                poolItem.IsUsing = false;
+                poolItem.OnReferenceRelease();
             }
         }
 
         object IReferenceCacheBase.Acquire()
         {
-            TContent _reference = null;
-#if !PB_THREAD_UNSAFE
+            TContent reference = null;
+#if PB_THREAD_SAFE
             //加锁会消耗性能，使用宏定义判定是否需要保持线程安全
             lock (m_References)
             {
 #endif
                 if (m_References.Count > 0)
                 {
-                    _reference = m_References.Dequeue();
+                    reference = m_References.Dequeue();
                 }
-#if !PB_THREAD_UNSAFE
+#if PB_THREAD_SAFE
             }
 #endif
-            _reference = _reference ?? CreateInstanceFromContentType();
-            if (_reference == null)
+            reference = reference ?? CreateInstanceFromContentType();
+            if (reference == null)
             {
                 return null;
             }
             UsingCount++;
-            TryCallPoolItemAcquire(_reference);
-            return _reference;
+            TryCallPoolItemAcquire(reference);
+            return reference;
         }
 
         public TContent Acquire() => (TContent)((IReferenceCacheBase)this).Acquire();
@@ -80,7 +80,7 @@ namespace PBBox
                     Log.PBBoxLoggerName);
             }
             TryCallPoolItemRelease(reference);
-#if !PB_THREAD_UNSAFE
+#if PB_THREAD_SAFE
             lock (m_References)
             {
 #endif
@@ -90,7 +90,7 @@ namespace PBBox
                     return;
                 }
             m_References.Enqueue(reference);
-#if !PB_THREAD_UNSAFE
+#if PB_THREAD_SAFE
             }
 #endif
             UsingCount--;
@@ -98,9 +98,9 @@ namespace PBBox
 
         void IReferenceCacheBase.Release(object reference)
         {
-            if (reference is TContent _reference)
+            if (reference is TContent content)
             {
-                this.Release(_reference);
+                this.Release(content);
             }
             else
             {

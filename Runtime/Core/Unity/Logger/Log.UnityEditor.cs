@@ -9,6 +9,8 @@ using System;
 using UnityEngine;
 #if UNITY_EDITOR 
 using UnityEditor;
+using UnityEditor.Build;
+
 #if !UNITY_2022_1_OR_NEWER || UNITY_6000_0_OR_NEWER
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -32,24 +34,43 @@ namespace PBBox
         private const string STR_MENU_LOG_LEVEL_3 = "Tools/PBBox/Debug/Logging/Lv3 Error Only";
         private const string STR_MENU_LOG_IN_EDITOR = "Tools/PBBox/Debug/Logging/Log Level In Editory";
 
+        private static string[] GetDefineSymbols()
+        {
+#if UNITY_6000_0_OR_NEWER
+            PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), out var defines);
+#else
+            PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, out var defines);
+#endif
+            return defines;
+        }
+
+        private static void SetDefineSymbols(string[] defines)
+        {
+#if UNITY_6000_0_OR_NEWER
+            PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), defines);
+#else
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, defines);
+#endif
+        }
+
         [InitializeOnLoadMethod]
         private static void InitDefineSymbols()
         {
-            PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, out var defines);
-            bool _initedLogLevelDefine = false;
+            var defines = GetDefineSymbols();
+            bool initedLogLevelDefine = false;
             foreach (var s in s_LogLevelDefineSymbols)
             {
                 if (Array.IndexOf<string>(defines, s) >= 0)
                 {
-                    _initedLogLevelDefine = true;
+                    initedLogLevelDefine = true;
                     break;
                 }
             }
-            if (!_initedLogLevelDefine)
+            if (!initedLogLevelDefine)
             {
                 Array.Resize(ref defines, defines.Length + 1);
                 defines[defines.Length - 1] = s_LogLevelDefineSymbols[0];
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, defines);
+                SetDefineSymbols(defines);
             }
         }
 
@@ -58,18 +79,18 @@ namespace PBBox
         /// </summary>
         private static void SwitchLogInReleaseDefine()
         {
-            PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, out var defines);
-            List<string> _temps = new List<string>(defines);
-            int _idx = _temps.IndexOf(s_LogLevelReleaseOnlyDefineSymbol);
-            if (_idx >= 0)
+            var defines = GetDefineSymbols();
+            List<string> temps = new List<string>(defines);
+            int idx = temps.IndexOf(s_LogLevelReleaseOnlyDefineSymbol);
+            if (idx >= 0)
             {
-                _temps.RemoveAt(_idx);
+                temps.RemoveAt(idx);
             }
             else
             {
-                _temps.Add(s_LogLevelReleaseOnlyDefineSymbol);
+                temps.Add(s_LogLevelReleaseOnlyDefineSymbol);
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, _temps.ToArray());
+            SetDefineSymbols(temps.ToArray());
         }
 
         /// <summary>
@@ -78,35 +99,35 @@ namespace PBBox
         /// <param name="level"></param>
         private static void SetLogLevelDefine(int level)
         {
-            PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, out var defines);
-            List<string> _temps = new List<string>(defines);
-            bool _isSet = false;
-            for (int i = _temps.Count - 1; i >= 0; i--)
+            var defines = GetDefineSymbols();
+            List<string> temps = new List<string>(defines);
+            bool isSet = false;
+            for (int i = temps.Count - 1; i >= 0; i--)
             {
-                if (Array.IndexOf<string>(s_LogLevelDefineSymbols, _temps[i]) >= 0)
+                if (Array.IndexOf<string>(s_LogLevelDefineSymbols, temps[i]) >= 0)
                 {
-                    if (!_isSet)
+                    if (!isSet)
                     {
-                        _temps[i] = s_LogLevelDefineSymbols[level];
-                        _isSet = true;
+                        temps[i] = s_LogLevelDefineSymbols[level];
+                        isSet = true;
                     }
                     else
                     {
-                        _temps.RemoveAt(i);
+                        temps.RemoveAt(i);
                     }
                 }
             }
-            if (!_isSet)
+            if (!isSet)
             {
-                _temps.Add(s_LogLevelDefineSymbols[level]);
+                temps.Add(s_LogLevelDefineSymbols[level]);
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, _temps.ToArray());
+            SetDefineSymbols(temps.ToArray());
         }
 
         [MenuItem(STR_MENU_LOG_LEVEL_0, true)]
         private static bool InitLoggingMenuStates()
         {
-            PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, out var symbols);
+            var symbols = GetDefineSymbols();
             Menu.SetChecked(STR_MENU_LOG_IN_EDITOR, Array.IndexOf<string>(symbols, s_LogLevelReleaseOnlyDefineSymbol) >= 0);
             Menu.SetChecked(STR_MENU_LOG_LEVEL_0, Array.IndexOf<string>(symbols, s_LogLevelDefineSymbols[0]) >= 0);
             Menu.SetChecked(STR_MENU_LOG_LEVEL_1, Array.IndexOf<string>(symbols, s_LogLevelDefineSymbols[1]) >= 0);
@@ -158,35 +179,35 @@ namespace PBBox
         [UnityEditor.Callbacks.OnOpenAsset(-1)]
         private static bool OnOpenAsset(int instance, int line)
         {
-            string _checkPath = AssetDatabase.GetAssetPath(EditorUtility.InstanceIDToObject(instance));
-            if (!_checkPath.Contains("/Log."))
+            string checkPath = AssetDatabase.GetAssetPath(EditorUtility.InstanceIDToObject(instance));
+            if (!checkPath.Contains("/Log."))
             {
                 return false;
             }
 
-            string _strStackTrace = GetStackTrace();
-            if (string.IsNullOrEmpty(_strStackTrace) || !_strStackTrace.Contains(typeof(Log).FullName + ":"))
+            string strStackTrace = GetStackTrace();
+            if (string.IsNullOrEmpty(strStackTrace) || !strStackTrace.Contains(typeof(Log).FullName + ":"))
             {
                 return false;
             }
-            var _removeIndex = _strStackTrace.LastIndexOf(typeof(Log).FullName + ":");
-            _strStackTrace = _strStackTrace.Remove(0, _removeIndex);
-            _strStackTrace = _strStackTrace.Remove(0, _strStackTrace.IndexOf("\n") + 1);
+            var _removeIndex = strStackTrace.LastIndexOf(typeof(Log).FullName + ":");
+            strStackTrace = strStackTrace.Remove(0, _removeIndex);
+            strStackTrace = strStackTrace.Remove(0, strStackTrace.IndexOf("\n") + 1);
 
-            Match _matches = Regex.Match(_strStackTrace, @"\(at (.+):(\d+)\)", RegexOptions.IgnoreCase);
-            while (_matches.Success)
+            Match matches = Regex.Match(strStackTrace, @"\(at (.+):(\d+)\)", RegexOptions.IgnoreCase);
+            while (matches.Success)
             {
-                var path = Path.Combine(Application.dataPath.Remove(Application.dataPath.LastIndexOf("Assets")), _matches.Groups[1].Value);
-                if (!int.TryParse(_matches.Groups[2].Value, out int _tempLine))
+                var path = Path.Combine(Application.dataPath.Remove(Application.dataPath.LastIndexOf("Assets")), matches.Groups[1].Value);
+                if (!int.TryParse(matches.Groups[2].Value, out int tempLine))
                 {
-                    _tempLine = 0;
+                    tempLine = 0;
                 }
-                line = _tempLine;
+                line = tempLine;
                 if (UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(Path.GetFullPath(path), line))
                 {
                     break;
                 }
-                _matches = _matches.NextMatch();
+                matches = matches.NextMatch();
             }
             return true;
         }
@@ -199,15 +220,15 @@ namespace PBBox
         /// <returns></returns>
         private static string GetStackTrace()
         {
-            var _typeConsoleWindow = typeof(EditorWindow).Assembly.GetType("UnityEditor.ConsoleWindow");
-            var _fieldInfo = _typeConsoleWindow.GetField("ms_ConsoleWindow", BindingFlags.Static | BindingFlags.NonPublic);
-            var _consoleWindowInstance = _fieldInfo.GetValue(null);
-            if (_consoleWindowInstance != null)
+            var typeConsoleWindow = typeof(EditorWindow).Assembly.GetType("UnityEditor.ConsoleWindow");
+            var fieldInfo = typeConsoleWindow.GetField("ms_ConsoleWindow", BindingFlags.Static | BindingFlags.NonPublic);
+            var consoleWindowInstance = fieldInfo.GetValue(null);
+            if (consoleWindowInstance != null)
             {
-                if ((object)EditorWindow.focusedWindow == _consoleWindowInstance)
+                if ((object)EditorWindow.focusedWindow == consoleWindowInstance)
                 {
-                    _fieldInfo = _typeConsoleWindow.GetField("m_ActiveText", BindingFlags.Instance | BindingFlags.NonPublic);
-                    return _fieldInfo.GetValue(_consoleWindowInstance).ToString();
+                    fieldInfo = typeConsoleWindow.GetField("m_ActiveText", BindingFlags.Instance | BindingFlags.NonPublic);
+                    return fieldInfo.GetValue(consoleWindowInstance).ToString();
                 }
             }
             return null;

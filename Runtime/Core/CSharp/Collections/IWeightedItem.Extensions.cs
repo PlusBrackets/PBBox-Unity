@@ -43,10 +43,10 @@ namespace PBBox
         public static List<T> GetRandomWeightedItems<T>(this IEnumerable<T> target, int count, bool canRepeat = true, float totalWeights = -1, System.Func<T, bool> filter = null) where T : IWeightedItem
         {
             List<T> items = new List<T>();
-            var _target = target;
+            var targetTemp = target;
             if (!canRepeat || filter != null)
             {
-                _target = new List<T>(target);
+                targetTemp = new List<T>(target);
             }
             if (totalWeights < 0)
             {
@@ -59,7 +59,7 @@ namespace PBBox
                 float rand = RandomUtils.Range(0f, totalWeights);
                 int _index = 0;
                 bool _removeItem = false;
-                foreach (T item in _target)
+                foreach (T item in targetTemp)
                 {
                     float w = item.Weights;
                     if (w + baseWeights >= rand)
@@ -79,10 +79,10 @@ namespace PBBox
                     _index++;
                     baseWeights += w;
                 }
-                if ((_removeItem || !canRepeat) && _index < (_target as List<T>).Count)
+                if ((_removeItem || !canRepeat) && _index < (targetTemp as List<T>).Count)
                 {
-                    (_target as List<T>).RemoveAt(_index);
-                    totalWeights = _target.GetTotalWeight();
+                    (targetTemp as List<T>).RemoveAt(_index);
+                    totalWeights = targetTemp.GetTotalWeight();
                 }
             }
             return items;
@@ -116,15 +116,15 @@ namespace PBBox
         public static List<int> GetRandomWeightedIndexs(this IList<float> target, int count = 1, bool canRepeat = true, float totalWeights = -1)
         {
             List<int> indexs = new List<int>();
-            var _target = target;
+            var targetTemp = target;
             if (!canRepeat)
             {
-                _target = new List<float>(target);
+                targetTemp = new List<float>(target);
             }
             if (totalWeights < 0)
             {
                 totalWeights = 0;
-                foreach (float f in _target)
+                foreach (float f in targetTemp)
                 {
                     totalWeights += f;
                 }
@@ -134,23 +134,23 @@ namespace PBBox
                 count--;
                 float baseWeights = 0;
                 float rand = RandomUtils.Range(0f, totalWeights);
-                int _index = 0;
-                foreach (float item in _target)
+                int index = 0;
+                foreach (float item in targetTemp)
                 {
                     float w = item;
                     if (w + baseWeights >= rand)
                     {
-                        indexs.Add(_index);
+                        indexs.Add(index);
                         break;
                     }
-                    _index++;
+                    index++;
                     baseWeights += w;
                 }
-                if (!canRepeat && _index < _target.Count)
+                if (!canRepeat && index < targetTemp.Count)
                 {
-                    _target[_index] = 0;
+                    targetTemp[index] = 0;
                     totalWeights = 0;
-                    foreach (float f in _target)
+                    foreach (float f in targetTemp)
                     {
                         totalWeights += f;
                     }

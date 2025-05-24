@@ -38,50 +38,50 @@ namespace PBBox
             {
                 return;
             }
-            var _type = reference.GetType();
-            CheckTypeLegality(_type);
-            GetCache(_type).Release(reference);
+            var type = reference.GetType();
+            CheckTypeLegality(type);
+            GetCache(type).Release(reference);
         }
 
         public static IReferenceCache GetCache<T>() where T : class, new()
         {
-            IReferenceCache _collection = null;
-            var _type = typeof(T);
+            IReferenceCache collection = null;
+            var type = typeof(T);
 
-#if !PB_THREAD_UNSAFE
+#if PB_THREAD_SAFE
             lock (s_Caches)
             {
 #endif
-                if (!s_Caches.TryGetValue(_type, out _collection))
+                if (!s_Caches.TryGetValue(type, out collection))
                 {
-                    _collection = new ReferenceCache<T>();
-                    s_Caches.Add(_type, _collection);
+                    collection = new ReferenceCache<T>();
+                    s_Caches.Add(type, collection);
                 }
 
-#if !PB_THREAD_UNSAFE
+#if PB_THREAD_SAFE
             }
 #endif
-            return _collection;
+            return collection;
         }
 
         public static IReferenceCache GetCache(Type type)
         {
-            IReferenceCache _collection = null;
+            IReferenceCache cache = null;
 
-#if !PB_THREAD_UNSAFE
+#if PB_THREAD_SAFE
             lock (s_Caches)
             {
 #endif
-                if (!s_Caches.TryGetValue(type, out _collection))
+                if (!s_Caches.TryGetValue(type, out cache))
                 {
-                    _collection = new ReferenceCache<object>(type);
-                    s_Caches.Add(type, _collection);
+                    cache = new ReferenceCache<object>(type);
+                    s_Caches.Add(type, cache);
                 }
 
-#if !PB_THREAD_UNSAFE
+#if PB_THREAD_SAFE
             }
 #endif
-            return _collection;
+            return cache;
         }
 
         public static void PreCreate<T>(int count) where T : class, new()
@@ -99,9 +99,9 @@ namespace PBBox
         {
             lock (s_Caches)
             {
-                if (s_Caches.TryGetValue(referenceType, out var _collection))
+                if (s_Caches.TryGetValue(referenceType, out var cache))
                 {
-                    _collection.Remove(count);
+                    cache.Remove(count);
                 }
             }
         }
@@ -110,9 +110,9 @@ namespace PBBox
         {
             lock (s_Caches)
             {
-                if (s_Caches.TryGetValue(referenceType, out var _collection))
+                if (s_Caches.TryGetValue(referenceType, out var cache))
                 {
-                    _collection.Remove(_collection.CachedCount - size);
+                    cache.Remove(cache.CachedCount - size);
                 }
             }
         }
@@ -121,9 +121,9 @@ namespace PBBox
         {
             lock (s_Caches)
             {
-                if (s_Caches.TryGetValue(referenceType, out var _collection))
+                if (s_Caches.TryGetValue(referenceType, out var cache))
                 {
-                    _collection.Clear();
+                    cache.Clear();
                 }
             }
         }

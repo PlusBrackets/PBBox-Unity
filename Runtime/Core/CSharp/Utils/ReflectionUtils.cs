@@ -197,7 +197,7 @@ namespace PBBox
             if (domain == null)
                 domain = AppDomain.CurrentDomain;
             IEnumerable<Type> result = null;
-            var _allTypes = domain
+            var allTypes = domain
                 .GetAssemblies()
                 .Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                 .SelectMany(a => a.GetTypes());
@@ -205,18 +205,18 @@ namespace PBBox
             {
                 if (target.IsSubclassOf(typeof(System.Attribute)))
                 {
-                    var _attributeUsage = target.GetCustomAttribute<AttributeUsageAttribute>();
-                    bool _inherited = _attributeUsage != null ? _attributeUsage.Inherited : false;
-                    result = _allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && t.IsDefined(target, _inherited));
+                    var attributeUsage = target.GetCustomAttribute<AttributeUsageAttribute>();
+                    bool inherited = attributeUsage != null ? attributeUsage.Inherited : false;
+                    result = allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && t.IsDefined(target, inherited));
                 }
                 else
                 {
-                    result = _allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && (t.IsSubclassOf(target) || t == target));
+                    result = allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && (t.IsSubclassOf(target) || t == target));
                 }
             }
             else if (target.IsInterface)
             {
-                result = _allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && target.IsAssignableFrom(t));
+                result = allTypes.Where(t => (includeAbstractClass || !t.IsAbstract) && target.IsAssignableFrom(t));
             }
             return result;
         }

@@ -14,7 +14,6 @@ namespace PBBox
     /// </summary>
     public sealed partial class EventPool<TKey> : IReferencePoolItem
     {
-
         private readonly Dictionary<TKey, SortedMutiLinkedList<Delegate>> m_EventHandlerDict;
         private readonly Queue<Event> m_EventQueue;
         /// <summary>

@@ -46,16 +46,16 @@ namespace PBBox
             {
                 return s_DefaultLogger;
             }
-            ILogger _logger;
+            ILogger logger;
             lock (s_AdditionLoggers)
             {
-                if (!s_AdditionLoggers.Value.TryGetValue(name, out _logger))
+                if (!s_AdditionLoggers.Value.TryGetValue(name, out logger))
                 {
-                    _logger = s_LoggerCreator(name);
-                    s_AdditionLoggers.Value.Add(name, _logger);
+                    logger = s_LoggerCreator(name);
+                    s_AdditionLoggers.Value.Add(name, logger);
                 }
             }
-            return _logger;
+            return logger;
         }
 
         // [Conditional("PB_LOG_LEVEL_EDITOR_USE"), Conditional("UNITY_EDITOR")]
@@ -103,8 +103,8 @@ namespace PBBox
 #endif
         public static void Debug(object message, string tag = null, string loggerName = null)
         {
-            ILogger _logger = GetLogger(loggerName);
-            if (CheckCanLog(_logger, 0)) _logger.LogDebug(_logger.DecoMessage(0, tag, message));
+            ILogger logger = GetLogger(loggerName);
+            if (CheckCanLog(logger, 0)) logger.LogDebug(logger.DecoMessage(0, tag, message));
         }
 
         /// <summary>
@@ -123,8 +123,8 @@ namespace PBBox
 #endif
         public static void Info(object message, string tag = null, string loggerName = null)
         {
-            ILogger _logger = GetLogger(loggerName);
-            if (CheckCanLog(_logger, 1)) _logger.LogInfo(_logger.DecoMessage(1, tag, message));
+            ILogger logger = GetLogger(loggerName);
+            if (CheckCanLog(logger, 1)) logger.LogInfo(logger.DecoMessage(1, tag, message));
         }
 
         /// <summary>
@@ -143,8 +143,8 @@ namespace PBBox
 #endif
         public static void Warning(object message, string tag = null, string loggerName = null)
         {
-            ILogger _logger = GetLogger(loggerName);
-            if (CheckCanLog(_logger, 2)) _logger.LogWarning(_logger.DecoMessage(2, tag, message));
+            ILogger logger = GetLogger(loggerName);
+            if (CheckCanLog(logger, 2)) logger.LogWarning(logger.DecoMessage(2, tag, message));
         }
 
         /// <summary>
@@ -163,8 +163,8 @@ namespace PBBox
 #endif
         public static void Error(object message, string tag = null, string loggerName = null)
         {
-            ILogger _logger = GetLogger(loggerName);
-            if (CheckCanLog(_logger, 3)) _logger.LogError(_logger.DecoMessage(3, tag, message));
+            ILogger logger = GetLogger(loggerName);
+            if (CheckCanLog(logger, 3)) logger.LogError(logger.DecoMessage(3, tag, message));
         }
         #endregion
     }

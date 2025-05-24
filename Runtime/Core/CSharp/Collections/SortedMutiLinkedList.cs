@@ -28,7 +28,7 @@ namespace PBBox.Collections
     /// <para>Key可以相同，不同的Key过多会在插入时造成一定程度的性能问题。遍历性能与LinkedList一致。</para>
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
-    public partial class SortedMutiLinkedList<TKey, TValue> : IEnumerable<TValue>, IEnumerable where TKey : IComparable<TKey>, IEquatable<TKey>
+    public partial class SortedMutiLinkedList<TKey, TValue> : IEnumerable<TValue>, IEnumerable, IReferencePoolItem where TKey : IComparable<TKey>, IEquatable<TKey>
     {
         //节点cache，减少移除添加时的gc
         private readonly Lazy<ReferenceTempCache<LinkedListNode<KeyValueEntry<TKey, TValue>>>> m_NodeCache;
@@ -47,6 +47,8 @@ namespace PBBox.Collections
         public int Count => m_List.Count;
         public int GroupCount => m_SortedGroupList.Count;
 
+        bool IReferencePoolItem.IsUsing { get; set; } = true;
+
         public SortedMutiLinkedList()
         {
             m_GroupLookUp = new Dictionary<TKey, LinkedListNode<Group>>();
@@ -59,29 +61,29 @@ namespace PBBox.Collections
         private LinkedListNode<KeyValueEntry<TKey, TValue>> TryAcquireNode(KeyValueEntry<TKey, TValue> item)
         {
             //从缓存中取LinkedListNode，若无则创建
-            if (!m_NodeCache.IsValueCreated || !m_NodeCache.Value.TryAcquire(out var _node))
+            if (!m_NodeCache.IsValueCreated || !m_NodeCache.Value.TryAcquire(out var node))
             {
-                _node = new LinkedListNode<KeyValueEntry<TKey, TValue>>(item);
+                node = new LinkedListNode<KeyValueEntry<TKey, TValue>>(item);
             }
             else
             {
-                _node.Value = item;
+                node.Value = item;
             }
-            return _node;
+            return node;
         }
 
         private LinkedListNode<Group> TryAcquireGroupNode(Group item)
         {
             //从缓存中取LinkedListNode，若无则创建
-            if (!m_GroupNodeCache.IsValueCreated || !m_GroupNodeCache.Value.TryAcquire(out var _node))
+            if (!m_GroupNodeCache.IsValueCreated || !m_GroupNodeCache.Value.TryAcquire(out var node))
             {
-                _node = new LinkedListNode<Group>(item);
+                node = new LinkedListNode<Group>(item);
             }
             else
             {
-                _node.Value = item;
+                node.Value = item;
             }
-            return _node;
+            return node;
         }
 
         protected virtual bool CheckTravelDirection(TKey orderKey)
@@ -91,60 +93,76 @@ namespace PBBox.Collections
 
         private void InsertNewGroupNode(TKey orderKey, LinkedListNode<KeyValueEntry<TKey, TValue>> newNode)
         {
-            var _newGroupNode = TryAcquireGroupNode(new Group(orderKey, newNode, newNode));
+            var newGroupNode = TryAcquireGroupNode(new Group(orderKey, newNode, newNode));
             //若没有数据，则直接放到第一位
             if (m_SortedGroupList.Count == 0)
             {
                 m_List.AddFirst((LinkedListNode<KeyValueEntry<TKey, TValue>>)newNode);
-                m_SortedGroupList.AddFirst(_newGroupNode);
+                m_SortedGroupList.AddFirst(newGroupNode);
             }
             //判定顺序遍历还是逆序遍历
             else if (CheckTravelDirection(orderKey))
             {
-                for (var _group = m_SortedGroupList.First; _group != null; _group = _group.Next)
+                bool inserted = false;
+                for (var group = m_SortedGroupList.First; group != null; group = group.Next)
                 {
                     //顺序遍历遇到第一个大于order的，把该group加入到其前面
-                    if (Comparer<TKey>.Default.Compare(_group.Value.OrderKey, orderKey) > 0)
+                    if (Comparer<TKey>.Default.Compare(group.Value.OrderKey, orderKey) > 0)
                     {
-                        m_List.AddBefore(_group.Value.Start, newNode);
-                        m_SortedGroupList.AddBefore(_group, _newGroupNode);
+                        m_List.AddBefore(group.Value.Start, newNode);
+                        m_SortedGroupList.AddBefore(group, newGroupNode);
+                        inserted = true;
                         break;
                     }
+                }
+                // 如果没有找到比它大的，则添加到末尾
+                if (!inserted)
+                {
+                    m_List.AddLast(newNode);
+                    m_SortedGroupList.AddLast(newGroupNode);
                 }
             }
             else
             {
-                for (var _group = m_SortedGroupList.Last; _group != null; _group = _group.Previous)
+                bool inserted = false;
+                for (var group = m_SortedGroupList.Last; group != null; group = group.Previous)
                 {
                     //逆序遍历遇到第一个比order小的，把该group加入到其后面
-                    if (Comparer<TKey>.Default.Compare(_group.Value.OrderKey, orderKey) < 0)
+                    if (Comparer<TKey>.Default.Compare(group.Value.OrderKey, orderKey) < 0)
                     {
-                        m_List.AddAfter(_group.Value.End, newNode);
-                        m_SortedGroupList.AddAfter(_group, _newGroupNode);
+                        m_List.AddAfter(group.Value.End, newNode);
+                        m_SortedGroupList.AddAfter(group, newGroupNode);
+                        inserted = true;
                         break;
                     }
                 }
+                // 如果没有找到比它小的，则添加到开头
+                if (!inserted)
+                {
+                    m_List.AddFirst(newNode);
+                    m_SortedGroupList.AddFirst(newGroupNode);
+                }
             }
-            m_GroupLookUp.Add(orderKey, _newGroupNode);
+            m_GroupLookUp.Add(orderKey, newGroupNode);
         }
 
         public LinkedListRange<KeyValueEntry<TKey, TValue>> GetGroup(TKey orderKey)
         {
-            if (m_GroupLookUp.TryGetValue(orderKey, out var _group))
+            if (m_GroupLookUp.TryGetValue(orderKey, out var group))
             {
                 return new LinkedListRange<KeyValueEntry<TKey, TValue>>(
-                    _group.Value.Start,
-                    _group.Value.End,
-                    _group.Value.Count);
+                    group.Value.Start,
+                    group.Value.End,
+                    group.Value.Count);
             }
             return LinkedListRange<KeyValueEntry<TKey, TValue>>.Empty;
         }
 
         public bool Contains(KeyValueEntry<TKey, TValue> orderItem)
         {
-            if (m_GroupLookUp.TryGetValue(orderItem.Key, out var _group))
+            if (m_GroupLookUp.TryGetValue(orderItem.Key, out var group))
             {
-                return _group.Value.GetNode(orderItem) != null;
+                return group.Value.GetNode(orderItem) != null;
             }
             return false;
         }
@@ -158,9 +176,9 @@ namespace PBBox.Collections
 
         public bool ContainsValue(TValue item)
         {
-            for (var _n = First; _n != null; _n = _n.Next)
+            for (var n = First; n != null; n = n.Next)
             {
-                if (EqualityComparer<TValue>.Default.Equals(_n.Value.Value, item))
+                if (EqualityComparer<TValue>.Default.Equals(n.Value.Value, item))
                 {
                     return true;
                 }
@@ -172,16 +190,16 @@ namespace PBBox.Collections
 
         public void Add(KeyValueEntry<TKey, TValue> orderItem)
         {
-            LinkedListNode<Group> _groupNode = null;
-            LinkedListNode<KeyValueEntry<TKey, TValue>> _node = TryAcquireNode(orderItem);
+            LinkedListNode<Group> groupNode;
+            LinkedListNode<KeyValueEntry<TKey, TValue>> node = TryAcquireNode(orderItem);
 
-            if (!m_GroupLookUp.TryGetValue(orderItem.Key, out _groupNode))
+            if (!m_GroupLookUp.TryGetValue(orderItem.Key, out groupNode))
             {
-                InsertNewGroupNode(orderItem.Key, _node);
+                InsertNewGroupNode(orderItem.Key, node);
             }
             else
             {
-                _groupNode.Value = _groupNode.Value.AddNode(_node);
+                groupNode.Value = groupNode.Value.AddNode(node);
             }
         }
 
@@ -202,10 +220,10 @@ namespace PBBox.Collections
         /// <returns></returns>
         public bool Remove(KeyValueEntry<TKey, TValue> orderItem)
         {
-            if (m_GroupLookUp.TryGetValue(orderItem.Key, out var _groupNode))
+            if (m_GroupLookUp.TryGetValue(orderItem.Key, out var groupNode))
             {
-                var _node = _groupNode.Value.GetNode(orderItem);
-                return RemoveInternal(_groupNode, _node);
+                var node = groupNode.Value.GetNode(orderItem);
+                return RemoveInternal(groupNode, node);
             }
             return false;
         }
@@ -218,9 +236,9 @@ namespace PBBox.Collections
         public bool Remove(LinkedListNode<KeyValueEntry<TKey, TValue>> node)
         {
             var orderItem = node.Value;
-            if (m_GroupLookUp.TryGetValue(orderItem.Key, out var _groupNode))
+            if (m_GroupLookUp.TryGetValue(orderItem.Key, out var groupNode))
             {
-                return RemoveInternal(_groupNode, node);
+                return RemoveInternal(groupNode, node);
             }
             return false;
         }
@@ -231,8 +249,8 @@ namespace PBBox.Collections
             {
                 return false;
             }
-            groupNode.Value = groupNode.Value.RemoveNode(node, out var _removedNode);
-            if (_removedNode != null)
+            groupNode.Value = groupNode.Value.RemoveNode(node, out var removedNode);
+            if (removedNode != null)
             {
                 if (groupNode.Value.Count == 0)
                 {
@@ -242,8 +260,8 @@ namespace PBBox.Collections
                     groupNode.Value = default(Group);
                     m_GroupNodeCache.Value.Release(groupNode);
                 }
-                _removedNode.Value = default(KeyValueEntry<TKey, TValue>);
-                m_NodeCache.Value.Release(_removedNode);
+                removedNode.Value = default(KeyValueEntry<TKey, TValue>);
+                m_NodeCache.Value.Release(removedNode);
                 return true;
             }
             return false;
@@ -254,8 +272,14 @@ namespace PBBox.Collections
             m_List.Clear();
             m_SortedGroupList.Clear();
             m_GroupLookUp.Clear();
-            m_NodeCache.Value.Clear();
-            m_GroupNodeCache.Value.Clear();
+            if (m_NodeCache.IsValueCreated)
+            {
+                m_NodeCache.Value.Clear();
+            }
+            if (m_GroupNodeCache.IsValueCreated)
+            {
+                m_GroupNodeCache.Value.Clear();
+            }
         }
 
         public Enumerator GetEnumerator()
@@ -271,6 +295,28 @@ namespace PBBox.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+        void IReferencePoolItem.OnReferenceAcquire()
+        {
+            if(m_List.Count > 0)
+            {
+                throw new Log.FetalErrorException(
+                    "The SortedMutiLinkedList is not empty when acquiring from the reference pool. Please check the code.",
+                    "SortedMutiLinkedList",
+                    Log.PBBoxLoggerName);
+            }
+            Clear();
+        }
+
+        void IReferencePoolItem.OnReferenceRelease()
+        {
+            Clear();
+        }
+
+        public void Release()
+        {
+            ReferencePool.Release(this);
         }
 
         [StructLayout(LayoutKind.Auto)]

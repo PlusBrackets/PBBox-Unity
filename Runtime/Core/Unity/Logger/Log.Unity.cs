@@ -27,9 +27,9 @@ namespace PBBox
         public static void SetNameColor(string loggerName, Color color)
         {
 #if UNITY_EDITOR
-            if (GetLogger(loggerName) is UnityLogger _logger)
+            if (GetLogger(loggerName) is UnityLogger logger)
             {
-                _logger.NameColor = color;
+                logger.NameColor = color;
             }
 #endif
         }
@@ -38,9 +38,9 @@ namespace PBBox
         public static void SetTagColor(string loggerName, Color color)
         {
 #if UNITY_EDITOR
-            if (GetLogger(loggerName) is UnityLogger _logger)
+            if (GetLogger(loggerName) is UnityLogger logger)
             {
-                _logger.TagColor = color;
+                logger.TagColor = color;
             }
 #endif
         }
@@ -56,16 +56,16 @@ namespace PBBox
 #endif
         public static void Debug(object message, UnityEngine.Object context, string tag = null, string loggerName = null)
         {
-            ILogger _logger = GetLogger(loggerName);
-            if (!CheckCanLog(_logger, 0)) return;
-            object deco_msg = _logger.DecoMessage(0, tag, message);
-            if (_logger is UnityLogger __logger)
+            ILogger logger = GetLogger(loggerName);
+            if (!CheckCanLog(logger, 0)) return;
+            object deco_msg = logger.DecoMessage(0, tag, message);
+            if (logger is UnityLogger uLogger)
             {
-                __logger.LogDebugContext(deco_msg, context);
+                uLogger.LogDebugContext(deco_msg, context);
             }
             else
             {
-                _logger.LogDebug(deco_msg);
+                logger.LogDebug(deco_msg);
             }
         }
 
@@ -79,16 +79,16 @@ namespace PBBox
 #endif
         public static void Info(object message, UnityEngine.Object context, string tag = null, string loggerName = null)
         {
-            ILogger _logger = GetLogger(loggerName);
-            if (!CheckCanLog(_logger, 1)) return;
-            object deco_msg = _logger.DecoMessage(0, tag, message);
-            if (_logger is UnityLogger __logger)
+            ILogger logger = GetLogger(loggerName);
+            if (!CheckCanLog(logger, 1)) return;
+            object deco_msg = logger.DecoMessage(0, tag, message);
+            if (logger is UnityLogger uLogger)
             {
-                __logger.LogInfoContext(deco_msg, context);
+                uLogger.LogInfoContext(deco_msg, context);
             }
             else
             {
-                _logger.LogInfo(deco_msg);
+                logger.LogInfo(deco_msg);
             }
         }
 
@@ -102,16 +102,16 @@ namespace PBBox
 #endif
         public static void Warning(object message, UnityEngine.Object context, string tag = null, string loggerName = null)
         {
-            ILogger _logger = GetLogger(loggerName);
-            if (!CheckCanLog(_logger, 2)) return;
-            object deco_msg = _logger.DecoMessage(0, tag, message);
-            if (_logger is UnityLogger __logger)
+            ILogger logger = GetLogger(loggerName);
+            if (!CheckCanLog(logger, 2)) return;
+            object deco_msg = logger.DecoMessage(0, tag, message);
+            if (logger is UnityLogger uLogger)
             {
-                __logger.LogWarningContext(deco_msg, context);
+                uLogger.LogWarningContext(deco_msg, context);
             }
             else
             {
-                _logger.LogWarning(deco_msg);
+                logger.LogWarning(deco_msg);
             }
         }
 
@@ -125,16 +125,16 @@ namespace PBBox
 #endif
         public static void Error(object message, UnityEngine.Object context, string tag = null, string loggerName = null)
         {
-            ILogger _logger = GetLogger(loggerName);
-            if (!CheckCanLog(_logger, 3)) return;
-            object deco_msg = _logger.DecoMessage(0, tag, message);
-            if (_logger is UnityLogger __logger)
+            ILogger logger = GetLogger(loggerName);
+            if (!CheckCanLog(logger, 3)) return;
+            object deco_msg = logger.DecoMessage(0, tag, message);
+            if (logger is UnityLogger uLogger)
             {
-                __logger.LogErrorContext(deco_msg, context);
+                uLogger.LogErrorContext(deco_msg, context);
             }
             else
             {
-                _logger.LogError(deco_msg);
+                logger.LogError(deco_msg);
             }
         }
         #endregion
