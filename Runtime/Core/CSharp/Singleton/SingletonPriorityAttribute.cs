@@ -9,7 +9,7 @@ namespace PBBox
 {
     /// <summary>
     /// 单例优先级特性
-    /// 用于使用接口单例时，自动配置初始具体类型的优先级，不使用时默认为0
+    /// 用于使用接口单例时，自动配置初始具体类型的优先级，不使用时默认为0，越大优先级越高。
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class SingletonPriorityAttribute : System.Attribute

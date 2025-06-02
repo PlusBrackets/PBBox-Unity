@@ -12,7 +12,7 @@ namespace PBBox
     /// </summary>
     public struct EventSubscription : IDisposable
     {
-        private readonly IEventManager m_Manager;
+        private readonly ISubscriptionHandler m_Handler;
         private readonly int m_EventId;
         private readonly Delegate m_Listener;
         private readonly int m_Order;
@@ -20,9 +20,9 @@ namespace PBBox
 
         public int EventId => m_EventId;
 
-        internal EventSubscription(IEventManager handler, int eventId, Delegate listener, int order, bool isLateEvent)
+        internal EventSubscription(ISubscriptionHandler handler, int eventId, Delegate listener, int order, bool isLateEvent)
         {
-            m_Manager = handler;
+            m_Handler = handler;
             m_EventId = eventId;
             m_Listener = listener;
             m_Order = order;
@@ -31,9 +31,9 @@ namespace PBBox
 
         public void Dispose()
         {
-            if (m_Manager != null)
+            if (m_Handler != null)
             {
-                m_Manager.Unsubscripe(m_EventId, m_Listener, m_Order, m_IsLateEvent);
+                m_Handler.Unsubscripe(m_EventId, m_Listener, m_Order, m_IsLateEvent);
             }
         }
     }

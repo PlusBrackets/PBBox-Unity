@@ -12,7 +12,7 @@ namespace PBBox
     /// <summary>
     /// 事件处理器
     /// </summary>
-    public sealed partial class EventPool
+    public sealed partial class EventPool : ISubscriptionHandler
     {
         #region 添加事件监听器
 
@@ -356,9 +356,9 @@ namespace PBBox
         public void Emit<TEventArgs>(string eventName, object sender, TEventArgs args, IReferenceCacheBase releaseEventArgsPool = null)=>
             EmitImpl(GetEventId(eventName), sender, args, releaseEventArgsPool);
 
-        EventSubscription IEventManager.Subscribe(int eventId, Delegate handler, int order, bool isLateEvent) => SubscribeImpl(eventId, handler, order, isLateEvent);
+        EventSubscription ISubscriptionHandler.Subscribe(int eventId, Delegate handler, int order, bool isLateEvent) => SubscribeImpl(eventId, handler, order, isLateEvent);
 
-        void IEventManager.Unsubscripe(int eventId, Delegate listener, int order, bool isLateEvent) => UnsubscribeImpl(eventId, listener, order, isLateEvent);
+        void ISubscriptionHandler.Unsubscripe(int eventId, Delegate listener, int order, bool isLateEvent) => UnsubscribeImpl(eventId, listener, order, isLateEvent);
 
         #endregion
     }

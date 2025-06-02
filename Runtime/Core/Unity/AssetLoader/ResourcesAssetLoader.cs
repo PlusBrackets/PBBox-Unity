@@ -1,0 +1,110 @@
+/*--------------------------------------------------------
+ *Copyright (c) 2016-2025 PlusBrackets
+ *@update: 2025.06.03
+ *@author: PlusBrackets
+ --------------------------------------------------------*/
+using System.Collections.Generic;
+using System.Collections;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEditor;
+
+namespace PBBox
+{
+
+    public class ResourcesAssetLoader : AssetLoaderBase
+    {
+        protected override string LogTag => "ResourcesAssetLoader";
+
+        public ResourcesAssetLoader(string key) : base(key)
+        {
+        }
+
+        protected override TAsset DoLoad<TAsset>()
+        {
+            return Resources.Load(Key, typeof(TAsset)) as TAsset;
+        }
+
+        protected override async Task<TAsset> DoLoadAsync<TAsset>()
+        {
+            var tcs = new TaskCompletionSource<TAsset>();
+            Resources.LoadAsync(Key, typeof(TAsset)).completed += (op) =>
+            {
+                if (op is ResourceRequest request)
+                {
+                    tcs.SetResult(request.asset as TAsset);
+                }
+                else
+                {
+                    tcs.SetException(new System.Exception("Failed to load asset asynchronously."));
+                }
+            };
+            return await tcs.Task;
+        }
+
+        private IList<TAsset> ConvertToList<TAsset>(Object[] array)
+        {
+            if (array == null || array.Length == 0)
+            {
+                return new List<TAsset>();
+            }
+            var list = new List<TAsset>(array.Length);
+            foreach (var item in array)
+            {
+                if (item is TAsset asset)
+                {
+                    list.Add(asset);
+                }
+            }
+            return list;
+        }
+
+        protected override IList<TAsset> DoLoads<TAsset>()
+        {
+            var array = Resources.LoadAll(Key, typeof(TAsset));
+            return ConvertToList<TAsset>(array);
+        }
+
+        protected override Task<IList<TAsset>> DoLoadsAsync<TAsset>()
+        {
+            // Unity's Resources API does not support async loading for multiple assets.
+            var result = DoLoads<TAsset>();
+            return Task.FromResult(result);
+        }
+
+        protected override void OnReleaseAsset()
+        {
+            if (m_Asset != null)
+            {
+                if (m_Asset is Object asset)
+                {
+                    TryUnloadAsset(asset);
+                }
+                else if (m_Asset is IList assetList)
+                {
+                    foreach (var item in assetList)
+                    {
+                        TryUnloadAsset(item);
+                    }
+                }
+            }
+        }
+
+        protected void TryUnloadAsset(object asset)
+        {
+            if (asset is GameObject || asset is Component)
+            {
+                return;
+            }
+            else if (asset is Object unityObject)
+            {
+                Resources.UnloadAsset(unityObject);
+            }
+        }
+        
+        public override bool IsVaild()
+        {
+            return base.IsVaild() && IsVaildUnity();
+        }
+    }
+}
