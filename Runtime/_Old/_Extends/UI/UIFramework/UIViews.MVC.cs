@@ -35,7 +35,7 @@ namespace PBBox.UI
             m_ViewCtrlBindMap = new Dictionary<string, BindTypeInfo>();
             m_ViewCtrls = new Dictionary<int, IUIViewController>();
 
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
             System.Text.StringBuilder logs = new System.Text.StringBuilder();
             logs.AppendLine("");
             var testCost = new System.Diagnostics.Stopwatch();
@@ -53,7 +53,7 @@ namespace PBBox.UI
                 {
                     if (m_ViewCtrlBindMap.TryAdd(a.uiid, new BindTypeInfo() { type = t, attribute = a }))
                     {
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
                         logs.AppendLine($"绑定 UIID[{a.uiid}] <-> ViewCtrl[{t.FullName}]");
 #endif
                         bindCount++;
@@ -64,7 +64,7 @@ namespace PBBox.UI
                     }
                 }
             }
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
             testCost.Stop();
             Log.Debug($"UIViewCtrl绑定结束,已绑定:{bindCount},耗时{testCost.Elapsed.TotalMilliseconds}ms"
                 + logs.ToString(), "UIViews", Log.PBBoxLoggerName);

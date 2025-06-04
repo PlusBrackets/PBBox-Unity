@@ -60,7 +60,9 @@ namespace PBBox
                 return m_Asset as TAsset;
             }
             m_Asset = DoLoad<TAsset>();
+#if PB_TEST_LOG
             Log.Debug($"Asset loaded: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+#endif
             return m_Asset as TAsset;
         }
 
@@ -82,11 +84,15 @@ namespace PBBox
                     Log.Error($"Loading task is not of type Task<{nameof(TAsset)}>.", LogTag, Log.PBBoxLoggerName);
                 }
             }
+#if PB_TEST_LOG
             Log.Debug($"Starting async load for asset: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+#endif
             m_LoadingTask = DoLoadAsync<TAsset>();
             m_Asset = await (m_LoadingTask as Task<TAsset>);
             m_LoadingTask = null;
+#if PB_TEST_LOG
             Log.Debug($"Async asset loaded: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+#endif
             return m_Asset as TAsset;
         }
 
@@ -98,7 +104,9 @@ namespace PBBox
                 return m_Asset as IList<TAsset>;
             }
             m_Asset = DoLoads<TAsset>();
+#if PB_TEST_LOG
             Log.Debug($"Assets loaded: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+#endif
             return m_Asset as IList<TAsset>;
         }
 
@@ -120,11 +128,15 @@ namespace PBBox
                     Log.Error($"Loading task is not of type Task< IList<{nameof(TAsset)}>.", LogTag, Log.PBBoxLoggerName);
                 }
             }
+#if PB_TEST_LOG
             Log.Debug($"Starting async load for assets: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+#endif
             m_LoadingTask = DoLoadsAsync<TAsset>();
             m_Asset = await (m_LoadingTask as Task<IList<TAsset>>);
             m_LoadingTask = null;
+#if PB_TEST_LOG
             Log.Debug($"Async assets loaded: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+#endif
             return m_Asset as IList<TAsset>;
         }
 
@@ -143,7 +155,9 @@ namespace PBBox
                 }
                 else
                 {
+#if PB_TEST_LOG
                     Log.Debug($"Asset released: {Key}", LogTag, Log.PBBoxLoggerName);
+#endif
                     OnReleaseAsset();
                     m_Asset = null;
                 }

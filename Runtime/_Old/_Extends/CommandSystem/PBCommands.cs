@@ -30,7 +30,7 @@ namespace PBBox
 
         public void LoadAllCmd()
         {
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
             System.Text.StringBuilder logs = new System.Text.StringBuilder();
             logs.AppendLine("");
             var testCost = new System.Diagnostics.Stopwatch();
@@ -45,14 +45,14 @@ namespace PBBox
                 var attrs = m.GetCustomAttributes<PBCommandAttribute>();
                 foreach (var a in attrs)
                 {
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
                     logs.AppendLine($"载入cmd: {a.cmdName} <=> method: {m.IsSpecialName}");
 #endif
                     methodCount++;
                     _methodMap[a.cmdName.Trim().ToLower()] = new CmdMethodInfo() { methodInfo = m, cmdAttribute = a };
                 }
             }
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
             testCost.Stop();
             DebugUtils.Internal.Info<PBCommands>($"PBCommand完成加载,已加载:{methodCount},耗时{testCost.Elapsed.TotalMilliseconds}ms"
                 + logs.ToString());
@@ -162,7 +162,7 @@ namespace PBBox
                     parameters.Add(extraParameter);
                 }
 
-#if GAME_TEST
+#if PB_TEST_LOG
                 object methodResult = value.methodInfo.Invoke(null, parameters.ToArray());
                 string paramStr2 = null;
                 foreach (var p in parameters)

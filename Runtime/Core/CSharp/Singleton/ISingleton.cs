@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine.PlayerLoop;
 
 namespace PBBox
 {
@@ -15,18 +16,25 @@ namespace PBBox
     /// </summary>
     public interface ISingleton
     {
+        protected static bool s_IsInitialized = false;
         /// <summary>
         /// 通过反射注册各接口型单例的具体实现类型
         /// </summary>
 #if UNITY_5_3_OR_NEWER
-        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
 #endif
         internal static void InitInstaceTypes()
         {
+            if (s_IsInitialized)
+            {
+                return;
+            }
+            s_IsInitialized = true;
+            var assemblyNames = PBBoxSettings.CommonInitReflectAssemblies.Union(PBBoxSettings.InitReflectAssemblies_Singleton);
             //获得所有继承了ISingleton的具体类
-            var types = typeof(ISingleton).GetAllChildClass(moreDeep: true, containAbstract: false, assemblyNames: PBBoxSettings.SingletonInitReflectAssemblies);
+            var types = typeof(ISingleton).GetAllChildClass(moreDeep: true, containAbstract: false, assemblyNames: assemblyNames);
 
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             var test = new System.Diagnostics.Stopwatch();
             test.Start();
 #endif
@@ -35,19 +43,19 @@ namespace PBBox
                 .SelectMany(type => type.GetInterfaces()
                     .Where(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ISingleton<>) && t.GetGenericArguments()[0] != type)
                     .Select(t => (type, t.GetGenericArguments()[0])));
-            Dictionary<Type, (Type instanceType, int order)> tempMap = new Dictionary<Type, (Type instanceType, int order)>();
+            Dictionary<Type, (Type instanceType, int priority)> tempMap = new Dictionary<Type, (Type instanceType, int priority)>();
             foreach (var (type, interfaceType) in typeMap)
             {
                 int priority = 0;
                 //检查instanceType是否有SingletonPriorityAttribute特性，若有则重设优先级
-                var attribute = type.GetCustomAttribute<SingletonPriorityAttribute>(false);
-                if (attribute != null)
+                var attr = type.GetCustomAttribute<SingletonPriorityAttribute>(false);
+                if (attr != null)
                 {
-                    priority = attribute.Priority;
+                    priority = attr.Priority;
                 }
                 if (tempMap.TryGetValue(interfaceType, out var oldValue))
                 {
-                    if (oldValue.order < priority)
+                    if (oldValue.priority < priority)
                     {
                         tempMap[interfaceType] = (type, priority);
                     }
@@ -58,7 +66,7 @@ namespace PBBox
                 }
             }
             Type[] setInstanceTypeParameterType = new Type[] { typeof(Type) };
-            foreach (var (interfaceType, (instanceType, order)) in tempMap)
+            foreach (var (interfaceType, (instanceType, priority)) in tempMap)
             {
                 // 获取具体的泛型接口类型
                 Type genericInterfaceType = typeof(ISingleton<>).MakeGenericType(interfaceType);
@@ -80,16 +88,25 @@ namespace PBBox
                     Log.Error($"SetInstanceType method not found in {genericInterfaceType.Name}.", "ISingleton", Log.PBBoxLoggerName);
                 }
             }
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             test.Stop();
             System.Text.StringBuilder logs = new System.Text.StringBuilder();
             logs.AppendLine($"单例间接绑定完成，耗时:{test.Elapsed.TotalMilliseconds}ms");
-            foreach (var (interfaceType, (instanceType, order)) in tempMap)
+            foreach (var (interfaceType, (instanceType, priority)) in tempMap)
             {
-                logs.AppendLine($"{interfaceType.Name}-->{instanceType.Name}，优先级：{order}");
+                logs.AppendLine($"{interfaceType.Name}-->{instanceType.Name}，优先级：{priority}");
             }
             Log.Debug(logs.ToString(), "ISingleton", Log.PBBoxLoggerName);
 #endif
+        }
+
+        /// <summary>
+        /// 重新初始化单例类型映射
+        /// </summary>
+        internal static void ReInitInstaceTypes()
+        {
+            s_IsInitialized = false;
+            InitInstaceTypes();
         }
     }
 
@@ -156,6 +173,10 @@ namespace PBBox
                 {
                     Log.Warning($"Instance already exists. Use Destroy() to remove the existing instance before creating a new one.", typeof(T).Name, Log.PBBoxLoggerName);
                     return;
+                }
+                if (!s_IsInitialized)
+                {
+                    InitInstaceTypes();
                 }
                 if (s_InstanceType == null)
                 {
@@ -263,6 +284,10 @@ namespace PBBox
                 {
                     Log.Error($"Instance already exists. Use Destroy() to remove the existing instance before setting a new type.", typeof(T).Name, Log.PBBoxLoggerName);
                     return;
+                }
+                if (!s_IsInitialized)
+                {
+                    InitInstaceTypes();
                 }
                 s_InstanceType = type;
             }

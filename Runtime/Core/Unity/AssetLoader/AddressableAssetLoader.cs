@@ -12,11 +12,18 @@ using System.Collections.Generic;
 
 namespace PBBox
 {
+    [AssetLoaderAssign(AssetLoaderTypes.Addressable, -1)]
     public class AddressableAssetLoader : AssetLoaderBase
     {
+        [AssetLoaderCreateMethod]
+        public static IAssetLoader Create(string key)
+        {
+            return new AddressableAssetLoader(key);
+        }
+
         private AsyncOperationHandle m_Handler;
         protected override string LogTag => "AddressableAssetLoader";
-
+        
         public AddressableAssetLoader(string key) : base(key)
         {
         }

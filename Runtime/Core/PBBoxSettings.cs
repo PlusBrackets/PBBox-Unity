@@ -6,19 +6,39 @@ namespace PBBox
     /// <summary>
     /// PBPox的一些设置
     /// </summary>    
-    internal static partial class PBBoxSettings
+    public static partial class PBBoxSettings
     {
         internal const string ASSEMBLY_NAME_PBBOX = "PBBox";
         internal const string ASSEMBLY_UNITY_PROJECT = "Assembly-CSharp";
-
+        
         /// <summary>
-        /// 单例初始化时需要反射的程序集名称,为空则反射全部程序集(耗时)
+        /// 通用的反射绑定程序集名称,为空则反射全部程序集(耗时)
         /// </summary>
-        internal static readonly HashSet<string> SingletonInitReflectAssemblies = new HashSet<string>()
+        public static readonly HashSet<string> CommonInitReflectAssemblies = new HashSet<string>()
         {
             ASSEMBLY_NAME_PBBOX,
             ASSEMBLY_UNITY_PROJECT,
         };
+
+
+
+        /// <summary>
+        /// 额外的单例的反射绑定程序集名称
+        /// </summary>
+        public static readonly HashSet<string> InitReflectAssemblies_Singleton = new HashSet<string>();
+
+
+
+        /// <summary>
+        /// 额外的AssetLoader的反射绑定程序集名称
+        /// </summary>
+        public static readonly HashSet<string> InitReflectAssemblies_AssetLoader = new HashSet<string>();
+        /// <summary>
+        /// AssetLoader默认的加载器类型ID
+        /// </summary>
+        public static int AssetLoaderDefaultId = (int)AssetLoaderTypes.Resources;
+
+        //旧
 
         /// <summary>
         /// PBCommandSystem 允许反射绑定指令的程序集名称,为空则反射全部程序集(耗时)
@@ -40,7 +60,7 @@ namespace PBBox
         /// <summary>
         /// 是否在DataOperatorManager创建时自动反射注册DataOperator
         /// </summary>
-        internal static readonly bool enableDataOperaAutoReflectInit = true;
+        internal static bool enableDataOperaAutoReflectInit = true;
         /// <summary>
         /// 允许反射绑定指令的程序集名称,为空则反射全部程序集(耗时)
         /// </summary>

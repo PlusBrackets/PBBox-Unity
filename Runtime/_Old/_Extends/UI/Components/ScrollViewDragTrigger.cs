@@ -85,7 +85,7 @@ namespace PBBox.UI
         private void Awake()
         {
             m_ScrollRect = GetComponent<ScrollRect>();
-#if UNITY_EDITOR && GAME_TEST
+#if UNITY_EDITOR && PB_TEST_LOG
             onElasticReadyStateChanged.AddListener((d, f) =>
             {
                 DebugUtils.Test.Log("[ScrollViewDragTrigger] " + gameObject.name + " " + d.ToString() + (f ? " ready" : " cancel"));

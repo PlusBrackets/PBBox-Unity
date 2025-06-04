@@ -39,7 +39,7 @@ namespace PBBox
         /// <returns></returns>
         public static IEnumerable<Type> GetAllChildClass(this Type target, bool moreDeep = true, bool containAbstract = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null)
         {
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             var test = new System.Diagnostics.Stopwatch();
             test.Start();
 #endif
@@ -65,7 +65,7 @@ namespace PBBox
                     result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                         .SelectMany(a => a.GetTypes().Where(t => (containAbstract || !t.IsAbstract) && t.GetInterfaces().Contains(type)));
             }
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
 
             test.Stop();
             Log.Debug($"反射获取{target}的子类(count:{result.Count()}),用时:{test.Elapsed.TotalMilliseconds}ms", loggerName: Log.PBBoxLoggerName);
@@ -83,7 +83,7 @@ namespace PBBox
         /// <returns></returns>
         public static IEnumerable<Type> GetAllClassWithAttribute<TAttribute>(bool containAbstract = false, bool inherit = true, AppDomain domain = null, IEnumerable<string> assemblyNames = null) where TAttribute : Attribute
         {
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             var test = new System.Diagnostics.Stopwatch();
             test.Start();
 #endif
@@ -91,7 +91,7 @@ namespace PBBox
                 domain = AppDomain.CurrentDomain;
             var result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                 .SelectMany(a => a.GetTypes().Where(t => t.IsDefined(typeof(TAttribute), inherit)));
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             test.Stop();
             Log.Debug($"反射获取带有{typeof(TAttribute)}特性的类型(count:{result.Count()}),用时:{test.Elapsed.TotalMilliseconds}ms", loggerName: Log.PBBoxLoggerName);
 #endif
@@ -137,7 +137,7 @@ namespace PBBox
         /// <returns></returns>
         public static IEnumerable<MethodInfo> GetAllMethodWithAtturbute<TAttribute>(BindingFlags bindingFlags = BindingFlags.Default, bool inherit = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null)
         {
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             var test = new System.Diagnostics.Stopwatch();
             test.Start();
 #endif
@@ -149,7 +149,7 @@ namespace PBBox
 
             result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                 .SelectMany(a => a.GetTypes().SelectMany(t => t.GetMethods(bindingFlags).Where(m => m.IsDefined(typeof(TAttribute), inherit))));
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             test.Stop();
             Log.Debug($"反射获取带有{typeof(TAttribute)}特性的方法(count:{result.Count()}),用时:{test.Elapsed.TotalMilliseconds}ms", loggerName: Log.PBBoxLoggerName);
 #endif
@@ -165,7 +165,7 @@ namespace PBBox
         /// <returns></returns>
         public static IEnumerable<MethodInfo> GetAllMethodWithAtturbute<TClassAttribute, TMethodAttribute>(BindingFlags bindingFlags = BindingFlags.Default, bool inherit = false, AppDomain domain = null, IEnumerable<string> assemblyNames = null)
         {
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             var test = new System.Diagnostics.Stopwatch();
             test.Start();
 #endif
@@ -177,7 +177,7 @@ namespace PBBox
 
             result = domain.GetAssemblies().Where(a => assemblyNames == null || assemblyNames.Count() == 0 || assemblyNames.Contains(a.GetName().Name))
                 .SelectMany(a => a.GetTypes().Where(t => t.IsDefined(typeof(TClassAttribute), inherit)).SelectMany(t => t.GetMethods(bindingFlags).Where(m => m.IsDefined(typeof(TMethodAttribute), inherit))));
-#if GAME_TEST || UNITY_EDITOR
+#if PB_TEST_LOG || UNITY_EDITOR
             test.Stop();
             Log.Debug($"反射获取{typeof(TClassAttribute)}的class中带有{typeof(TMethodAttribute)}特性的方法(count:{result.Count()}),用时:{test.Elapsed.TotalMilliseconds}ms", loggerName: Log.PBBoxLoggerName);
 #endif

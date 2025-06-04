@@ -24,7 +24,7 @@ namespace PBBox
 
         public static string AddClassInfo<T>(this string str)
         {
-#if LOG_DEFAULT || LOG_INTERNAL || UNITY_EDITOR || GAME_TEST
+#if LOG_DEFAULT || LOG_INTERNAL || UNITY_EDITOR || PB_TEST_LOG
             str = "[" + typeof(T).FullName + "]" + str;
 #endif
             return str;
@@ -36,7 +36,7 @@ namespace PBBox
 
         public static class Default
         {
-#if LOG_DEFAULT || UNITY_EDITOR || GAME_TEST
+#if LOG_DEFAULT || UNITY_EDITOR || PB_TEST_LOG
             public static Action<object> Log = Debug.Log;
             public static Action<object> LogWarning = Debug.LogWarning;
             public static Action<object> LogError = Debug.LogError;
@@ -75,7 +75,7 @@ namespace PBBox
 
         public static class Test
         {
-#if GAME_TEST
+#if PB_TEST_LOG
             public static Action<object> Log = Debug.Log;
             public static Action<object> LogWarning = Debug.LogWarning;
             public static Action<object> LogError = Debug.LogError;
@@ -95,7 +95,7 @@ namespace PBBox
 
 //     public static partial class PBExtensions
 //     {
-// #if LOG_DEFAULT || UNITY_EDITOR || GAME_TEST
+// #if LOG_DEFAULT || UNITY_EDITOR || PB_TEST_LOG
 //         public static void LogInfo(this object target, object message)
 //         {
 //             DebugUtils.Log($"[{target.GetType().FullName}] {message}");

@@ -57,7 +57,7 @@ namespace PBBox
 
         private void LoadAllOperators()
         {
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
             System.Text.StringBuilder logs = new System.Text.StringBuilder();
             logs.AppendLine("");
             var testCost = new System.Diagnostics.Stopwatch();
@@ -74,12 +74,12 @@ namespace PBBox
                     IDataOperator op = Activator.CreateInstance(t) as IDataOperator;
                     bool success = Register(a.key, op);
                     if (success) count++;
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
                     if (success) logs.AppendLine($"载入operator[{a.key}] => {t.FullName}");
 #endif
                 }
             }
-#if UNITY_EDITOR || GAME_TEST
+#if UNITY_EDITOR || PB_TEST_LOG
             testCost.Stop();
             DebugUtils.Internal.Info<DataOperatorManager>($"DataOperator完成加载,已加载:{count},耗时{testCost.Elapsed.TotalMilliseconds}ms"
                 + logs.ToString());
