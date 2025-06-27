@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace PBBox
 {
     [System.Serializable]
-    public partial struct AssetLoadHandle<TObject> : IDisposable, IAssetLoader where TObject : class
+    public partial struct AssetLoadHandle : IDisposable, IAssetLoader
     {
         [NonSerialized]
         private IAssetLoader m_Loader;

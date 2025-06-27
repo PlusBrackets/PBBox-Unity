@@ -3,18 +3,21 @@
  *@update: 2025.05.30
  *@author: PlusBrackets
  --------------------------------------------------------*/
+using System.Threading.Tasks;
 
-namespace PBBox.UI2
+namespace PBBox.View
 {
-
-    public interface IUIController
+    /// <summary>
+    /// 控制器接口
+    /// </summary>
+    public interface IController
     {
         string ID { get; }
-        void Init(string id);
-        IUIView GetView();
-        T GetView<T>() where T : IUIView;
-        void Show();
-        void Hide();
+
+        bool HasView();
+        IView GetView();
+        void Open();
+        void Close();
         void Resume();
         void Pause();
         void PreloadView();

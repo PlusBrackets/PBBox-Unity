@@ -48,23 +48,6 @@ namespace PBBox
             return await tcs.Task;
         }
 
-        private IList<TAsset> ConvertToList<TAsset>(Object[] array)
-        {
-            if (array == null || array.Length == 0)
-            {
-                return new List<TAsset>();
-            }
-            var list = new List<TAsset>(array.Length);
-            foreach (var item in array)
-            {
-                if (item is TAsset asset)
-                {
-                    list.Add(asset);
-                }
-            }
-            return list;
-        }
-
         protected override IList<TAsset> DoLoads<TAsset>()
         {
             var array = Resources.LoadAll(Key, typeof(TAsset));

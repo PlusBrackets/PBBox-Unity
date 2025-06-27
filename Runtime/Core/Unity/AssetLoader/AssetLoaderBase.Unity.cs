@@ -3,6 +3,8 @@
  *@update: 2025.06.03
  *@author: PlusBrackets
  --------------------------------------------------------*/
+using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 namespace PBBox
@@ -16,6 +18,23 @@ namespace PBBox
                 return unityObject != null;
             }
             return true;
+        }
+
+        protected IList<TObject> ConvertToList<TObject>(IEnumerable array)
+        {
+            if (array == null)
+            {
+                return new List<TObject>();
+            }
+            var list = new List<TObject>();
+            foreach (var item in array)
+            {
+                if (item is TObject asset)
+                {
+                    list.Add(asset);
+                }
+            }
+            return list;
         }
     }
 }

@@ -4,12 +4,14 @@
  *@author: PlusBrackets
  --------------------------------------------------------*/
 
-namespace PBBox.UI2
+namespace PBBox.View
 {
-
-    public interface IUIView
+    /// <summary>
+    /// 视图接口
+    /// </summary>
+    public interface IView
     {
-        IUIController GetController();
+        IController GetController();
         string ID { get; }
         void OnShow();
         void OnHide();

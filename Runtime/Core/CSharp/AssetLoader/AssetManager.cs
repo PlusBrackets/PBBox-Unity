@@ -10,7 +10,7 @@ using System.Linq;
 namespace PBBox
 {
     [SingletonPriority(-1)]
-    public sealed partial class AssetManager2 : IAssetManager
+    internal sealed partial class AssetManager2 : IAssetManager
     {
         private Lazy<Dictionary<Type, LoadersContainer>> m_LoaderContainers = new Lazy<Dictionary<Type, LoadersContainer>>();
 

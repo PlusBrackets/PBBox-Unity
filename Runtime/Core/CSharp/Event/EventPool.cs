@@ -220,27 +220,6 @@ namespace PBBox
             Clear();
         }
 
-        /// <summary>
-        /// 从字符串中获取事件ID
-        /// </summary>
-        /// <param name="eventName"></param>
-        /// <returns></returns>
-        public static int GetEventId(string eventName)
-        {
-            if (string.IsNullOrEmpty(eventName))
-                return 0;
-
-            unchecked
-            {
-                int hash = 23;
-                foreach (char c in eventName)
-                {
-                    hash = hash * 31 + c;
-                }
-                return hash;
-            }
-        }
-
         void ISingletonLifecycle.OnCreateAsSingleton()
         {
             LogicUpdater.Attach(this);

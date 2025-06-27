@@ -61,7 +61,7 @@ namespace PBBox
             }
             m_Asset = DoLoad<TAsset>();
 #if PB_TEST_LOG
-            Log.Debug($"Asset loaded: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+            Log.Debug($"Asset loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
             return m_Asset as TAsset;
         }
@@ -85,13 +85,13 @@ namespace PBBox
                 }
             }
 #if PB_TEST_LOG
-            Log.Debug($"Starting async load for asset: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+            Log.Debug($"Starting async load for asset: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
             m_LoadingTask = DoLoadAsync<TAsset>();
             m_Asset = await (m_LoadingTask as Task<TAsset>);
             m_LoadingTask = null;
 #if PB_TEST_LOG
-            Log.Debug($"Async asset loaded: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+            Log.Debug($"Async asset loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
             return m_Asset as TAsset;
         }
@@ -105,7 +105,7 @@ namespace PBBox
             }
             m_Asset = DoLoads<TAsset>();
 #if PB_TEST_LOG
-            Log.Debug($"Assets loaded: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+            Log.Debug($"Assets loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
             return m_Asset as IList<TAsset>;
         }
@@ -129,13 +129,13 @@ namespace PBBox
                 }
             }
 #if PB_TEST_LOG
-            Log.Debug($"Starting async load for assets: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+            Log.Debug($"Starting async load for assets: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
             m_LoadingTask = DoLoadsAsync<TAsset>();
             m_Asset = await (m_LoadingTask as Task<IList<TAsset>>);
             m_LoadingTask = null;
 #if PB_TEST_LOG
-            Log.Debug($"Async assets loaded: {Key}, Type: {typeof(TAsset).Name}", LogTag, Log.PBBoxLoggerName);
+            Log.Debug($"Async assets loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
             return m_Asset as IList<TAsset>;
         }
