@@ -12,9 +12,13 @@ namespace PBBox.View
     public interface IView
     {
         IController GetController();
-        string ID { get; }
-        void OnShow();
-        void OnHide();
+        ViewState State => GetController().State;
+        string ID => GetController().ID;
+        
+        bool IsVaild();
+
+        void OnOpen();
+        void OnClose();
         void OnResume();
         void OnPause();
     }

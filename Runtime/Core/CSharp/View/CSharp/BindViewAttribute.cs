@@ -5,17 +5,25 @@ namespace PBBox.View
 {
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public abstract class BindViewAttributeBase : Attribute, IViewFactory
+    public abstract class BindViewAttributeBase : Attribute
     {
-        public string Id{ get; private set; }
+        public string Id { get; private set; }
+        /// <summary>
+        /// 是否创建表达式创建器
+        /// <para>如果为true，则在创建时会使用表达式树来创建，适用于频繁创建该Controller的场景(>20)</para>
+        /// </summary>
+        public bool IsCreateExpressionFactory { get; private set; } = false;
 
+        /// <summary>
+        /// 绑定视图特性基类
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="isCreateExpressionCreator">如果为true，则在创建Controller时会使用表达式树来创建，适用于频繁创建该Controller的场景(>20)</param>
         public BindViewAttributeBase(string id)
         {
             this.Id = id;
         }
 
-        public abstract IView CreateView(IController controller);
-        public abstract Task<IView> CreateViewAsync(IController controller);
-        public abstract void ReleaseView(IController controller);
+        public abstract IViewFactory GetViewFactory();
     }
 }

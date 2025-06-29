@@ -14,13 +14,13 @@ namespace PBBox
     [AssetLoaderAssign(AssetLoaderTypes.Resources, -1)]
     public class ResourcesAssetLoader : AssetLoaderBase
     {
-        [AssetLoaderCreateMethod]
-        public static IAssetLoader Create(string key)
-        {
-            return new ResourcesAssetLoader(key);
-        }
+        //[AssetLoaderCreateMethod]
+        //public static IAssetLoader Create(string key)
+        //{
+        //    return new ResourcesAssetLoader(key);
+        //}
 
-        protected override string LogTag => "ResourcesAssetLoader";
+        protected override string LogTag => "ResourcesLoader";
 
         public ResourcesAssetLoader(string key) : base(key)
         {

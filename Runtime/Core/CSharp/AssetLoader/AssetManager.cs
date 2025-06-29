@@ -6,11 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace PBBox
 {
     [SingletonPriority(-1)]
-    internal sealed partial class AssetManager2 : IAssetManager
+    internal sealed partial class AssetManager2 : IAssetManager, ISingletonLifecycle
     {
         private Lazy<Dictionary<Type, LoadersContainer>> m_LoaderContainers = new Lazy<Dictionary<Type, LoadersContainer>>();
 
@@ -26,34 +27,34 @@ namespace PBBox
             //{
             //    if (IAssetLoader.GetLoaderTypeFromId(value) == null)
             //    {
-            //        Log.Error($"Invalid loader type ID: {value}.", "AssetManager", Log.PBBoxLoggerName);
+            //        Log.Error($"Invalid loader type ID: {value}.", nameof(IAssetManager), Log.PBBoxLoggerName);
             //        return;
             //    }
             //    m_DefaultLoaderTypeId = value;
             //}
         }
 
-        /// <summary>
-        /// 注册自定义加载器工厂。
-        /// </summary>
-        /// <param name="loaderType"></param>
-        /// <param name="factory"></param>
-        private void RegisterCustomLoaderFactory(Type loaderType, Func<string, IAssetLoader> factory)
-        {
-            if (m_LoaderContainers.Value.TryGetValue(loaderType, out LoadersContainer container))
-            {
-                Log.Warning($"Custom loader factory for {loaderType.Name} already registered.", "AssetManager", Log.PBBoxLoggerName);
-                container.SetLoaderFactory(factory, loaderType);
-            }
-            else
-            {
-                container = new LoadersContainer(factory, loaderType);
-                m_LoaderContainers.Value[loaderType] = container;
-#if PB_TEST_LOG
-                Log.Info($"Custom loader factory for {loaderType.Name} registered.", "AssetManager", Log.PBBoxLoggerName);
-#endif
-            }
-        }
+//        /// <summary>
+//        /// 注册自定义加载器工厂。
+//        /// </summary>
+//        /// <param name="loaderType"></param>
+//        /// <param name="factory"></param>
+//        private void RegisterCustomLoaderFactory(Type loaderType, Func<string, IAssetLoader> factory)
+//        {
+//            if (m_LoaderContainers.Value.TryGetValue(loaderType, out LoadersContainer container))
+//            {
+//                Log.Warning($"Custom loader factory for {loaderType.Name} already registered.", nameof(IAssetManager), Log.PBBoxLoggerName);
+//                container.SetLoaderFactory(factory, loaderType);
+//            }
+//            else
+//            {
+//                container = new LoadersContainer(factory, loaderType);
+//                m_LoaderContainers.Value[loaderType] = container;
+//#if PB_TEST_LOG
+//                Log.Info($"Custom loader factory for {loaderType.Name} registered.", nameof(IAssetManager), Log.PBBoxLoggerName);
+//#endif
+//            }
+//        }
 
         public TLoader GetLoader<TLoader>(string key) where TLoader : IAssetLoader
         {
@@ -66,7 +67,7 @@ namespace PBBox
             var loaderType = IAssetLoader.GetLoaderTypeFromId(loaderTypeId);
             if (loaderType == null)
             {
-                Log.Error($"Invalid loader type ID: {loaderTypeId}.", "AssetManager", Log.PBBoxLoggerName);
+                Log.Error($"Invalid loader type ID: {loaderTypeId}.", nameof(IAssetManager), Log.PBBoxLoggerName);
                 return null;
             }
             return GetLoader(key, loaderType);
@@ -80,26 +81,42 @@ namespace PBBox
             }
             if (loaderType == null)
             {
-                Log.Error("Default loader type is not set.", "AssetManager", Log.PBBoxLoggerName);
+                Log.Error("Default loader type is not set.", nameof(IAssetManager), Log.PBBoxLoggerName);
                 return null;
             }
 
             if (string.IsNullOrEmpty(key))
             {
-                Log.Error("AssetLoader key cannot be null or empty.", "AssetManager", Log.PBBoxLoggerName);
+                Log.Error("AssetLoader key cannot be null or empty.", nameof(IAssetManager), Log.PBBoxLoggerName);
                 return null;
             }
-            if (!m_LoaderContainers.IsValueCreated || !m_LoaderContainers.Value.ContainsKey(loaderType))
+            if (!m_LoaderContainers.Value.TryGetValue(loaderType, out LoadersContainer container))
             {
-                RegisterCustomLoaderFactory(loaderType, null);
+                container = new LoadersContainer(loaderType);
+                m_LoaderContainers.Value[loaderType] = container;
             }
-            var container = m_LoaderContainers.Value[loaderType];
+            //if (!m_LoaderContainers.IsValueCreated || !m_LoaderContainers.Value.ContainsKey(loaderType))
+            //{
+            //    RegisterCustomLoaderFactory(loaderType, null);
+            //}
+            //var container = m_LoaderContainers.Value[loaderType];
             if (container == null)
             {
-                Log.Error($"No loader container found for type {loaderType.Name}.", "AssetManager", Log.PBBoxLoggerName);
+                Log.Error($"No loader container found for type {loaderType.Name}.", nameof(IAssetManager), Log.PBBoxLoggerName);
                 return null;
             }
             return container.GetLoader(key);
+        }
+
+        public void OnCreateAsSingleton()
+        {
+            // 预热加载器类型Map，确保在第一次使用时不会有性能损耗
+            IAssetLoader.WarmupLoaderTypeMap();
+        }
+
+        public void OnDestroyAsSingleton()
+        {
+
         }
 
 
@@ -108,23 +125,21 @@ namespace PBBox
         /// </summary>
         private class LoadersContainer
         {
-            private Func<string, IAssetLoader> m_Factory = null;
+            private readonly Type m_LoaderType = null;
             private Dictionary<string, IAssetLoader> m_Loaders = null;
-            private Type m_LoaderType = null;
+            private Func<string, IAssetLoader> m_Factory = null;
 
-            public LoadersContainer(Func<string, IAssetLoader> factory, Type loaderType)
+            public LoadersContainer(Type loaderType)
             {
-                m_Factory = factory;
                 m_LoaderType = loaderType;
                 TryRegisterCreatorFunc();
             }
 
-            public void SetLoaderFactory(Func<string, IAssetLoader> factory, Type loaderType)
-            {
-                m_Factory = factory;
-                m_LoaderType = loaderType;
-                TryRegisterCreatorFunc();
-            }
+            //public void SetLoaderFactory(Func<string, IAssetLoader> factory)
+            //{
+            //    m_Factory = factory;
+            //    TryRegisterCreatorFunc();
+            //}
 
             private void TryRegisterCreatorFunc()
             {
@@ -132,29 +147,26 @@ namespace PBBox
                 {
                     return;
                 }
-                var method = m_LoaderType.GetMethods(System.Reflection.BindingFlags.Static).FirstOrDefault(m => m.IsDefined(typeof(AssetLoaderCreateMethodAttribute), false));
-                if (method != null)
+                // new AssetLoader(string key)的构造函数
+                var constructor = m_LoaderType.GetConstructor(new[] { typeof(string) });
+                if (constructor == null)
                 {
-                    m_Factory = method.CreateDelegate(typeof(Func<string, IAssetLoader>)) as Func<string, IAssetLoader>;
+                    Log.Error($"No constructor found for loader type {m_LoaderType.Name} with string parameter. Cannot create loader instances.", nameof(IAssetManager), Log.PBBoxLoggerName);
+                    return;
                 }
+                var keyParam = Expression.Parameter(typeof(string), "key");
+                var newExpression = Expression.New(constructor, keyParam);
+                m_Factory = Expression.Lambda<Func<string, IAssetLoader>>(newExpression, keyParam).Compile();
 #if PB_TEST_LOG
-                if (m_Factory != null)
-                {
-                    Log.Debug($"Custom loader factory for {m_LoaderType.Name} registered via method {method.Name}.", "AssetManager", Log.PBBoxLoggerName);
-                }
-                else
+                Log.Debug($"Loader factory for {m_LoaderType.Name} registered successfully.", nameof(IAssetManager), Log.PBBoxLoggerName);
 #endif
-                if (method != null)
-                {
-                    Log.Error($"Failed to create loader factory for {m_LoaderType.Name}. Method {method.Name} does not match Func<string, IAssetLoader> signature.", "AssetManager", Log.PBBoxLoggerName);
-                }
             }
 
             public IAssetLoader GetLoader(string key)
             {
                 if (string.IsNullOrEmpty(key))
                 {
-                    Log.Error("AssetLoader key cannot be null or empty.", "AssetManager", Log.PBBoxLoggerName);
+                    Log.Error("AssetLoader key cannot be null or empty.", nameof(IAssetManager), Log.PBBoxLoggerName);
                     return null;
                 }
                 if (m_Loaders == null)
@@ -167,6 +179,7 @@ namespace PBBox
                     {
                         if (m_Factory == null)
                         {
+                            Log.Warning($"No factory registered for loader type {m_LoaderType.Name}. Attempting to create instance directly.", nameof(IAssetManager), Log.PBBoxLoggerName);
                             loader = Activator.CreateInstance(m_LoaderType, key) as IAssetLoader;
                         }
                         else
@@ -176,7 +189,7 @@ namespace PBBox
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Failed to create loader for key '{key}': {ex.Message}", "AssetManager", Log.PBBoxLoggerName);
+                        Log.Error($"Failed to create loader for key '{key}': {ex.Message}", nameof(IAssetManager), Log.PBBoxLoggerName);
                         return null;
                     }
                     if (loader != null)

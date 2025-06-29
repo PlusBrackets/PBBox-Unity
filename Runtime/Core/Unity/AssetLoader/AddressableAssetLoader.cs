@@ -15,14 +15,14 @@ namespace PBBox
     [AssetLoaderAssign(AssetLoaderTypes.Addressable, -1)]
     public class AddressableAssetLoader : AssetLoaderBase
     {
-        [AssetLoaderCreateMethod]
-        public static IAssetLoader Create(string key)
-        {
-            return new AddressableAssetLoader(key);
-        }
+        //[AssetLoaderCreateMethod]
+        //public static IAssetLoader Create(string key)
+        //{
+        //    return new AddressableAssetLoader(key);
+        //}
 
         private AsyncOperationHandle m_Handler;
-        protected override string LogTag => "AddressableAssetLoader";
+        protected override string LogTag => "AddressableLoader";
         
         public AddressableAssetLoader(string key) : base(key)
         {

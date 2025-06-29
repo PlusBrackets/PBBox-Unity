@@ -55,8 +55,8 @@ namespace PBBox
                 else if (!AutoCreateIfNotFound)
                 {
                     Log.Error(
-                        "Failed to find any [" + typeof(T).Name + "] in scene, and it will not be automatically created.",
-                        typeof(T).Name,
+                        "Failed to find any [" + nameof(T) + "] in scene, and it will not be automatically created.",
+                        nameof(T),
                         Log.PBBoxLoggerName
                         );
                     return null;
@@ -72,7 +72,7 @@ namespace PBBox
                     {
                         Log.Error(
                             "Failed to load prefab from path [" + LoadFromResourcesPath + "]",
-                            typeof(T).Name,
+                            nameof(T),
                             Log.PBBoxLoggerName
                             );
                         return null;
@@ -87,7 +87,7 @@ namespace PBBox
                     {
                         Log.Error(
                             "Failed to load prefab from path [" + LoadFromAddressableKey + "]",
-                            typeof(T).Name,
+                            nameof(T),
                             Log.PBBoxLoggerName
                             );
                         return null;
@@ -97,7 +97,7 @@ namespace PBBox
                 }
                 else//自动创建单例
                 {
-                    go = new GameObject("Singleton_" + typeof(T).Name);
+                    go = new GameObject("Singleton_" + nameof(T));
                     component = go.AddComponent(instanceType) as T;
                 }
             }

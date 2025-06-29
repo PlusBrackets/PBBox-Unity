@@ -3,14 +3,22 @@
  *@update: 2025.06.19
  *@author: PlusBrackets
  --------------------------------------------------------*/
- 
+
+using System;
+
 namespace PBBox.View
 {
 
     public abstract class ControllerBase : IController
     {
         public string ID { get; private set; }
+
+        public ViewState State { get; protected set; } = ViewState.Closed;
+
+        protected IView m_View;
         protected IViewFactory m_ViewLoader;
+
+        public event Action<IController, ViewState> OnStateChanged;
 
         public ControllerBase(string id, IViewFactory viewLoader)
         {
@@ -18,13 +26,103 @@ namespace PBBox.View
             m_ViewLoader = viewLoader;
         }
 
-        public abstract bool HasView();
-        public abstract IView GetView();
+        public virtual bool HasView()
+        {
+            return m_View != null && m_View.IsVaild();
+        }
+        public virtual IView GetView()
+        {
+            if (!HasView())
+            {
+                Close();
+                m_View = m_ViewLoader.CreateView(this);
+            }
+            return m_View;
+        }
 
-        public virtual void Open() { }
-        public virtual void Close() { }
-        public virtual void Resume() { }
-        public virtual void Pause() { }
-        public virtual void PreloadView() { }
+        public virtual void Open()
+        {
+            GetView();
+            if (State != ViewState.Closed)
+            {
+                return;
+            }
+            if (HasView())
+            {
+                var oldState = State;
+                State = ViewState.Active;
+                m_View.OnOpen();
+                NotifyStateChanged(oldState);
+            }
+        }
+
+        public virtual void Close()
+        {
+            if (State == ViewState.Closed)
+            {
+                return;
+            }
+            var oldState = State;
+            State = ViewState.Closed;
+            if (HasView())
+            {
+                m_View.OnClose();
+            }
+            NotifyStateChanged(oldState);
+        }
+
+        public virtual void Resume()
+        {
+            if (State != ViewState.Paused)
+            {
+                return;
+            }
+            var oldState = State;
+            State = ViewState.Active;
+            if (HasView())
+            {
+                m_View.OnResume();
+            }
+            NotifyStateChanged(oldState);
+        }
+        public virtual void Pause()
+        {
+            if (State != ViewState.Active)
+            {
+                return;
+            }
+            var oldState = State;
+            State = ViewState.Paused;
+            if (HasView())
+            {
+                m_View.OnPause();
+            }
+            NotifyStateChanged(oldState);
+        }
+
+        public virtual void PreloadView()
+        {
+            m_ViewLoader.PreloadView(this);
+        }
+
+        public virtual void ReleaseView()
+        {
+            if (HasView())
+            {
+                if (State != ViewState.Closed)
+                {
+                    Log.Warning($"Releasing view {ID} while it is not closed. Closing it first.", "UI", Log.PBBoxLoggerName);
+                    Close();
+                }
+                m_ViewLoader.ReleaseView(this);
+                m_View = null;
+            }
+        }
+
+        protected void NotifyStateChanged(ViewState oldState)
+        {
+            OnStateChanged?.Invoke(this, oldState);
+            IEventManager.Instance.Emit("event_view_state_changed", this, oldState);
+        }
     }
 }

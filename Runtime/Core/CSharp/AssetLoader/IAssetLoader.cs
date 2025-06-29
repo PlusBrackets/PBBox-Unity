@@ -68,7 +68,16 @@ namespace PBBox
         /// <param name="asset"></param>
         void Release();
 
+        /// <summary>
+        /// 加载器类型Map，(类型Id, (优先级, 加载器类型))
+        /// </summary>
         private static readonly Lazy<Dictionary<int, (int priority, Type loaderType)>> m_LoaderTypeMap = new Lazy<Dictionary<int, (int, Type)>>(CreateLoaderTypeMap);
+
+        internal static void WarmupLoaderTypeMap()
+        {
+            // 预热加载器类型Map，确保在第一次使用时不会有性能损耗
+            var _ = m_LoaderTypeMap.Value;
+        }
 
         private static Dictionary<int, (int, Type)> CreateLoaderTypeMap()
         {

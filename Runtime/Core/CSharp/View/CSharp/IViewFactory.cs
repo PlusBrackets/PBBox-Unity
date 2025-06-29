@@ -14,7 +14,8 @@ namespace PBBox.View
     public interface IViewFactory
     {
         IView CreateView(IController controller);
-        Task<IView> CreateViewAsync(IController controller);
+        Task<bool> PreloadView(IController controller);
         void ReleaseView(IController controller);
     }
+
 }

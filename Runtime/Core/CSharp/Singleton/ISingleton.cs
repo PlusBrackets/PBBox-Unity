@@ -85,7 +85,7 @@ namespace PBBox
                 }
                 else
                 {
-                    Log.Error($"SetInstanceType method not found in {genericInterfaceType.Name}.", "ISingleton", Log.PBBoxLoggerName);
+                    Log.Error($"SetInstanceType method not found in {genericInterfaceType.Name}.", nameof(ISingleton), Log.PBBoxLoggerName);
                 }
             }
 #if PB_TEST_LOG || UNITY_EDITOR
@@ -96,7 +96,7 @@ namespace PBBox
             {
                 logs.AppendLine($"{interfaceType.Name}-->{instanceType.Name}，优先级：{priority}");
             }
-            Log.Debug(logs.ToString(), "ISingleton", Log.PBBoxLoggerName);
+            Log.Debug(logs.ToString(), nameof(ISingleton), Log.PBBoxLoggerName);
 #endif
         }
 
@@ -171,7 +171,7 @@ namespace PBBox
             {
                 if (HasInstance())
                 {
-                    Log.Warning($"Instance already exists. Use Destroy() to remove the existing instance before creating a new one.", typeof(T).Name, Log.PBBoxLoggerName);
+                    Log.Warning($"Instance already exists. Use Destroy() to remove the existing instance before creating a new one.", nameof(T), Log.PBBoxLoggerName);
                     return;
                 }
                 if (!s_IsInitialized)
@@ -282,7 +282,7 @@ namespace PBBox
                 }
                 if (HasInstance())
                 {
-                    Log.Error($"Instance already exists. Use Destroy() to remove the existing instance before setting a new type.", typeof(T).Name, Log.PBBoxLoggerName);
+                    Log.Error($"Instance already exists. Use Destroy() to remove the existing instance before setting a new type.", nameof(T), Log.PBBoxLoggerName);
                     return;
                 }
                 if (!s_IsInitialized)

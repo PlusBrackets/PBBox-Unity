@@ -33,18 +33,13 @@ namespace PBBox
 
             private static string DecoMessage(string msg, string tag, string logger)
             {
-                string temp = msg;
-#if UNITY_EDITOR
-                temp = "<color=#FF00EA>[FetalError]</color> " + temp;
-#else
-                    temp = "[FetalError] " + temp;
-#endif
+                string temp = " " + msg;
                 if (!string.IsNullOrEmpty(tag))
                 {
 #if UNITY_EDITOR
                     temp = "<color=#008080>[" + tag + "]</color> " + temp;
 #else
-                    temp = "[" + tag + "] " + temp;
+                    temp = "[" + tag + "]" + temp;
 #endif
                 }
                 if (!string.IsNullOrEmpty(logger))
@@ -52,9 +47,14 @@ namespace PBBox
 #if UNITY_EDITOR
                     temp = "<color=#808080>[" + logger + "]</color> " + temp;
 #else
-                    temp = "[" + logger + "] " + temp;
+                    temp = "[" + logger + "]" + temp;
 #endif
                 }
+#if UNITY_EDITOR
+                temp = "<color=#FF00EA>[FetalError]</color> " + temp;
+#else
+                    temp = "[FetalError] " + temp;
+#endif
                 return temp;
             }
 

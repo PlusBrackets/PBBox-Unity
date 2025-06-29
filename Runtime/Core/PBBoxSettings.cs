@@ -8,6 +8,7 @@ namespace PBBox
     /// </summary>    
     public static partial class PBBoxSettings
     {
+        #region 通用设置
         internal const string ASSEMBLY_NAME_PBBOX = "PBBox";
         internal const string ASSEMBLY_UNITY_PROJECT = "Assembly-CSharp";
         
@@ -19,25 +20,41 @@ namespace PBBox
             ASSEMBLY_NAME_PBBOX,
             ASSEMBLY_UNITY_PROJECT,
         };
+        #endregion
 
 
-
+        #region Singleton模块
         /// <summary>
         /// 额外的单例的反射绑定程序集名称
         /// </summary>
-        public static readonly HashSet<string> InitReflectAssemblies_Singleton = new HashSet<string>();
+        public static readonly HashSet<string> InitReflectAssemblies_Singleton = new HashSet<string>()
+        {
+        };
+        #endregion
 
 
-
+        #region AssetLoader模块
         /// <summary>
         /// 额外的AssetLoader的反射绑定程序集名称
         /// </summary>
-        public static readonly HashSet<string> InitReflectAssemblies_AssetLoader = new HashSet<string>();
+        public static readonly HashSet<string> InitReflectAssemblies_AssetLoader = new HashSet<string>()
+        {
+        };
         /// <summary>
         /// AssetLoader默认的加载器类型ID
         /// </summary>
         public static int AssetLoaderDefaultId = (int)AssetLoaderTypes.Resources;
+        #endregion
 
+
+        #region View模块
+        /// <summary>
+        /// 额外的View的反射绑定程序集名称
+        /// </summary>
+        public static readonly HashSet<string> InitReflectAssemblies_View = new HashSet<string>
+        {
+        };
+        #endregion
         //旧
 
         /// <summary>

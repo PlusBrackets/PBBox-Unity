@@ -28,12 +28,4 @@ namespace PBBox
             Priority = priority;
         }
     }
-
-    /// <summary>
-    /// 创建资源加载器的方法特性，需要静态无参数且返回IAssetLoader的函数
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public sealed class AssetLoaderCreateMethodAttribute : Attribute
-    {
-    }
 }

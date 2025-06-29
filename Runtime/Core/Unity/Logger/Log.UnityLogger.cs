@@ -14,7 +14,7 @@ namespace PBBox
         private class UnityLogger : ILogger
         {
             private static Lazy<StringBuilder> s_MessageBuilder = new Lazy<StringBuilder>(System.Threading.LazyThreadSafetyMode.None);
-            
+
             public string Name { get; private set; }
             public bool Enable { get; set; } = true;
             public int LogLevel { get; set; } = 0;
@@ -64,9 +64,47 @@ namespace PBBox
 
             public object DecoMessage(int level, string tag, object message)
             {
-                lock(s_MessageBuilder)
+                lock (s_MessageBuilder)
                 {
                     var msgBuilder = s_MessageBuilder.Value;
+                    switch (level)
+                    {
+                        case 0:
+                            msgBuilder
+#if UNITY_EDITOR
+                                .Append("<color=#808080>[DEBUG] </color>");
+#else
+                                .Append("[DEBUG] ");
+#endif
+                            // #if UNITY_EDITOR
+                            //                                 .Append("<color=#808080>")
+                            //                                 .Append(message)
+                            //                                 .Append("</color>");
+                            // #else
+                            //                                 .Append(message);
+                            // #endif
+                            break;
+                        case 1:
+                            msgBuilder
+                                .Append("[INFO] ");
+                            break;
+                        case 2:
+                            msgBuilder
+#if UNITY_EDITOR
+                                .Append("<color=#ffaa00>[WARNING] </color>");
+#else
+                                .Append("[WARNING] ");
+#endif
+                            break;
+                        case 3:
+                            msgBuilder
+#if UNITY_EDITOR
+                                .Append("<color=#ff0000>[ERROR] </color>");
+#else
+                                .Append("[ERROR] ");
+#endif
+                            break;
+                    }
                     if (!string.IsNullOrEmpty(Name))
                     {
                         msgBuilder
@@ -93,49 +131,7 @@ namespace PBBox
                             .Append("]");
 #endif
                     }
-                    switch (level)
-                    {
-                        case 0:
-                            msgBuilder
-#if UNITY_EDITOR
-                                .Append("<color=#808080>[DEBUG] </color>")
-#else
-                                .Append("[DEBUG] ")
-#endif
-                                .Append(message);
-// #if UNITY_EDITOR
-//                                 .Append("<color=#808080>")
-//                                 .Append(message)
-//                                 .Append("</color>");
-// #else
-//                                 .Append(message);
-// #endif
-                            break;
-                        case 1:
-                            msgBuilder
-                                .Append("[INFO] ")
-                                .Append(message);
-                            break;
-                        case 2:
-                            msgBuilder
-#if UNITY_EDITOR
-                                .Append("<color=#ffaa00>[WARNING] </color>")
-#else
-                                .Append("[WARNING] ")
-#endif
-                                .Append(message);
-                            break;
-                        case 3:
-                            msgBuilder
-#if UNITY_EDITOR
-                                .Append("<color=#ff0000>[ERROR] </color>")
-#else
-                                .Append("[ERROR] ")
-#endif
-                                .Append(message);
-                            break;
-                    }
-                    
+                    msgBuilder.Append(" ").Append(message);
                     if (s_MessageBuilder.Value.Length >= 0)
                     {
                         message = s_MessageBuilder.Value.ToString();
@@ -145,6 +141,6 @@ namespace PBBox
                 return message;
             }
         }
-        
+
     }
 }
