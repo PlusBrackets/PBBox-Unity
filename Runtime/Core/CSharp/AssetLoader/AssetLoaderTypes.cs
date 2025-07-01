@@ -12,7 +12,14 @@ namespace PBBox
     /// </summary>
     public enum AssetLoaderTypes
     {
+        /// <summary>
+        /// 使用默认的资源加载器类型，可在PBBoxSettings.AssetLoaderDefaultId中设置。
+        /// <para>默认使用Resources加载器</para>
+        /// </summary>
         Default = 0,
+        /// <summary>
+        /// Unity从Resources文件夹加载资源
+        /// </summary>
         Resources = 1,
         Addressable = 2,
         //AssetBundle = 3,

@@ -127,19 +127,6 @@ namespace PBBox
         public static event Action OnCreateEvent;
         public static event Action OnDestroyEvent;
 
-
-        public static Type InstanceType
-        {
-            get
-            {
-                if (s_InstanceType == null)
-                {
-                    s_InstanceType = typeof(T);
-                }
-                return s_InstanceType;
-            }
-        }
-
         public static T Instance => GetInstance();
 
         public static T GetInstance()
@@ -151,6 +138,23 @@ namespace PBBox
             return s_Instance;
         }
 
+        /// <summary>
+        /// 获取单例的具体类型
+        /// </summary>
+        /// <returns></returns>
+        public static Type GetInstaceType()
+        {
+            if (s_InstanceType == null)
+            {
+                s_InstanceType = typeof(T);
+            }
+            return s_InstanceType;
+        }
+
+        /// <summary>
+        /// 检查是否有单例实例，不会触发创建
+        /// </summary>
+        /// <returns></returns>
         public static bool HasInstance()
         {
 #if UNITY_5_3_OR_NEWER

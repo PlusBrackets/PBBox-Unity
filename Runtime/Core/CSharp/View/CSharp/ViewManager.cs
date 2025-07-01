@@ -61,14 +61,14 @@ namespace PBBox.View
         private void RegisterAttributeControllers()
         {
             //用反射获取所有标记了BindViewAttribute的IController类型
+            var assemblyNames = PBBoxSettings.CommonInitReflectAssemblies.Union(PBBoxSettings.InitReflectAssemblies_View);
+            var controllerTypes = typeof(IController).GetAllChildClassWithAttribute<BindViewAttributeBase>(assemblyNames: assemblyNames);
+
 #if PB_TEST_LOG
             System.Text.StringBuilder logs = new System.Text.StringBuilder();
             logs.AppendLine("");
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 #endif
-            var assemblyNames = PBBoxSettings.CommonInitReflectAssemblies.Union(PBBoxSettings.InitReflectAssemblies_View);
-            var controllerTypes = typeof(IController).GetAllChildClassWithAttribute<BindViewAttributeBase>(assemblyNames: assemblyNames);
-
             foreach (var type in controllerTypes)
             {
                 var attributes = type.GetCustomAttributes<BindViewAttributeBase>(false);

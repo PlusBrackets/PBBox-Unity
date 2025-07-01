@@ -9,6 +9,7 @@ namespace PBBox
     public static partial class PBBoxSettings
     {
         #region 通用设置
+
         internal const string ASSEMBLY_NAME_PBBOX = "PBBox";
         internal const string ASSEMBLY_UNITY_PROJECT = "Assembly-CSharp";
         

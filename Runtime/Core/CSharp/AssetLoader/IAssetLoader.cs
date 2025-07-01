@@ -85,10 +85,14 @@ namespace PBBox
             //获取所有实现了IAssetLoader接口，且有AssetLoaderAssign特性的具体类
             var assemblyNames = PBBoxSettings.CommonInitReflectAssemblies.Union(PBBoxSettings.InitReflectAssemblies_AssetLoader);
             var types = typeof(IAssetLoader).GetAllChildClassWithAttribute<AssetLoaderAssignAttribute>(false, true, assemblyNames: assemblyNames);
+#if PB_TEST_LOG
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+#endif
             foreach (var type in types)
             {
                 int priority = 0;
                 var attr = type.GetCustomAttribute<AssetLoaderAssignAttribute>(false);
+                
                 if (attr != null)
                 {
                     priority = attr.Priority;
@@ -106,6 +110,10 @@ namespace PBBox
                     map.Add(attr.LoaderTypeId, (priority, type));
                 }
             }
+#if PB_TEST_LOG
+            sw.Stop();
+            Log.Debug($"AssetLoader类型Map创建完成,已注册:{map.Count}个加载器,耗时{sw.Elapsed.TotalMilliseconds}ms", nameof(IAssetLoader), Log.PBBoxLoggerName);
+#endif
             return map;
         }
 

@@ -11,8 +11,20 @@ namespace PBBox.UI
     {
         private static readonly Lazy<Dictionary<string, UIRoot>> s_Roots = new Lazy<Dictionary<string, UIRoot>>(System.Threading.LazyThreadSafetyMode.None);
 
-        public static UIRoot Get(string id)
+        public static readonly string DefaultRootId = "_";
+
+        /// <summary>
+        /// 获取指定ID的UIRoot实例。
+        /// 如果ID为空，则返回默认的UIRoot实例。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static UIRoot Get(string id = null)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                id = DefaultRootId;
+            }
             if (s_Roots.IsValueCreated && s_Roots.Value.TryGetValue(id, out var root))
             {
                 return root;
@@ -42,7 +54,7 @@ namespace PBBox.UI
 
         [SerializeField]
         private bool m_DontDestroyOnLoad = false;
-        [SerializeField, Tooltip("若为空，则取GameObject的名称作为该Root的ID")]
+        [SerializeField, Tooltip("若为空，则取默认的UIRootID作为该Root的ID")]
         private string m_RootId = null;
         [SerializeField, Tooltip("自定义默认的ui容器，若为空则默认取自身")]
         private GameObject m_CustomDefaultContainer;
@@ -70,7 +82,7 @@ namespace PBBox.UI
 
         private void Awake()
         {
-            m_RootId = string.IsNullOrEmpty(m_RootId) ? gameObject.name : m_RootId;
+            m_RootId = string.IsNullOrEmpty(m_RootId) ? DefaultRootId : m_RootId;
             if (!RegisterRoot(this))
             {
                 gameObject.SetActive(false);

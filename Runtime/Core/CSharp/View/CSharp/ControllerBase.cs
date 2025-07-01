@@ -40,6 +40,11 @@ namespace PBBox.View
             return m_View;
         }
 
+        protected virtual void OnOpen(){}
+        protected virtual void OnClose(){}
+        protected virtual void OnResume(){}
+        protected virtual void OnPause(){}
+
         public virtual void Open()
         {
             GetView();
@@ -51,6 +56,7 @@ namespace PBBox.View
             {
                 var oldState = State;
                 State = ViewState.Active;
+                OnOpen();
                 m_View.OnOpen();
                 NotifyStateChanged(oldState);
             }
@@ -64,6 +70,7 @@ namespace PBBox.View
             }
             var oldState = State;
             State = ViewState.Closed;
+            OnClose();
             if (HasView())
             {
                 m_View.OnClose();
@@ -79,6 +86,7 @@ namespace PBBox.View
             }
             var oldState = State;
             State = ViewState.Active;
+            OnResume();
             if (HasView())
             {
                 m_View.OnResume();
@@ -93,6 +101,7 @@ namespace PBBox.View
             }
             var oldState = State;
             State = ViewState.Paused;
+            OnPause();
             if (HasView())
             {
                 m_View.OnPause();
@@ -122,7 +131,8 @@ namespace PBBox.View
         protected void NotifyStateChanged(ViewState oldState)
         {
             OnStateChanged?.Invoke(this, oldState);
-            IEventManager.Instance.Emit("event_view_state_changed", this, oldState);
+            //TODO 触发PBBox通用事件
+            //IEventManager.Instance.Emit("event_view_state_changed", this, oldState);
         }
     }
 }

@@ -9,10 +9,10 @@ namespace PBBox.View
     {
         public string Id { get; private set; }
         /// <summary>
-        /// 是否创建表达式创建器
+        /// 是否创建表达式创建器，默认为false
         /// <para>如果为true，则在创建时会使用表达式树来创建，适用于频繁创建该Controller的场景(>20)</para>
         /// </summary>
-        public bool IsCreateExpressionFactory { get; private set; } = false;
+        public bool IsCreateExpressionFactory { get; set; } = false;
 
         /// <summary>
         /// 绑定视图特性基类

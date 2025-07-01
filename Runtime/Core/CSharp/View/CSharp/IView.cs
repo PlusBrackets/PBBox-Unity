@@ -11,10 +11,10 @@ namespace PBBox.View
     /// </summary>
     public interface IView
     {
-        IController GetController();
-        ViewState State => GetController().State;
-        string ID => GetController().ID;
-        
+        IController Controller { get; set; }
+        ViewState State => Controller?.State ?? ViewState.Closed;
+        string ID => Controller?.ID;
+
         bool IsVaild();
 
         void OnOpen();
