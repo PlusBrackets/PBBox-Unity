@@ -17,7 +17,11 @@ namespace PBBox.CEditor.ShaderGUI
 
         public override void OnGUI(Rect position, MaterialProperty prop, GUIContent label, MaterialEditor editor)
         {
+            #if UNITY_6000_1_OR_NEWER
+            if (prop.propertyType == UnityEngine.Rendering.ShaderPropertyType.Vector)
+            #else
             if (prop.type == MaterialProperty.PropType.Vector)
+            #endif
             {
                 EditorGUIUtility.labelWidth = 0f;
                 // EditorGUIUtility.fieldWidth = 0f;
