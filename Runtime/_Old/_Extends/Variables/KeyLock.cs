@@ -13,7 +13,6 @@ namespace PBBox.Properties
     /// <typeparam name="T"></typeparam>
     public class KeyLock<T>
     {   
-        [SerializeField]
         private List<T> locks => _locks.Value;
         private Lazy<List<T>> _locks = new Lazy<List<T>>();
         /// <summary>

@@ -92,7 +92,6 @@ namespace PBBox.Timeline
         public T GetReference<T>(string key) where T : Object => GetReference(key) as T;
     }
 
-    [SerializeField]
     public class PBCmdEmitter : SignalEmitter
     {
         public const string CMD_PREFIX = "CmdTimeline_";
