@@ -15,8 +15,13 @@ namespace PBBox
         {
             // AssetReference a;
             AsyncOperationHandle handler;
+            #if UNITY_6000_5_OR_NEWER
+            System.Lazy<Dictionary<EntityId, AsyncOperationHandle<GameObject>>> m_References = new System.Lazy<Dictionary<EntityId, AsyncOperationHandle<GameObject>>>();
+            Dictionary<EntityId, AsyncOperationHandle<GameObject>> references => m_References.Value;
+            #else
             System.Lazy<Dictionary<int, AsyncOperationHandle<GameObject>>> m_References = new System.Lazy<Dictionary<int, AsyncOperationHandle<GameObject>>>();
             Dictionary<int, AsyncOperationHandle<GameObject>> references => m_References.Value;
+            #endif
             //暂不做处理，外部使用时避免更改数组
             // public override Object[] assets
             // {
@@ -93,7 +98,11 @@ namespace PBBox
                 op.WaitForCompletion();
                 if (op.Status == AsyncOperationStatus.Succeeded)
                 {
+#if UNITY_6000_5_OR_NEWER
+                    references.Add(op.Result.GetEntityId(), op);
+#else
                     references.Add(op.Result.GetInstanceID(), op);
+#endif
                     return op.Result;
                 }
                 return null;
@@ -105,7 +114,11 @@ namespace PBBox
                 await op.Task;
                 if (op.Status == AsyncOperationStatus.Succeeded)
                 {
+#if UNITY_6000_5_OR_NEWER
+                    references.Add(op.Result.GetEntityId(), op);
+#else
                     references.Add(op.Result.GetInstanceID(), op);
+#endif
                     return op.Result;
                 }
                 return null;
@@ -113,7 +126,11 @@ namespace PBBox
 
             public override bool ReleaseInstance(GameObject obj)
             {
+#if UNITY_6000_5_OR_NEWER
+                EntityId id = obj.GetEntityId();
+#else
                 int id = obj.GetInstanceID();
+#endif
                 if (references.TryGetValue(id, out var handler))
                 {
                     if (Addressables.ReleaseInstance(handler))

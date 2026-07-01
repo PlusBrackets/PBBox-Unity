@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
 
-#if !UNITY_2022_1_OR_NEWER || UNITY_6000_0_OR_NEWER
+#if !UNITY_2022_1_OR_NEWER
 using System.Reflection;
 using System.Text.RegularExpressions;
 #endif
@@ -168,7 +168,7 @@ namespace PBBox
         #endregion
 
         #region Console Window Click Trace Plugin
-#if !UNITY_2022_2_OR_NEWER || UNITY_6000_0_OR_NEWER//2022版可以直接使用[HideInCallstack]特性隐藏调用方法
+#if !UNITY_2022_2_OR_NEWER//2022版可以直接使用[HideInCallstack]特性隐藏调用方法
 
         /// <summary>
         /// 利用OnOpenAsset回调，忽略封装的回调路径，打开真实路径

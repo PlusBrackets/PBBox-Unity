@@ -1,3 +1,4 @@
+#if !UNITY_2022_1_OR_NEWER
 using System.Text.RegularExpressions;
 using System;
 using System.Linq;
@@ -110,3 +111,4 @@ namespace PBBox.CEditor
 
     }
 }
+#endif

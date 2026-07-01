@@ -1,3 +1,4 @@
+#if !UNITY_6000_5_OR_NEWER
 /*--------------------------------------------------------
  *Copyright (c) 2022 PlusBrackets
  *@update: 2022.10.22
@@ -225,3 +226,4 @@ namespace PBBox.Timeline
 
     }
 }
+#endif
