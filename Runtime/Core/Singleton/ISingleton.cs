@@ -68,6 +68,8 @@ namespace PBBox
             Type[] setInstanceTypeParameterType = new Type[] { typeof(Type) };
             foreach (var (interfaceType, (instanceType, priority)) in tempMap)
             {
+                ISingleton<IAssetManager>.SetInstanceType<AssetManager2>();
+                // ISingleton<InterfaceType>.SetInstanceType(instanceType);
                 // 获取具体的泛型接口类型
                 Type genericInterfaceType = typeof(ISingleton<>).MakeGenericType(interfaceType);
 
@@ -276,6 +278,10 @@ namespace PBBox
             SetInstanceType(typeof(TType));
         }
 
+        /// <summary>
+        /// 设置单例类型，若已有单例实例，则需要先销毁先前的实例再设置，否则设置失败
+        /// </summary>
+        /// <param name="type"></param>
         public static void SetInstanceType(Type type)
         {
             lock (s_Locker)

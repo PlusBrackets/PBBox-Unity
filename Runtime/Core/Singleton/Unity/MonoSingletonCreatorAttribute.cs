@@ -44,7 +44,11 @@ namespace PBBox
             if (FindInScene)//在场景中寻找脚本作为单例
             {
 #if UNITY_6000_0_OR_NEWER
+#if UNITY_6000_5_OR_NEWER
+                component = GameObject.FindAnyObjectByType(instanceType) as T;
+#else
                 component = GameObject.FindFirstObjectByType(instanceType) as T;
+#endif
 #else
                 component = GameObject.FindObjectOfType(instanceType) as T;
 #endif
