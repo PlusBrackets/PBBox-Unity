@@ -1,3 +1,4 @@
+#if UNITY_5_3_OR_NEWER
 /*--------------------------------------------------------
  *Copyright (c) 2016-2023 PlusBrackets
  *@update: 2023.02.16
@@ -14,9 +15,11 @@ namespace PBBox
     public abstract class MonoSingleton<T> : MonoBehaviour, ISingleton<T> where T : MonoSingleton<T>
     {
         public static T Instance => ISingleton<T>.Instance;
+        public static T InstanceRaw => ISingleton<T>.InstanceRaw;
         public static bool HasInstance() => ISingleton<T>.HasInstance();
         public static void Create() => ISingleton<T>.Create();
         public static void Destroy() => ISingleton<T>.Destroy();
         public static void SetInstance(T newInstance) => ISingleton<T>.SetInstance(newInstance);
     }
 }
+#endif

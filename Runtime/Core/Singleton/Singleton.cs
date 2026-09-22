@@ -15,6 +15,7 @@ namespace PBBox
     public abstract class Singleton<T> : ISingleton<T> where T : class, ISingleton, new()
     {
         public static T Instance => ISingleton<T>.Instance;
+        public static T InstanceRaw => ISingleton<T>.InstanceRaw;
 
         /// <summary>
         /// 是否已有单例实例

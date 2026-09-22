@@ -1,3 +1,4 @@
+#if UNITY_5_3_OR_NEWER
 /*--------------------------------------------------------
  *Copyright (c) 2016-2022 PlusBrackets
  *@update: 2022.12.12
@@ -26,3 +27,4 @@ namespace PBBox
         }
     }
 }
+#endif
