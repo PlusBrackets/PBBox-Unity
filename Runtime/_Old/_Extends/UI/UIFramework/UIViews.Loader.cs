@@ -68,12 +68,12 @@ namespace PBBox.UI
             {
                 view = obj.GetComponent<IUIView>();
                 RegisterUIPrefab(view);
-                DebugUtils.Internal.Info<UIViews>($"Loaded UI: [{uiid}]");
+                Log.Debug($"Loaded UI: [{uiid}]", "UIViews", Log.PBBoxLoggerName);
             }
             else
             {
                 ins.m_LoadedUIList.Remove(uiid);
-                DebugUtils.InfoError<UIViews>($"Can not load UI: [{uiid}], resouce name may be incorrect.");
+                Log.Error($"Can not load UI: [{uiid}], resouce name may be incorrect.", "UIViews", Log.PBBoxLoggerName);
             }
             callBack?.Invoke(view);
             return view;
@@ -98,11 +98,11 @@ namespace PBBox.UI
                 {
                     AssetManager.ReleaseAsset(uiid);
                 }
-                DebugUtils.Info<UIViews>($"Loaded UI: [{uiid}]");
+                Log.Debug($"Loaded UI: [{uiid}]", "UIViews", Log.PBBoxLoggerName);
             }
             else
             {
-                DebugUtils.InfoError<UIViews>($"Can not load UI: [{uiid}], resouce name may be incorrect.");
+                Log.Error($"Can not load UI: [{uiid}], resouce name may be incorrect.", "UIViews", Log.PBBoxLoggerName);
             }
             return view;
         }
@@ -143,7 +143,7 @@ namespace PBBox.UI
         {
             if (!Instance.m_ViewPrefabs.TryAdd(uiPrefab.GetUIID(), uiPrefab))
             {
-                DebugUtils.InfoWarning<UIViews>($"UIPrefabs字典中已存在ID为[{uiPrefab.GetUIID()}]的UI预制体");
+                Log.Warning($"UIPrefabs字典中已存在ID为[{uiPrefab.GetUIID()}]的UI预制体", "UIViews", Log.PBBoxLoggerName);
             }
         }
 

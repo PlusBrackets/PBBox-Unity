@@ -81,11 +81,11 @@ namespace PBBox
             }
 #if UNITY_EDITOR || PB_TEST_LOG
             testCost.Stop();
-            DebugUtils.Internal.Info<DataOperatorManager>($"DataOperator完成加载,已加载:{count},耗时{testCost.Elapsed.TotalMilliseconds}ms"
-                + logs.ToString());
+            Log.Debug($"DataOperator完成加载,已加载:{count},耗时{testCost.Elapsed.TotalMilliseconds}ms"
+                + logs.ToString(), "DataOperatorManager", Log.PBBoxLoggerName);
 #else
                             
-             DebugUtils.Internal.Info<DataOperatorManager>($"DataOperator完成加载,已加载:{count}");
+             Log.Debug($"DataOperator完成加载,已加载:{count}", "DataOperatorManager", Log.PBBoxLoggerName);
 #endif
         }
 
@@ -113,7 +113,7 @@ namespace PBBox
             }
             else
             {
-                DebugUtils.LogError($"DataOperator[key:{key}] has been registered!");
+                Log.Error($"DataOperator[key:{key}] has been registered!", "DataOperatorManager", Log.PBBoxLoggerName);
                 return false;
             }
         }

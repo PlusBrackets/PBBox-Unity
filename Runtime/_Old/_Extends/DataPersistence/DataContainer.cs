@@ -165,7 +165,7 @@ namespace PBBox.Persistence
                 }
                 catch (Exception e)
                 {
-                    DebugUtils.Internal.LogError(e);
+                    Log.Error(e);
                 }
             }
             if (data != null)

@@ -193,7 +193,7 @@ namespace PBBox.UI
             GameObject parentObj = GetViewContainer(canvasID, containerName);
             if (parentObj == null)
             {
-                DebugUtils.LogError($"[{Instance.GetType().Name}]不存在作为Parent的ID为[{(string.IsNullOrEmpty(canvasID) ? DEFAULT_CANVAS_ID : canvasID)}]的Canvas");
+                Log.Error($"[{Instance.GetType().Name}]不存在作为Parent的ID为[{(string.IsNullOrEmpty(canvasID) ? DEFAULT_CANVAS_ID : canvasID)}]的Canvas");
                 return null;
             }
             IUIView view = GameObject.Instantiate(viewPrefab.GetGameObject(), parentObj.transform, false).GetComponent<IUIView>();

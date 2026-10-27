@@ -24,7 +24,7 @@ namespace PBBox.CEditor
         {
             if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
             {
-                DebugUtils.Log("需要选中GameObject");
+                Log.Debug("需要选中GameObject");
                 return;
             }
             else
@@ -41,7 +41,7 @@ namespace PBBox.CEditor
                     });
                 }
                 Selection.objects = objs.ToArray();
-                DebugUtils.Log($"已选中 {objs.Count} 个可拥有IEventSystemHandler的Object");
+                Log.Debug($"已选中 {objs.Count} 个可拥有IEventSystemHandler的Object");
             }
         }
 
@@ -66,13 +66,13 @@ namespace PBBox.CEditor
 
         private void OnWizardCreate()
         {
-            DebugUtils.Log("Modify Start");
+            Log.Debug("Modify Start");
             m_InteractableObjects.Clear();
             string[] _ignoreNameTags = ignoreNameTag.Split(",");
             ModifyTarget(target, false, _ignoreNameTags, null);
             Selection.objects = m_InteractableObjects.ToArray();
             m_InteractableObjects.Clear();
-            DebugUtils.Log("Modify End, Selected interactable object, please check");
+            Log.Debug("Modify End, Selected interactable object, please check");
         }
 
         private void ModifyTarget(GameObject target, bool hasMaskParent, string[] tags,string path)
@@ -104,7 +104,7 @@ namespace PBBox.CEditor
                         }
                         if (!string.IsNullOrEmpty(log))
                         {
-                            DebugUtils.Log(log);
+                            Log.Debug(log);
                         }
                     }
                 }

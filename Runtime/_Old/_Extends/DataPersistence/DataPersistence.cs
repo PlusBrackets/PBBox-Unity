@@ -100,7 +100,7 @@ namespace PBBox.Persistence
         {
             if (m_ContainerDict.ContainsKey(dataID))
             {
-                DebugUtils.Internal.LogWarning($"[PBBox_Persistence]已经注册过该容器[id:{dataID}]");
+                Log.Warning($"[PBBox_Persistence]已经注册过该容器[id:{dataID}]", "DataPersistence", Log.PBBoxLoggerName);
                 return null;
             }
             //if (onRegisterContainer != null)
@@ -169,7 +169,7 @@ namespace PBBox.Persistence
             }
             else
             {
-                DebugUtils.Internal.LogWarning($"[PBBox_Persistence]数据内不存在该容器[id:{dataID}]");
+                Log.Warning($"[PBBox_Persistence]数据内不存在该容器[id:{dataID}]", "DataPersistence", Log.PBBoxLoggerName);
                 return null;
             }
 

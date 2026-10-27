@@ -54,11 +54,11 @@ namespace PBBox
             }
 #if UNITY_EDITOR || PB_TEST_LOG
             testCost.Stop();
-            DebugUtils.Internal.Info<PBCommands>($"PBCommand完成加载,已加载:{methodCount},耗时{testCost.Elapsed.TotalMilliseconds}ms"
-                + logs.ToString());
+            Log.Debug($"PBCommand完成加载,已加载:{methodCount},耗时{testCost.Elapsed.TotalMilliseconds}ms"
+                + logs.ToString(), "PBCommands", Log.PBBoxLoggerName);
 #else
                             
-             DebugUtils.Internal.Info<PBCommands>($"PBCommand完成加载,已加载:{methodCount}");
+             Log.Debug($"PBCommand完成加载,已加载:{methodCount}", "PBCommands", Log.PBBoxLoggerName);
 #endif
         }
 
@@ -108,7 +108,7 @@ namespace PBBox
                     return _result;
                 }
             }
-            DebugUtils.InfoError<PBCommands>($"Cmd cannot return the correct type: [{typeof(ResultT)}]. cmdStr:{cmdStr}");
+            Log.Error($"Cmd cannot return the correct type: [{typeof(ResultT)}]. cmdStr:{cmdStr}", "PBCommands", Log.PBBoxLoggerName);
             return default(ResultT);
         }
 
@@ -170,15 +170,15 @@ namespace PBBox
                     paramStr2 += p.ToString() + ",";
                 }
                 paramStr2 = paramStr2?.TrimEnd(',');
-                DebugUtils.Test.Info<PBCommands>(
+                Log.Debug(
                     $"Cmd [ {cmdKey}{(string.IsNullOrEmpty(paramStr) ? "" : $":{paramStr}")} ]. "
                     + $"Excuted function \"{value.methodInfo.Name}\" in \"{value.methodInfo.DeclaringType}\""
                     + $"{(string.IsNullOrEmpty(paramStr2) ? "" : $", with args: {paramStr2}")}"
                     + $"{(methodResult != null ? ", return: " + methodResult.ToString() : "")}"
-                    + ".");
+                    + ".", "PBCommands", Log.PBBoxLoggerName);
                 return methodResult;
             }
-            DebugUtils.Test.Info<PBCommands>($"Can not found cmd: \"{cmdKey}\"");
+            Log.Debug($"Can not found cmd: \"{cmdKey}\"", "PBCommands", Log.PBBoxLoggerName);
 #else
                 return value.methodInfo.Invoke(null, parameters.ToArray());
             }

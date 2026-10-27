@@ -88,11 +88,11 @@ namespace PBBox.UI
 #if UNITY_EDITOR && PB_TEST_LOG
             onElasticReadyStateChanged.AddListener((d, f) =>
             {
-                DebugUtils.Test.Log("[ScrollViewDragTrigger] " + gameObject.name + " " + d.ToString() + (f ? " ready" : " cancel"));
+                Log.Debug(gameObject.name + " " + d.ToString() + (f ? " ready" : " cancel"), "ScrollViewDragTrigger", Log.PBBoxLoggerName);
             });
             onElasticTrigger.AddListener((d) =>
             {
-                DebugUtils.Test.Log("[ScrollViewDragTrigger] " + gameObject.name + " " + d.ToString() + " trigger");
+                Log.Debug(gameObject.name + " " + d.ToString() + " trigger", "ScrollViewDragTrigger", Log.PBBoxLoggerName);
             });
 #endif
         }

@@ -28,7 +28,7 @@ namespace PBBox.UI
             var viewCanvas = Instance.m_ViewCanvas;
             if (!viewCanvas.TryAdd(c.canvasID, c))
             {
-                DebugUtils.LogError($"[{Instance.GetType().Name}] Canvas字典中已存在ID为[{c.canvasID}]的Canvas");
+                Log.Error($"[{Instance.GetType().Name}] Canvas字典中已存在ID为[{c.canvasID}]的Canvas", "UIViews", Log.PBBoxLoggerName);
                 return false;
             }
             OnCanvasRegisteredEvent?.Invoke(c.canvasID);
