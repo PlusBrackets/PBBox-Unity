@@ -50,6 +50,8 @@ namespace PBBox.UI
         bool m_SetImageActive = true;
         [SerializeField]
         protected string m_SpriteName;
+        [SerializeField]
+        protected AssetLoaderTypes m_SpriteLoaderType = AssetLoaderTypes.Default;
         public bool showOnEnable = false;
         public bool dismissOnDisable = false;
         [Tooltip("设置加载图片的消耗，每帧最大值为100，超过会留到下一帧")]
@@ -66,9 +68,11 @@ namespace PBBox.UI
         Handler m_AsyncHandler;
         public string showingSpriteName => m_AsyncHandler?.SpriteName;
         public bool isShowingSprite => !string.IsNullOrEmpty(m_AsyncHandler?.SpriteName);
+        private IAssetManager m_AssetManager;
 
         protected virtual void Awake()
         {
+            m_AssetManager = IAssetManager.GetInstance();
             m_ImageRenderer = m_Image.GetComponent<CanvasRenderer>();
             if (!isShowingSprite)
             {
@@ -110,6 +114,7 @@ namespace PBBox.UI
             if (m_AsyncHandler.result)
             {
                 AssetManager.ReleaseAsset(m_AsyncHandler.SpriteName);
+                //m_AssetManager.GetLoader(m_AsyncHandler.SpriteName, m_SpriteLoaderType).Release();
             }
         }
 
@@ -124,7 +129,12 @@ namespace PBBox.UI
             ActionQueue.Get(actionQueueName).Do(
                     () => AssetManager.LoadAsset<Sprite>(_handler.SpriteName, sp => OnSpriteLoaded(sp, _handler)),
                     () => _handler != null && !_handler.IsReleased,
-                    cost: 100);
+                    cost: loadCost);
+            //ActionQueue.Get(actionQueueName).Do(
+            //        () => m_AssetManager.GetLoader(_handler.SpriteName, m_SpriteLoaderType).LoadAsync<Sprite>(, sp => OnSpriteLoaded(sp, _handler)),
+            //        () => _handler != null && !_handler.IsReleased,
+            //        cost: loadCost);
+            
         }
 
         private void OnSpriteLoaded(Sprite sp, Handler handler)

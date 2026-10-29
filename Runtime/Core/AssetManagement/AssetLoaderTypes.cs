@@ -17,12 +17,14 @@ namespace PBBox
         /// <para>默认使用Resources加载器</para>
         /// </summary>
         Default = 0,
+#if UNITY_5_3_OR_NEWER
         /// <summary>
         /// Unity从Resources文件夹加载资源
         /// </summary>
         Resources = 1,
         Addressable = 2,
         //AssetBundle = 3,
+#endif
     }
 
     public static partial class PBExtensions

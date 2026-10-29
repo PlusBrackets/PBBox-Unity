@@ -31,5 +31,12 @@ namespace PBBox
         /// <param name="loaderTypeId"></param>
         /// <returns></returns>
         IAssetLoader GetLoader(string key, int loaderTypeId);
+        /// <summary>
+        /// 获得指定类型ID的加载器
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="loaderType"></param>
+        /// <returns></returns>
+        IAssetLoader GetLoader(string key, AssetLoaderTypes loaderType) => GetLoader(key, (int)loaderType);
     }
 }
