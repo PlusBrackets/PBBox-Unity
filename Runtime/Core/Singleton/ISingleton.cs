@@ -25,7 +25,7 @@ namespace PBBox
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void TryAutoInstanceTypes()
         {
-            InitInstaceTypes();
+            InitInstanceTypes();
         }
 #endif
 
@@ -68,7 +68,7 @@ namespace PBBox
             return tempMap;
         }
 
-        protected static void InitInstaceTypes()
+        protected static void InitInstanceTypes()
         {
             lock (s_Locker_Init)
             {
@@ -117,7 +117,7 @@ namespace PBBox
         /// </summary>
         /// <param name="interfaceType"></param>
         /// <param name="instanceType"></param>
-        public static void SetInstanceType(Type interfaceType, Type instanceType)
+        private static void SetInstanceType(Type interfaceType, Type instanceType)
         {
             // ISingleton<InterfaceType>.SetInstanceType(instanceType);
             // 获取具体的泛型接口类型
@@ -145,13 +145,13 @@ namespace PBBox
         /// <summary>
         /// 使用反射重新初始化单例类型映射
         /// </summary>
-        public static void ReInitInstaceTypes()
+        public static void ReInitInstanceTypes()
         {
             lock (s_Locker_Init)
             {
                 s_IsInitialized = false;
             }
-            InitInstaceTypes();
+            InitInstanceTypes();
         }
 
         /// <summary>

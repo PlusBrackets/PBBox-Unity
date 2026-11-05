@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using UnityEngine.PlayerLoop;
 
 namespace PBBox
@@ -27,24 +28,34 @@ namespace PBBox
 
         public static event Action OnCreateEvent;
         public static event Action OnDestroyEvent;
+        /// <summary>
+        /// 获取Instance，若无则创建
+        /// </summary>
 
         public static T Instance => GetInstance();
+        /// <summary>
+        /// 直接访问Instance，不进行HasInstance判定
+        /// </summary>
         public static T InstanceRaw => s_Instance;
 
+        /// <summary>
+        /// 获得Instance，若无则创建
+        /// </summary>
+        /// <returns></returns>
         public static T GetInstance()
         {
             if (!HasInstance())
             {
                 Create();
             }
-            return s_Instance;
+            return Volatile.Read(ref s_Instance);
         }
 
         /// <summary>
         /// 获取单例的具体类型
         /// </summary>
         /// <returns></returns>
-        public static Type GetInstaceType()
+        public static Type GetInstanceType()
         {
             if (s_InstanceType == null)
             {
@@ -59,13 +70,14 @@ namespace PBBox
         /// <returns></returns>
         public static bool HasInstance()
         {
+            var instance = Volatile.Read(ref s_Instance);
 #if UNITY_5_3_OR_NEWER
-            if (s_Instance is UnityEngine.Object uObj)
+            if (instance is UnityEngine.Object uObj)
             {
                 return uObj != null;
             }
 #endif
-            return s_Instance != null;
+            return instance != null;
         }
 
         /// <summary>
@@ -82,12 +94,20 @@ namespace PBBox
                 }
                 if (!s_IsInitialized)
                 {
-                    InitInstaceTypes();
+                    InitInstanceTypes();
                 }
                 if (s_InstanceType == null)
                 {
                     s_InstanceType = typeof(T);
                 }
+                s_Instance = null;
+                //TODO 添加工厂模式避免AOT中CreateInstance失败以及提高性能和拓展构建方式
+                /*
+                if (s_Factory != null)
+                {
+                    s_Instance = s_Factory.Invoke(s_InstanceType);
+                }
+                */
                 if (s_InstanceType.IsDefined(typeof(CustomSingletonCreatorAttribute), false))
                 {
                     CustomSingletonCreatorAttribute attribute = Attribute.GetCustomAttribute(s_InstanceType, typeof(CustomSingletonCreatorAttribute), false) as CustomSingletonCreatorAttribute;
@@ -173,29 +193,30 @@ namespace PBBox
         /// 设置单例类型，若已有单例实例，则需要先销毁先前的实例再设置，否则设置失败
         /// </summary>
         /// <param name="type"></param>
-        public static void SetInstanceType<TType>() where TType : T
+        public static bool SetInstanceType<TType>() where TType : T
         {
-            SetInstanceType(typeof(TType));
+            return SetInstanceType(typeof(TType));
         }
 
         /// <summary>
         /// 设置单例类型，若已有单例实例，则需要先销毁先前的实例再设置，否则设置失败
         /// </summary>
         /// <param name="type"></param>
-        public static void SetInstanceType(Type type)
+        public static bool SetInstanceType(Type type)
         {
             lock (s_Locker)
             {
                 if (s_InstanceType == type)
                 {
-                    return;
+                    return true;
                 }
                 if (HasInstance())
                 {
                     Log.Error($"Instance already exists. Use Destroy() to remove the existing instance before setting a new type.", nameof(T), Log.PBBoxLoggerName);
-                    return;
+                    return false;
                 }
                 s_InstanceType = type;
+                return true;
             }
         }
     }
