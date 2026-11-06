@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 
-namespace PBBox
+namespace PBBox.AssetManagement
 {
     public abstract partial class AssetLoaderBase
     {

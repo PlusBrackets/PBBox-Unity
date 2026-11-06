@@ -44,7 +44,7 @@ namespace PBBox
         /// <summary>
         /// AssetLoader默认的加载器类型ID
         /// </summary>
-        public static int AssetLoaderDefaultId = (int)AssetLoaderTypes.Resources;
+        public static int AssetLoaderDefaultId = (int)AssetLoadType.Resources;
         #endregion
 
 

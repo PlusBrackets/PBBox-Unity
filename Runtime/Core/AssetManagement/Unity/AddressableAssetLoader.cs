@@ -10,9 +10,9 @@ using UnityEngine.AddressableAssets;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace PBBox
+namespace PBBox.AssetManagement
 {
-    [AssetLoaderAssign(AssetLoaderTypes.Addressable, -1)]
+    [AssetLoaderAssign(AssetLoadType.Addressable, -1)]
     public class AddressableAssetLoader : AssetLoaderBase
     {
         //[AssetLoaderCreateMethod]
@@ -55,11 +55,11 @@ namespace PBBox
             return m_Handler.WaitForCompletion() as IList<TAsset>;
         }
 
-        protected override async Task<IList<TAsset>> DoLoadsAsync<TAsset>()
+        protected override async Task<IList<TAsset>> DoLoadsAsync<TAsset>(System.Action<TAsset> onLoadOne)
         {
             if (!m_Handler.IsValid())
             {
-                m_Handler = Addressables.LoadAssetsAsync<TAsset>(Key, null);
+                m_Handler = Addressables.LoadAssetsAsync<TAsset>(Key, onLoadOne);
             }
             return await m_Handler.Task as IList<TAsset>;
         }
@@ -72,7 +72,6 @@ namespace PBBox
                 m_Handler = default;
             }
         }
-
 
         public override bool IsVaild()
         {

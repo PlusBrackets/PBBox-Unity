@@ -59,7 +59,8 @@ namespace PBBox
             {
                 if (fromAssetManager)
                 {
-                    template = AssetManager.LoadAssetSync<GameObject>(name)?.GetComponent<AudioSource>();
+                    //template = AssetManager.LoadAssetSync<GameObject>(name)?.GetComponent<AudioSource>();
+                    template = IAssetManager.Instance.LoadAsset<AudioSource>(name, AssetLoadType.Addressable);
                     if (template != null)
                     {
                         m_TemplatesFromAssetManager.Value.Add(name);
@@ -79,7 +80,8 @@ namespace PBBox
         {
             if (m_TemplatesFromAssetManager.Value.Contains(name))
             {
-                AssetManager.ReleaseAsset(name);
+                //AssetManager.ReleaseAsset(name);
+                IAssetManager.Instance.ReleaseAsset(name, AssetLoadType.Addressable);
                 m_TemplatesFromAssetManager.Value.Remove(name);
             }
             m_SourceTemplates[name] = template;
@@ -141,7 +143,8 @@ namespace PBBox
                 _source.loop = loop.Value;
             if (!string.IsNullOrEmpty(audioName))
             {
-                _source.clip = AssetManager.LoadAssetSync<AudioClip>(audioName);
+                //_source.clip = AssetManager.LoadAssetSync<AudioClip>(audioName);
+                _source.clip = IAssetManager.Instance.LoadAsset<AudioClip>(audioName, AssetLoadType.Addressable);
             }
             float _dur = fixedDuration.HasValue ? fixedDuration.Value : -1;
             apo.lifeTime = _dur;

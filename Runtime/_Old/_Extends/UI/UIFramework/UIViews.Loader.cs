@@ -62,7 +62,8 @@ namespace PBBox.UI
                 return Instance.m_ViewPrefabs[uiid];
             var ins = Instance;
             ins.m_LoadedUIList.Add(uiid);
-            GameObject obj = await AssetManager.LoadAssetAsync<GameObject>(uiid);
+            //GameObject obj = await AssetManager.LoadAssetAsync<GameObject>(uiid);
+            GameObject obj = await IAssetManager.Instance.LoadAssetAsync<GameObject>(uiid, AssetLoadType.Addressable);
             IUIView view = null;
             if (obj != null)
             {
@@ -88,7 +89,8 @@ namespace PBBox.UI
         {
             if (IsLoaded(uiid))
                 return Instance.m_ViewPrefabs[uiid];
-            GameObject obj = AssetManager.LoadAssetSync<GameObject>(uiid);
+            //GameObject obj = AssetManager.LoadAssetSync<GameObject>(uiid);
+            GameObject obj = IAssetManager.Instance.LoadAsset<GameObject>(uiid, AssetLoadType.Addressable);
             IUIView view = null;
             if (obj != null)
             {
@@ -96,7 +98,8 @@ namespace PBBox.UI
                 RegisterUIPrefab(view);
                 if (!Instance.m_LoadedUIList.Add(uiid))
                 {
-                    AssetManager.ReleaseAsset(uiid);
+                    //AssetManager.ReleaseAsset(uiid);
+                    IAssetManager.Instance.ReleaseAsset(uiid, ref obj, AssetLoadType.Addressable);
                 }
                 Log.Debug($"Loaded UI: [{uiid}]", "UIViews", Log.PBBoxLoggerName);
             }
@@ -117,7 +120,8 @@ namespace PBBox.UI
             UnregisterUIPrefab(uiid);
             if (Instance.m_LoadedUIList.Contains(uiid))
             {
-                AssetManager.ReleaseAsset(uiid);
+                //AssetManager.ReleaseAsset(uiid);
+                IAssetManager.Instance.ReleaseAsset(uiid, AssetLoadType.Addressable);
                 Instance.m_LoadedUIList.Remove(uiid);
             }
         }

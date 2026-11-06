@@ -62,7 +62,11 @@ namespace PBBox
             }
             if (!string.IsNullOrEmpty(assetName))
             {
-                AssetManager.ReleaseAsset(assetName);
+                //AssetManager.ReleaseAsset(assetName);
+                if (IAssetManager.HasInstance())
+                {
+                    IAssetManager.Instance.ReleaseAsset(assetName, AssetLoadType.Addressable);
+                }
                 assetName = null;
             }
         }

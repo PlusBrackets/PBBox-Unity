@@ -22,7 +22,7 @@ namespace PBBox
             Priority = priority;
         }
 
-        public AssetLoaderAssignAttribute(AssetLoaderTypes loaderType, int priority = 0)
+        public AssetLoaderAssignAttribute(AssetLoadType loaderType, int priority = 0)
         {
             LoaderTypeId = (int)loaderType;
             Priority = priority;

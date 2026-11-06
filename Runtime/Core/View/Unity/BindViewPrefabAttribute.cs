@@ -7,7 +7,7 @@ namespace PBBox.View
     public class BindViewPrefabAttribute : BindViewAttributeBase
     {
         public string AssetPath { get; set; }
-        public AssetLoaderTypes LoaderTypes { get; set; } = AssetLoaderTypes.Default;
+        public AssetLoadType LoaderTypes { get; set; } = AssetLoadType.Default;
         private PrefabViewFactory m_PrefabViewFactory;
 
         public BindViewPrefabAttribute(string id) : base(id)

@@ -12,13 +12,13 @@ namespace PBBox.View
         
         //public string AssetPath { get; }
         //public AssetLoaderTypes LoaderTypes { get; } = AssetLoaderTypes.Default;
-        private AssetLoadHandle m_AssetHandle;
+        private AssetHandle<GameObject> m_AssetHandle;
 
-        public PrefabViewFactory(string assetPath, AssetLoaderTypes loaderTypes = AssetLoaderTypes.Default)
+        public PrefabViewFactory(string assetPath, AssetLoadType loaderTypes = AssetLoadType.Default)
         {
             //AssetPath = assetPath;
             //LoaderTypes = loaderTypes;
-            m_AssetHandle = new AssetLoadHandle(assetPath, loaderTypes);
+            m_AssetHandle = new AssetHandle<GameObject>(assetPath, loaderTypes);
         }
 
         IView IViewFactory.CreateView(IController controller)
@@ -32,7 +32,7 @@ namespace PBBox.View
             //}
             //else
             //{
-            var prefab = m_AssetHandle.Load<GameObject>();
+            var prefab = m_AssetHandle.GetOrLoad();
             //}
             if (prefab == null)
             {
@@ -58,8 +58,8 @@ namespace PBBox.View
                 // 如果已经加载过了，就不需要再次加载
                 return true;
             }
-            var obj = await m_AssetHandle.LoadAsync<GameObject>();
-            m_AssetHandle.Release();
+            var obj = await m_AssetHandle.GetOrLoadAsync();
+            //m_AssetHandle.Release();
             if (obj == null)
             {
                 Log.Error($"Failed to preload prefab from path: {m_AssetHandle.Key}", nameof(PrefabViewFactory), Log.PBBoxLoggerName);

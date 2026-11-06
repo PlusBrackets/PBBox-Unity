@@ -6,9 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NUnit.Framework;
 
-namespace PBBox
+namespace PBBox.AssetManagement
 {
     public abstract partial class AssetLoaderBase : IAssetLoader
     {
@@ -20,12 +19,18 @@ namespace PBBox
         protected Task m_LoadingTask = null;
         protected abstract string LogTag { get; }
 
+
         public AssetLoaderBase(string key)
         {
             Key = key;
         }
+        
+        public object GetAssetDirect()
+        {
+            return m_Asset;
+        }
 
-        public TAsset GetAsset<TAsset>() where TAsset : class
+        public TAsset GetAssetDirect<TAsset>() where TAsset : class
         {
             if (m_Asset is TAsset typedAsset)
             {
@@ -38,7 +43,7 @@ namespace PBBox
             return null;
         }
 
-        public IList<TAsset> GetAssets<TAsset>() where TAsset : class
+        public IList<TAsset> GetAssetsDirect<TAsset>() where TAsset : class
         {
             if (m_Asset is IList<TAsset> typedAssets)
             {
@@ -66,34 +71,44 @@ namespace PBBox
             return m_Asset as TAsset;
         }
 
-        public async Task<TAsset> LoadAsync<TAsset>() where TAsset : class
+        public async Task<TAsset> LoadAsync<TAsset>(Action<TAsset> onFinish = null) where TAsset : class
         {
             ReferenceCount++;
+            TAsset asset = null;
             if (IsVaild())
             {
-                return m_Asset as TAsset;
+                asset = m_Asset as TAsset;
             }
             else if (m_LoadingTask != null)
             {
+                // 等待之前的加载完成
                 if (m_LoadingTask is Task<TAsset> assetTask)
                 {
-                    return await assetTask;
+                    asset = await assetTask;
                 }
                 else
                 {
                     Log.Error($"Loading task is not of type Task<{nameof(TAsset)}>.", LogTag, Log.PBBoxLoggerName);
                 }
             }
+            if (asset != null)
+            {
+                onFinish?.Invoke(asset);
+                return asset;
+            }
+            // 开始加载
 #if PB_TEST_LOG
             Log.Debug($"Starting async load for asset: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
             m_LoadingTask = DoLoadAsync<TAsset>();
-            m_Asset = await (m_LoadingTask as Task<TAsset>);
+            asset = await (m_LoadingTask as Task<TAsset>);
+            m_Asset = asset;
             m_LoadingTask = null;
 #if PB_TEST_LOG
             Log.Debug($"Async asset loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
-            return m_Asset as TAsset;
+            onFinish?.Invoke(asset);
+            return asset;
         }
 
         public IList<TAsset> LoadAll<TAsset>() where TAsset : class
@@ -110,34 +125,48 @@ namespace PBBox
             return m_Asset as IList<TAsset>;
         }
 
-        public async Task<IList<TAsset>> LoadAllAsync<TAsset>() where TAsset : class
+        public async Task<IList<TAsset>> LoadAllAsync<TAsset>(Action<IList<TAsset>> onFinish = null, Action<TAsset> onLoadOne = null) where TAsset : class
         {
             ReferenceCount++;
+            IList<TAsset> assets = null;
             if (IsVaild())
             {
-                return m_Asset as IList<TAsset>;
+                assets = m_Asset as IList<TAsset>;
             }
             else if (m_LoadingTask != null)
             {
+                // 等待之前的加载完成
                 if (m_LoadingTask is Task<IList<TAsset>> assetTask)
                 {
-                    return await assetTask;
+                    assets = await assetTask;
                 }
                 else
                 {
                     Log.Error($"Loading task is not of type Task< IList<{nameof(TAsset)}>.", LogTag, Log.PBBoxLoggerName);
                 }
             }
+            if (assets != null)
+            {
+                foreach (var asset in assets)
+                {
+                    onLoadOne?.Invoke(asset);
+                }
+                onFinish?.Invoke(assets);
+                return assets;
+            }
+            // 开始加载
 #if PB_TEST_LOG
             Log.Debug($"Starting async load for assets: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
-            m_LoadingTask = DoLoadsAsync<TAsset>();
-            m_Asset = await (m_LoadingTask as Task<IList<TAsset>>);
+            m_LoadingTask = DoLoadsAsync<TAsset>(onLoadOne);
+            assets = await (m_LoadingTask as Task<IList<TAsset>>);
             m_LoadingTask = null;
+            m_Asset = assets;
 #if PB_TEST_LOG
             Log.Debug($"Async assets loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
-            return m_Asset as IList<TAsset>;
+            onFinish?.Invoke(assets);
+            return assets;
         }
 
         public void Release()
@@ -148,6 +177,8 @@ namespace PBBox
             {
                 if (m_LoadingTask != null && !m_LoadingTask.IsCompleted)
                 {
+                    //TODO 有问题，后续在AssetManager实现按释放策略时进行处理
+                    ReferenceCount = 1; // 将引用计数恢复为1，等待加载完成后再释放
                     m_LoadingTask.ContinueWith(t =>
                     {
                         Release();
@@ -167,7 +198,7 @@ namespace PBBox
         protected abstract TAsset DoLoad<TAsset>() where TAsset : class;
         protected abstract Task<TAsset> DoLoadAsync<TAsset>() where TAsset : class;
         protected abstract IList<TAsset> DoLoads<TAsset>() where TAsset : class;
-        protected abstract Task<IList<TAsset>> DoLoadsAsync<TAsset>() where TAsset : class;
+        protected abstract Task<IList<TAsset>> DoLoadsAsync<TAsset>(Action<TAsset> onLoadOne) where TAsset : class;
         protected abstract void OnReleaseAsset();
     }
 }

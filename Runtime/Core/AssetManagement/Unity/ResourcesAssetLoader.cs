@@ -7,11 +7,10 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEditor;
 
-namespace PBBox
+namespace PBBox.AssetManagement
 {
-    [AssetLoaderAssign(AssetLoaderTypes.Resources, -1)]
+    [AssetLoaderAssign(AssetLoadType.Resources, -1)]
     public class ResourcesAssetLoader : AssetLoaderBase
     {
         //[AssetLoaderCreateMethod]
@@ -54,10 +53,17 @@ namespace PBBox
             return ConvertToList<TAsset>(array);
         }
 
-        protected override Task<IList<TAsset>> DoLoadsAsync<TAsset>()
+        protected override Task<IList<TAsset>> DoLoadsAsync<TAsset>(System.Action<TAsset> onLoadOne)
         {
             // Unity's Resources API does not support async loading for multiple assets.
             var result = DoLoads<TAsset>();
+            if(onLoadOne != null)
+            {
+                foreach (var asset in result)
+                {
+                    onLoadOne.Invoke(asset);
+                }
+            }
             return Task.FromResult(result);
         }
 

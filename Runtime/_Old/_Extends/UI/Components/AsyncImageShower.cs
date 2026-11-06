@@ -51,7 +51,7 @@ namespace PBBox.UI
         [SerializeField]
         protected string m_SpriteName;
         [SerializeField]
-        protected AssetLoaderTypes m_SpriteLoaderType = AssetLoaderTypes.Default;
+        protected AssetLoadType m_SpriteLoaderType = AssetLoadType.Default;
         public bool showOnEnable = false;
         public bool dismissOnDisable = false;
         [Tooltip("设置加载图片的消耗，每帧最大值为100，超过会留到下一帧")]
@@ -113,8 +113,11 @@ namespace PBBox.UI
             m_AsyncHandler.Release();
             if (m_AsyncHandler.result)
             {
-                AssetManager.ReleaseAsset(m_AsyncHandler.SpriteName);
-                //m_AssetManager.GetLoader(m_AsyncHandler.SpriteName, m_SpriteLoaderType).Release();
+                //AssetManager.ReleaseAsset(m_AsyncHandler.SpriteName);
+                if (IAssetManager.HasInstance())
+                {
+                   IAssetManager.Instance.ReleaseAsset(m_AsyncHandler.SpriteName, ref m_AsyncHandler.result, (int)m_SpriteLoaderType);
+                }
             }
         }
 
@@ -126,14 +129,14 @@ namespace PBBox.UI
             Dismiss();
             m_AsyncHandler = new Handler(spName);
             var _handler = m_AsyncHandler;
-            ActionQueue.Get(actionQueueName).Do(
-                    () => AssetManager.LoadAsset<Sprite>(_handler.SpriteName, sp => OnSpriteLoaded(sp, _handler)),
-                    () => _handler != null && !_handler.IsReleased,
-                    cost: loadCost);
             //ActionQueue.Get(actionQueueName).Do(
-            //        () => m_AssetManager.GetLoader(_handler.SpriteName, m_SpriteLoaderType).LoadAsync<Sprite>(, sp => OnSpriteLoaded(sp, _handler)),
+            //        () => AssetManager.LoadAsset<Sprite>(_handler.SpriteName, sp => OnSpriteLoaded(sp, _handler)),
             //        () => _handler != null && !_handler.IsReleased,
             //        cost: loadCost);
+            ActionQueue.Get(actionQueueName).Do(
+                    () => m_AssetManager.LoadAssetAsync<Sprite>(_handler.SpriteName, m_SpriteLoaderType, sp => OnSpriteLoaded(sp, _handler)),
+                    () => _handler != null && !_handler.IsReleased,
+                    cost: loadCost);
             
         }
 
@@ -141,7 +144,11 @@ namespace PBBox.UI
         {
             if (!this || handler.IsReleased || handler != m_AsyncHandler)
             {
-                AssetManager.ReleaseAsset(handler.SpriteName);
+                //AssetManager.ReleaseAsset(handler.SpriteName);
+                if (IAssetManager.HasInstance())
+                {
+                    IAssetManager.Instance.ReleaseAsset(handler.SpriteName, ref handler.result, (int)m_SpriteLoaderType);
+                }
             }
             else if (sp != null)
             {
@@ -170,7 +177,11 @@ namespace PBBox.UI
             m_AsyncHandler.Release();
             if (m_AsyncHandler.result)
             {
-                AssetManager.ReleaseAsset(m_AsyncHandler.SpriteName);
+                //AssetManager.ReleaseAsset(m_AsyncHandler.SpriteName);
+                if (IAssetManager.HasInstance())
+                {
+                    IAssetManager.Instance.ReleaseAsset(m_AsyncHandler.SpriteName, ref m_AsyncHandler.result, (int)m_SpriteLoaderType);
+                }
             }
             m_AsyncHandler = null;
             OnSpriteDismiss();
