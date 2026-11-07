@@ -5,7 +5,7 @@
  --------------------------------------------------------*/
 using System;
 
-namespace PBBox
+namespace PBBox.AssetManagement
 {
 
     /// <summary>

@@ -32,18 +32,18 @@ namespace PBBox.AssetManagement
         /// </summary>
         /// <returns></returns>
         object GetAssetDirect();
-        /// <summary>
-        /// 直接获取资源对象，不会加载资源和增加引用计数。
-        /// </summary>
-        /// <typeparam name="TAsset"></typeparam>
-        /// <returns></returns>
-        TAsset GetAssetDirect<TAsset>() where TAsset : class;
-        /// <summary>
-        /// 直接获取资源对象数组，不会加载资源和增加引用计数。
-        /// </summary>
-        /// <typeparam name="TAsset"></typeparam>
-        /// <returns></returns>
-        IList<TAsset> GetAssetsDirect<TAsset>() where TAsset : class;
+        ///// <summary>
+        ///// 直接获取资源对象，不会加载资源和增加引用计数。
+        ///// </summary>
+        ///// <typeparam name="TAsset"></typeparam>
+        ///// <returns></returns>
+        //TAsset GetAssetDirect<TAsset>() where TAsset : class;
+        ///// <summary>
+        ///// 直接获取资源对象数组，不会加载资源和增加引用计数。
+        ///// </summary>
+        ///// <typeparam name="TAsset"></typeparam>
+        ///// <returns></returns>
+        //IList<TAsset> GetAssetsDirect<TAsset>() where TAsset : class;
 
         /// <summary>
         /// 加载一次资源对象，并增加引用计数。

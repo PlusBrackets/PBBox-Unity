@@ -11,7 +11,7 @@ using PBBox.AssetManagement;
 namespace PBBox
 {
     [System.Serializable]
-    public partial struct AssetHandle<TAsset> : IDisposable where TAsset : class
+    public class AssetHandle<TAsset> : IDisposable where TAsset : class
     {
         [NonSerialized]
         private TAsset m_Asset;

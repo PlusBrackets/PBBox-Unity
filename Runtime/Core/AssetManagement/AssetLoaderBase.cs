@@ -30,27 +30,27 @@ namespace PBBox.AssetManagement
             return m_Asset;
         }
 
-        public TAsset GetAssetDirect<TAsset>() where TAsset : class
-        {
-            if (m_Asset is TAsset typedAsset)
-            {
-                return typedAsset;
-            }
-            else if (m_Asset is IList<TAsset> typedAssets && typedAssets.Count > 0)
-            {
-                return typedAssets[0];
-            }
-            return null;
-        }
-
-        public IList<TAsset> GetAssetsDirect<TAsset>() where TAsset : class
-        {
-            if (m_Asset is IList<TAsset> typedAssets)
-            {
-                return typedAssets;
-            }
-            return null;
-        }
+//        public TAsset GetAssetDirect<TAsset>() where TAsset : class
+//        {
+//            if (m_Asset is TAsset typedAsset)
+//            {
+//                return typedAsset;
+//            }
+//            else if (m_Asset is IList<TAsset> typedAssets && typedAssets.Count > 0)
+//            {
+//                return typedAssets[0];
+//            }
+//            return null;
+//        }
+//
+//        public IList<TAsset> GetAssetsDirect<TAsset>() where TAsset : class
+//        {
+//            if (m_Asset is IList<TAsset> typedAssets)
+//            {
+//                return typedAssets;
+//            }
+//            return null;
+//        }
 
         public virtual bool IsVaild()
         {

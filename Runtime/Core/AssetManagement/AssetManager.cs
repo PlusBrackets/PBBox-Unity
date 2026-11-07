@@ -13,18 +13,18 @@ using System.Threading.Tasks;
 namespace PBBox.AssetManagement
 {
     [SingletonPriority(-1)]
-    internal sealed partial class AssetManager2 : IAssetManager, ISingletonLifecycle
+    internal sealed partial class AssetManager : IAssetManager, ISingletonLifecycle
     {
         public void OnCreateAsSingleton()
         {
             // 预热加载器类型Map，确保在第一次使用时不会有性能损耗
-            WarmupLoaderTypeMap();
+            //WarmupLoaderTypeMap();
+            RegisterLoaderFactories();
         }
 
-        public void OnDestroyAsSingleton()
-        {
+        public void OnDestroyAsSingleton() { }
 
-        }
+        partial void RegisterLoaderFactories();
 
         public TAsset LoadAsset<TAsset>(string key, int loadType = (int)AssetLoadType.Default) where TAsset : class
         {
@@ -91,7 +91,7 @@ namespace PBBox.AssetManagement
                 // 检查传入的asset是否与loader中加载的资源一致
                 if (loader.GetAssetDirect() as TAsset != asset)
                 {
-                    Log.Error($"The asset provided for release does not match the loaded asset for key '{key}'.", nameof(IAssetManager), Log.PBBoxLoggerName);
+                    Log.Error($"The asset provided for release does not match the loaded asset for key '{key}'. Loader asset Type: {loader.GetAssetDirect()?.GetType().Name}, Provided asset Type: {asset?.GetType().Name}", nameof(IAssetManager), Log.PBBoxLoggerName);
                     return;
                 }
                 asset = null;
