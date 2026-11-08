@@ -1,3 +1,4 @@
+#if UNITY_5_3_OR_NEWER
 /*--------------------------------------------------------
  *Copyright (c) 2016-2025 PlusBrackets
  *@update: 2025.06.03
@@ -11,7 +12,7 @@ namespace PBBox.AssetManagement
 {
     public abstract partial class AssetLoaderBase
     {
-        protected bool IsVaildUnity()
+        protected bool IsAssetVaildUnity()
         {
             if (m_Asset is Object unityObject)
             {
@@ -38,3 +39,4 @@ namespace PBBox.AssetManagement
         }
     }
 }
+#endif

@@ -30,7 +30,10 @@ namespace PBBox.AssetManagement
             var container = GetContainer(loadTypeId);
             if (container == null)
             {
-                container = new Container { LoaderTypeId = loadTypeId };
+                container = new Container
+                {
+                    LoaderTypeId = loadTypeId
+                };
                 m_LoaderContainers.Add(container);
             }
             container.LoaderFactory = loaderFactory;
@@ -48,7 +51,8 @@ namespace PBBox.AssetManagement
         /// </summary>
         /// <param name="loadTypeId"></param>
         /// <returns></returns>
-        public static int GetRealLoadTypeId(int loadTypeId)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetRealLoadTypeId(int loadTypeId)
         {
             switch (loadTypeId)
             {
@@ -59,7 +63,7 @@ namespace PBBox.AssetManagement
             }
         }
 
-        public IAssetLoader GetLoader(string key, int loadTypeId)
+        private IAssetLoader GetLoader(string key, int loadTypeId)
         {
             var container = GetContainer(loadTypeId);
             if (container == null)

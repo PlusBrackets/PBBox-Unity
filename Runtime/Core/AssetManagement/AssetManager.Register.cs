@@ -15,5 +15,10 @@ namespace PBBox.AssetManagement
             RegisterLoaderFactory((int)AssetLoadType.Addressable, key => new AddressableAssetLoader(key));
             RegisterLoaderFactory((int)AssetLoadType.Resources, key => new ResourcesAssetLoader(key));
         }
+
+        partial void RegisterDefaultUnloadStrategy()
+        {
+            SetUnloadStrategy(PBBoxSettings.AssetManagerDefaultUnloadStrategy);
+        }
     }
 }

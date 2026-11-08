@@ -25,13 +25,6 @@ namespace PBBox.AssetManagement
         /// <param name="loadTypeId"></param>
         /// <returns></returns>
         Func<string, IAssetLoader> GetLoaderFactory(int loadTypeId);
-        /// <summary>
-        /// 获取指定类型ID的资源加载器
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="loadTypeId"></param>
-        /// <returns></returns>
-        IAssetLoader GetLoader(string key, int loadTypeId = (int)AssetLoadType.Default);
 
     }
 }

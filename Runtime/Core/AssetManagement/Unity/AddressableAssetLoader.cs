@@ -1,13 +1,12 @@
+#if UNITY_5_3_OR_NEWER
 /*--------------------------------------------------------
  *Copyright (c) 2016-2025 PlusBrackets
  *@update: 2025.06.03
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System.Threading.Tasks;
-using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.AddressableAssets;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace PBBox.AssetManagement
@@ -28,7 +27,7 @@ namespace PBBox.AssetManagement
         {
         }
 
-        protected override TAsset DoLoad<TAsset>()
+        protected override TAsset LoadImpl<TAsset>()
         {
             if (!m_Handler.IsValid())
             {
@@ -37,16 +36,17 @@ namespace PBBox.AssetManagement
             return m_Handler.WaitForCompletion() as TAsset;
         }
 
-        protected override async Task<TAsset> DoLoadAsync<TAsset>()
+        protected override async Task<TAsset> LoadImplAsync<TAsset>()
         {
             if (!m_Handler.IsValid())
             {
                 m_Handler = Addressables.LoadAssetAsync<TAsset>(Key);
             }
-            return await m_Handler.Task as TAsset;
+            var task = await m_Handler.Task as TAsset;
+            return task;
         }
 
-        protected override IList<TAsset> DoLoads<TAsset>()
+        protected override IList<TAsset> LoadAllImpl<TAsset>()
         {
             if (!m_Handler.IsValid())
             {
@@ -55,7 +55,7 @@ namespace PBBox.AssetManagement
             return m_Handler.WaitForCompletion() as IList<TAsset>;
         }
 
-        protected override async Task<IList<TAsset>> DoLoadsAsync<TAsset>(System.Action<TAsset> onLoadOne)
+        protected override async Task<IList<TAsset>> LoadAllImplAsync<TAsset>(System.Action<TAsset> onLoadOne)
         {
             if (!m_Handler.IsValid())
             {
@@ -64,18 +64,20 @@ namespace PBBox.AssetManagement
             return await m_Handler.Task as IList<TAsset>;
         }
 
-        protected override void OnReleaseAsset()
+        protected override bool UnloadImpl()
         {
             if (m_Handler.IsValid())
             {
                 Addressables.Release(m_Handler);
                 m_Handler = default;
             }
+            return true;
         }
 
-        public override bool IsVaild()
+        public override bool IsAssetVaild()
         {
-            return base.IsVaild() && IsVaildUnity();
+            return base.IsAssetVaild() && IsAssetVaildUnity();
         }
     }
 }
+#endif

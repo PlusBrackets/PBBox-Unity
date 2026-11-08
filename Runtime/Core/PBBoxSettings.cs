@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using PBBox.AssetManagement;
 
 namespace PBBox
 {
@@ -45,6 +46,10 @@ namespace PBBox
         /// AssetLoader默认的加载器类型ID
         /// </summary>
         public static int AssetLoaderDefaultId = (int)AssetLoadType.Resources;
+        /// <summary>
+        /// AssetManager默认的资源释放策略
+        /// </summary>
+        public static AssetUnloadStrategy AssetManagerDefaultUnloadStrategy = AssetUnloadStrategy.Immediate;
         #endregion
 
 

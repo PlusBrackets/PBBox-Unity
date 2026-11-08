@@ -1,3 +1,4 @@
+#if UNITY_5_3_OR_NEWER
 /*--------------------------------------------------------
  *Copyright (c) 2016-2025 PlusBrackets
  *@update: 2025.06.03
@@ -25,12 +26,12 @@ namespace PBBox.AssetManagement
         {
         }
 
-        protected override TAsset DoLoad<TAsset>()
+        protected override TAsset LoadImpl<TAsset>()
         {
             return Resources.Load(Key, typeof(TAsset)) as TAsset;
         }
 
-        protected override async Task<TAsset> DoLoadAsync<TAsset>()
+        protected override async Task<TAsset> LoadImplAsync<TAsset>()
         {
             var tcs = new TaskCompletionSource<TAsset>();
             Resources.LoadAsync(Key, typeof(TAsset)).completed += (op) =>
@@ -47,17 +48,17 @@ namespace PBBox.AssetManagement
             return await tcs.Task;
         }
 
-        protected override IList<TAsset> DoLoads<TAsset>()
+        protected override IList<TAsset> LoadAllImpl<TAsset>()
         {
             var array = Resources.LoadAll(Key, typeof(TAsset));
             return ConvertToList<TAsset>(array);
         }
 
-        protected override Task<IList<TAsset>> DoLoadsAsync<TAsset>(System.Action<TAsset> onLoadOne)
+        protected override Task<IList<TAsset>> LoadAllImplAsync<TAsset>(System.Action<TAsset> onLoadOne)
         {
             // Unity's Resources API does not support async loading for multiple assets.
-            var result = DoLoads<TAsset>();
-            if(onLoadOne != null)
+            var result = LoadAllImpl<TAsset>();
+            if (onLoadOne != null)
             {
                 foreach (var asset in result)
                 {
@@ -67,9 +68,9 @@ namespace PBBox.AssetManagement
             return Task.FromResult(result);
         }
 
-        protected override void OnReleaseAsset()
+        protected override bool UnloadImpl()
         {
-            if (m_Asset != null)
+            if (IsAssetVaild())
             {
                 if (m_Asset is Object asset)
                 {
@@ -83,6 +84,7 @@ namespace PBBox.AssetManagement
                     }
                 }
             }
+            return true;
         }
 
         protected void TryUnloadAsset(object asset)
@@ -96,10 +98,11 @@ namespace PBBox.AssetManagement
                 Resources.UnloadAsset(unityObject);
             }
         }
-        
-        public override bool IsVaild()
+
+        public override bool IsAssetVaild()
         {
-            return base.IsVaild() && IsVaildUnity();
+            return base.IsAssetVaild() && IsAssetVaildUnity();
         }
     }
 }
+#endif

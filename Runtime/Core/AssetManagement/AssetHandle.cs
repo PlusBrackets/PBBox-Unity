@@ -4,9 +4,7 @@
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using PBBox.AssetManagement;
 
 namespace PBBox
 {
@@ -55,27 +53,6 @@ namespace PBBox
             m_Asset = null;
             m_LoadType = other.m_LoadType;
         }
-
-        //public IAssetLoader GetAssetLoader()
-        //{
-        //    if (m_Loader != null)
-        //    {
-        //        return m_Loader;
-        //    }
-        //    var manager = IAssetManager.Instance;
-        //    if (manager == null)
-        //    {
-        //        Log.Error("AssetManager is not initialized.", "AssetLoadHandle", Log.PBBoxLoggerName);
-        //        return null;
-        //    }
-        //    m_Loader = manager.GetLoader(Key, (int)m_LoaderTypeId);
-        //    if (m_Loader == null)
-        //    {
-        //        Log.Error($"AssetLoader '{Key}' not found.", "AssetLoadHandle", Log.PBBoxLoggerName);
-        //        return null;
-        //    }
-        //    return m_Loader;
-        //}
 
         public bool IsVaild()
         {
