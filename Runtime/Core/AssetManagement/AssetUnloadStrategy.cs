@@ -12,15 +12,15 @@ namespace PBBox.AssetManagement
         /// <summary>
         /// 是否手动释放资源，如果为true，则需要手动调用ReleaseAssetHandle来释放资源，否则将根据设定的策略自动释放资源。
         /// </summary>
-        public bool isManual;
+        public bool IsManual;
         /// <summary>
         /// 每隔多少毫秒尝试释放一次资源，小于等于0或null表示不尝试。
         /// </summary>
-        public uint intervalMs;
+        public uint IntervalMs;
         /// <summary>
         /// 延迟多少毫秒后释放资源，从引用计数为0开始计时，重新引用时会重置计时器。小于等于0或null表示不延迟。
         /// </summary>
-        public uint delayMs;
+        public uint DelayMs;
 
         //TODO 考虑内存使用量相关的策略，目前暂时注释掉
         ///// <summary>
@@ -35,21 +35,21 @@ namespace PBBox.AssetManagement
         /// <summary>
         /// 每次释放资源的最大数量，超过该数量的资源将会在下一帧再释放。小于等于0则无限
         /// </summary>
-        public uint maxUnloadCountPerFrame;
+        public uint MaxUnloadCountPerFrame;
 
-        public bool IsImmediate => !isManual && intervalMs == 0 && delayMs == 0;
+        public bool IsImmediate => !IsManual && IntervalMs == 0 && DelayMs == 0;
 
         /// <summary>
         /// 默认的资源释放策略。
         /// </summary>
         public static AssetUnloadStrategy DefaultAuto => new AssetUnloadStrategy
         {
-            isManual = false,
-            intervalMs = 10 * 1000,
-            delayMs = 120 * 1000,
+            IsManual = false,
+            IntervalMs = 10 * 1000,
+            DelayMs = 120 * 1000,
             //lowMemoryThreshold = 0,
             //minMemoryThreshold = 1024 * 2,
-            maxUnloadCountPerFrame = 32
+            MaxUnloadCountPerFrame = 32
         };
 
         /// <summary>
@@ -57,12 +57,12 @@ namespace PBBox.AssetManagement
         /// </summary>
         public static AssetUnloadStrategy Immediate => new AssetUnloadStrategy
         {
-            isManual = false,
-            intervalMs = 0,
-            delayMs = 0,
+            IsManual = false,
+            IntervalMs = 0,
+            DelayMs = 0,
             //lowMemoryThreshold = 0,
             //minMemoryThreshold = 0,
-            maxUnloadCountPerFrame = 0
+            MaxUnloadCountPerFrame = 0
         };
 
 
@@ -71,12 +71,12 @@ namespace PBBox.AssetManagement
         /// </summary>
         public static AssetUnloadStrategy Manual => new AssetUnloadStrategy
         {
-            isManual = true,
-            intervalMs = 0,
-            delayMs = 0,
+            IsManual = true,
+            IntervalMs = 0,
+            DelayMs = 0,
             //lowMemoryThreshold = 0,
             //minMemoryThreshold = 0,
-            maxUnloadCountPerFrame = 0
+            MaxUnloadCountPerFrame = 0
         };
     }
 }

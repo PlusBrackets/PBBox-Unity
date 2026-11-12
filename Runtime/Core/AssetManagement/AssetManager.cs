@@ -144,7 +144,7 @@ namespace PBBox.AssetManagement
 
         private void TryUnloadAssetWithStrategy(IAssetLoader loader)
         {
-            if (loader.ReferenceCount > 0 || UnloadStrategy.isManual)
+            if (loader.ReferenceCount > 0 || UnloadStrategy.IsManual)
             {
                 //还有引用，或者是手动释放策略，不需要卸载
                 return;
@@ -205,7 +205,7 @@ namespace PBBox.AssetManagement
 
         private bool IsUnloadMaxCountReached()
         {
-            var maxUnloadCount = UnloadStrategy.maxUnloadCountPerFrame;
+            var maxUnloadCount = UnloadStrategy.MaxUnloadCountPerFrame;
             return maxUnloadCount > 0 && m_CurUnloadedAssetCountOnFrame >= maxUnloadCount;
         }
 
@@ -213,7 +213,7 @@ namespace PBBox.AssetManagement
         {
             var currentTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             m_CurUnloadedAssetCountOnFrame = 0;
-            if (currentTimeMs - m_LastUnloadUpdateTimeMs < UnloadStrategy.intervalMs)
+            if (currentTimeMs - m_LastUnloadUpdateTimeMs < UnloadStrategy.IntervalMs)
             {
                 //未到更新间隔，跳过本次卸载
                 return;
@@ -228,7 +228,7 @@ namespace PBBox.AssetManagement
                         m_RemovePendingUnloadList.Add(loader);
                         continue;
                     }
-                    if (loader.IsLoading || loader.LastReleaseTimeMs + UnloadStrategy.delayMs > currentTimeMs)
+                    if (loader.IsLoading || loader.LastReleaseTimeMs + UnloadStrategy.DelayMs > currentTimeMs)
                     {
                         //资源正在加载 或未到卸载时机，跳过卸载等待下次
                         continue;

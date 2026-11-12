@@ -11,7 +11,7 @@ namespace PBBox
     /// <summary>
     /// 事件管理器接口
     /// </summary>
-    public interface IEventManager : ISingleton<IEventManager>
+    public interface IEventManagerOld : ISingleton<IEventManagerOld>
     {
 
         #region 添加事件监听器

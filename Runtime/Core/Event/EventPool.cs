@@ -14,7 +14,7 @@ namespace PBBox
     /// 事件处理器
     /// </summary>
     [SingletonPriority(-1)]
-    public sealed partial class EventPool : IReferencePoolItem, IEventManager, ISingletonLifecycle, ILogicUpdateHandler<LogicUpdater.Default>
+    public sealed partial class EventPool : IReferencePoolItem, IEventManagerOld, ISingletonLifecycle, ILogicUpdateHandler<LogicUpdater.Default>
     {
         private readonly Dictionary<int, EventCollections> m_EventHandlerDict = new Dictionary<int, EventCollections>();
         private readonly Queue<Event> m_EventQueue = new Queue<Event>();
@@ -38,7 +38,7 @@ namespace PBBox
 
         public EventPool()
         {
-            
+
         }
 
         /// <summary>

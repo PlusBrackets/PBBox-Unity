@@ -17,6 +17,7 @@ namespace PBBox.Collections
     /// </summary>
     public sealed class SortedMutiLinkedList<T> : SortedMutiLinkedList<int, T>
     {
+
         protected override bool CheckTravelDirection(int order)
         {
             return (m_SortedGroupList.First.Value.OrderKey + m_SortedGroupList.Last.Value.OrderKey) / 2 >= order;
