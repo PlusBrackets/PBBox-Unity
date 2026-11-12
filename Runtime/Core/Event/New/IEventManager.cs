@@ -4,26 +4,33 @@
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
-using PBBox.Event;
 
 namespace PBBox
 {
-    public delegate void EventHandler<T>(in T eventData);
+    public delegate void ActionIn<T>(in T eventData);
 
     public interface IEventManager : ISingleton<IEventManager>
     {
-        EventSubscriptionNew Subscripte<T>(Action<T> handler, int order = 0, bool isLater = false);
-        void Unsubscribe<T>(Action<T> handler, int order = 0, bool isLater = false);
-        void Publish<T>(T eventData);
+        EventSubscriptionNew Subscripte<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent;
+        void Unsubscribe<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent;
+        void Publish<TEvent>(TEvent eventData) where TEvent : IEvent;
 
-        EventSubscriptionNew Subscripte<T>(EventHandler<T> handler, int order = 0, bool isLater = false);
-        void Unsubscribe<T>(EventHandler<T> handler, int order = 0, bool isLater = false);
-        void Publish<T>(in T eventData);
+        EventSubscriptionNew Subscripte<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent;
+        void Unsubscribe<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent;
+        void Publish<TEvent>(in TEvent eventData) where TEvent : struct, IEvent;
 
-        EventSubscriptionNew Subscripte(int eventId, Delegate handler, int order = 0, bool isLater = false);
-        void Unsubscribe(int eventId, Delegate handler, int order = 0, bool isLater = false);
-        void Publish<T>(int eventId, T eventData);
-        void Publish<T>(int eventId, in T eventData);
+        EventSubscriptionNew SubscripteGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false);
+        void UnsubscribeGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false);
+        void Publish<TData>(int eventId, TData eventData);
+        void Publish<TData>(int eventId, in TData eventData) where TData : struct;
         void Publish(int eventId);
+
+
+        EventSubscriptionNew Subscripte<TData>(int eventId, Action<TData> handler, int order = 0, bool isLater = false) => SubscripteGeneric(eventId, handler, order, isLater);
+        EventSubscriptionNew Subscripte<TData>(int eventId, ActionIn<TData> handler, int order = 0, bool isLater = false) where TData : struct => SubscripteGeneric(eventId, handler, order, isLater);
+        EventSubscriptionNew Subscripte<TData>(int eventId, Action handler, int order = 0, bool isLater = false) => SubscripteGeneric(eventId, handler, order, isLater);
+        void Unsubscribe<TData>(int eventId, Action<TData> handler, int order = 0, bool isLater = false) => UnsubscribeGeneric(eventId, handler, order, isLater);
+        void Unsubscribe<TData>(int eventId, ActionIn<TData> handler, int order = 0, bool isLater = false) where TData : struct => UnsubscribeGeneric(eventId, handler, order, isLater);
+        void Unsubscribe(int eventId, Action handler, int order = 0, bool isLater = false) => UnsubscribeGeneric(eventId, handler, order, isLater);
     }
 }

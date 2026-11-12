@@ -11,7 +11,22 @@ namespace PBBox.Event
     {
         EventSubscriptionNew Subscribe(Delegate handler, int order = 0);
         void Unsubscribe(Delegate handler, int order = 0);
-        void Publish<T>(in T eventData);
         void Publish();
+        void Publish<T>(T eventData);
+        void Publish<T>(in T eventData);
+    }
+
+    public interface IEventSubject<TEvent> : IEventSubject
+    {
+        EventSubscriptionNew Subscribe(Action<TEvent> handler, int order = 0);
+        void Unsubscribe(Action<TEvent> handler, int order = 0);
+        void Publish(TEvent eventData);
+    }
+
+    public interface IEventSubjectIn<TEvent> : IEventSubject
+    {
+        EventSubscriptionNew Subscribe(ActionIn<TEvent> handler, int order = 0);
+        void Unsubscribe(ActionIn<TEvent> handler, int order = 0);
+        void Publish(in TEvent eventData);
     }
 }

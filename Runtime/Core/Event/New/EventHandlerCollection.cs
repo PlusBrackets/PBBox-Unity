@@ -26,7 +26,7 @@ namespace PBBox.Event
         public int Count { get; private set; }
         public IList<int> Keys => _subscriptions.Keys;
         public IList<IndexedList<T>> Values => _subscriptions.Values;
-        private bool _isIterating;
+        private bool _isIterating = false;
         private int _currentIteratingOrder;
         private List<AddRemoveOperation> _pendingOperations;
 

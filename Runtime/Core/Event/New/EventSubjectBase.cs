@@ -30,7 +30,7 @@ namespace PBBox.Event
         {
         }
 
-        public virtual EventSubscriptionNew Subscribe(THandler handler, int order = 0)
+        protected virtual EventSubscriptionNew SubscribeInternal(THandler handler, int order = 0)
         {
             if (GetOrCreateHandlers().Add(handler, order))
             {
@@ -39,13 +39,13 @@ namespace PBBox.Event
             else
             {
 #if UNITY_EDITOR || PB_TEST_LOG
-                Log.Error($"Failed to add handler to EventSubject", LogTag, Log.PBBoxLoggerName);
+                Log.Error($"Failed to add handler to EventSubject, may be already added, handler: {handler}, order: {order}", LogTag, Log.PBBoxLoggerName);
 #endif
                 return EventSubscriptionNew.Empty;
             }
         }
         
-        public virtual void Unsubscribe(THandler handler, int order = 0)
+        protected virtual void UnsubscribeInternal(THandler handler, int order = 0)
         {
             if (handler == null)
             {
@@ -58,7 +58,7 @@ namespace PBBox.Event
 #if UNITY_EDITOR || PB_TEST_LOG
             else
             {
-                Log.Error($"Failed to remove handler from EventSubject", LogTag, Log.PBBoxLoggerName);
+                Log.Error($"Failed to remove handler from EventSubject, may be not added or already removed, handler: {handler}, order: {order}", LogTag, Log.PBBoxLoggerName);
             }
 #endif
         }
