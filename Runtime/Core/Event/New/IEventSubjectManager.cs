@@ -8,7 +8,9 @@ namespace PBBox.Event
 {
     public interface IEventSubjectManager
     {
-        IEventSubject GetSubject<TEvent>(bool isLater = false, bool isInParamHandler = false);
+        IEventSubject GetOrCreateSubject<TEvent>(bool isLater = false, bool isInParamHandler = false) where TEvent : IEvent;
+        IEventSubject GetOrCreateSubject(int eventId, bool isLater = false);
+        IEventSubject GetSubject<TEvent>(bool isLater = false, bool isInParamHandler = false) where TEvent : IEvent;
         IEventSubject GetSubject(int eventId, bool isLater = false);
     }
 }

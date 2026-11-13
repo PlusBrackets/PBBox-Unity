@@ -8,24 +8,30 @@ using PBBox.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Collections;
 
 namespace PBBox.Event
 {
-    public class EventHandlerCollection<T> where T : Delegate
+    //public delegate void EventHandlerCollectionForeachHandle<T, in T2>(in T eventData, T2 handlers);
+
+    public class EventHandlerCollection<T> :IEnumerable<KeyValuePair<int, IndexedList<T>>>, IEnumerable where T : Delegate
     {
+        public delegate void ForeachHandleIn<TValue>(in TValue eventData, List<T> handlers);
+        
+        private SortedDictionary<int, IndexedList<T>> _subscriptions = new SortedDictionary<int, IndexedList<T>>();
+        private bool _keepInBucketItemOrderly;
+        private int? _inBucketListCapacity;
         /// <summary>
         /// 最大缓存的订阅桶数量，超过该数量时会移除空的订阅桶
         /// </summary>
-        private const int MAX_CACHED_SUBSCRIPTIONS_BUCKET = 128;
-
-        private SortedList<int, IndexedList<T>> _subscriptions = new SortedList<int, IndexedList<T>>();
-        private bool _keepInBucketItemOrderly;
-        private int? _inBucketListCapacity;
+        public int MaxCachedSubscriptionsBucket { get; set; } = 8;
+        /// <summary>
+        /// 是否保持订阅桶内的项有序
+        /// </summary>
         public bool KeepInBucketItemOrderly => _keepInBucketItemOrderly;
 
         public int Count { get; private set; }
-        public IList<int> Keys => _subscriptions.Keys;
-        public IList<IndexedList<T>> Values => _subscriptions.Values;
+        // 是否正在遍历集合，用于延迟处理对集合的修改
         private bool _isIterating = false;
         private int _currentIteratingOrder;
         private List<AddRemoveOperation> _pendingOperations;
@@ -226,12 +232,12 @@ namespace PBBox.Event
                 }
                 if (list.Remove(handler))
                 {
-                    if (list.Count == 0 && _subscriptions.Count > MAX_CACHED_SUBSCRIPTIONS_BUCKET)
+                    if (list.Count == 0 && _subscriptions.Count > MaxCachedSubscriptionsBucket)
                     {
                         _subscriptions.Remove(order);
-#if UNITY_EDITOR || PB_TEST_LOG
-                        Log.Warning($"因超出最大缓存订阅桶数量({MAX_CACHED_SUBSCRIPTIONS_BUCKET})而移除订阅桶 {order}，当前订阅桶数量为 {_subscriptions.Count}，请注意开销", nameof(EventHandlerCollection<T>), Log.PBBoxLoggerName);
-#endif
+//#if UNITY_EDITOR || PB_TEST_LOG
+//                        Log.Warning($"因超出最大缓存订阅桶数量({MAX_CACHED_SUBSCRIPTIONS_BUCKET})而移除订阅桶 {order}，当前订阅桶数量为 {_subscriptions.Count}，请注意开销", nameof(EventHandlerCollection<T>), Log.PBBoxLoggerName);
+//#endif
                     }
                     Count--;
                     return true;
@@ -246,6 +252,43 @@ namespace PBBox.Event
             Count = 0;
             _pendingOperations.Clear();
         }
+
+        public SortedDictionary<int, IndexedList<T>>.Enumerator GetEnumerator()
+        {
+            return _subscriptions.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator<KeyValuePair<int, IndexedList<T>>> IEnumerable<KeyValuePair<int, IndexedList<T>>>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+        
+        public void ForEachIn<TValue>(in TValue eventData, ForeachHandleIn<TValue> handle)
+        {
+
+        }
+
+        public void ForEach(Action<List<T>> handle)
+        {
+            foreach (var kvp in _subscriptions)
+            {
+                SetIterating(true, kvp.Key);
+                handle(kvp.Value.RawItems);
+            }
+            SetIterating(false, 0);
+            ApplyPendingOperations();
+        }
+
+        public void ForEach<TValue>(TValue eventData, Action<TValue, List<T>> handle)
+        {
+            
+        }
+
 
         [StructLayout(LayoutKind.Auto)]
         private struct AddRemoveOperation

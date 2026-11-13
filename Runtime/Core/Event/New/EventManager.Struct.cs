@@ -15,14 +15,36 @@ namespace PBBox
         {
             public IEventSubject DefaultSubject;
             public IEventSubject DefaultSubjectLater;
-            public IEventSubject InParamSubject;
-            public IEventSubject InParamSubjectLater;
+
+            public EventSubject<T> GetOrCreateSubject<T>(bool isLater) where T : IEvent
+            {
+                if (isLater)
+                {
+                    return (DefaultSubjectLater ?? (DefaultSubjectLater = new EventSubject<T>())) as EventSubject<T>;
+                }
+                else
+                {
+                    return (DefaultSubject ?? (DefaultSubject = new EventSubject<T>())) as EventSubject<T>;
+                }
+            }
         }
 
         private class IdSubjectContainer
         {
             public EventSubject Subject;
             public EventSubject SubjectLater;
+
+            public EventSubject GetOrCreateSubject(bool isLater)
+            {
+                if (isLater)
+                {
+                    return SubjectLater ?? (SubjectLater = new EventSubject());
+                }
+                else
+                {
+                    return Subject ?? (Subject = new EventSubject());
+                }
+            }
         }
 
         private abstract class PendingEventBase
@@ -50,18 +72,18 @@ namespace PBBox
         private class PendingIdEvent<TData> : PendingIdEvent
         {
             private TData _eventData;
-            private bool _isInParamHandler;
+            private bool _isInParamEvent;
 
-            public PendingIdEvent(EventSubject subject, int eventId, TData eventData, bool isInParamHandler)
+            public PendingIdEvent(EventSubject subject, int eventId, TData eventData, bool isInParamEvent)
                 : base(subject, eventId)
             {
                 _eventData = eventData;
-                _isInParamHandler = isInParamHandler;
+                _isInParamEvent = isInParamEvent;
             }
 
             public override void Publish()
             {
-                if (_isInParamHandler)
+                if (_isInParamEvent)
                 {
                     Subject?.Publish(in _eventData);
                 }
@@ -76,35 +98,44 @@ namespace PBBox
         {
             private EventSubject<TEvent> Subject;
             private TEvent _event;
+            private bool _isInParamEvent;
 
-            public PendingTypedEvent(EventSubject<TEvent> subject, TEvent ev)
+            public PendingTypedEvent(EventSubject<TEvent> subject, TEvent ev, bool isInParamEvent)
             {
                 Subject = subject;
                 _event = ev;
+                _isInParamEvent = isInParamEvent;
             }
 
             public override void Publish()
             {
-                Subject?.Publish(_event);
+                if (_isInParamEvent)
+                {
+                    Subject?.Publish(in _event);
+                }
+                else
+                {
+                    Subject?.Publish(_event);
+                }
             }
         }
 
-        private class PendingTypedInParamEvent<TEvent> : PendingEventBase where TEvent : struct, IEvent
-        {
-            private EventSubjectIn<TEvent> Subject;
-            private TEvent _event;
-
-            public PendingTypedInParamEvent(EventSubjectIn<TEvent> subject, TEvent ev)
-            {
-                Subject = subject;
-                _event = ev;
-            }
-
-            public override void Publish()
-            {
-                Subject?.Publish(in _event);
-            }
-        }
+//        private class PendingTypedInParamEvent<TEvent> : PendingEventBase where TEvent : struct, IEvent
+//        {
+//            private EventSubjectIn<TEvent> Subject;
+//            private TEvent _event;
+//
+//            public PendingTypedInParamEvent(EventSubjectIn<TEvent> subject, TEvent ev)
+//            {
+//                Subject = subject;
+//                _event = ev;
+//            }
+//
+//            public override void Publish()
+//            {
+//                Subject?.Publish(in _event);
+//            }
+//        }
 
 
     }

@@ -38,9 +38,17 @@ namespace PBBox.Collections
         /// 列表顺序是否保持Add的顺序
         /// </summary>
         public bool IsOrderly => _keepOrderly;
+        /// <summary>
+        /// 当前有效元素数量
+        /// </summary>
         public int Count { get; private set; } = 0;
         public int Capacity => _items.Capacity;
-        public int RealCount => _items.Count;
+        /// <summary>
+        /// 列表的实际容量，包括已删除的元素
+        /// </summary>
+        public int RawCount => _items.Count;
+        //public T this[int index] => _items[index];
+        public List<T> RawItems => _items;
 
         bool ICollection<T>.IsReadOnly => false;
 
@@ -225,48 +233,61 @@ namespace PBBox.Collections
             private T _curValue;
             private int _curIndex;
             private List<T> _items;
+            private int _count;
 
             public Enumerator(List<T> items)
             {
                 _items = items;
-                _curIndex = -1;
+                _curIndex = 0;
                 _curValue = null;
-
+                _count = items.Count;
             }
 
             public void Dispose()
             {
                 _curValue = null;
-                _curIndex = -1;
+                _curIndex = 0;
                 _items = null;
             }
 
             public bool MoveNext()
             {
-                _curValue = NextVaildIitem();
-                return _curValue != null;
+                if (_curIndex < _count)
+                {
+                    _curValue = _items[_curIndex];
+                    _curIndex++;
+                    if(_curValue == null)
+                    {
+                        return MoveNext();
+                    }
+                    return true;
+                }
+                return false;
+                //_curValue = NextVaildIitem();
+                //return _curValue != null;
+                
             }
 
             public void Reset()
             {
-                _curIndex = -1;
+                _curIndex = 0;
                 _curValue = null;
             }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private T NextVaildIitem()
-            {
-                _curIndex++;
-                while (_curIndex < _items.Count)
-                {
-                    if (_items[_curIndex] != null)
-                    {
-                        return _items[_curIndex];
-                    }
-                    _curIndex++;
-                }
-                return null;
-            }
+            //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+            //private T NextVaildIitem()
+            //{
+            //    _curIndex++;
+            //    while (_curIndex < _items.Count)
+            //    {
+            //        if (_items[_curIndex] != null)
+            //        {
+            //            return _items[_curIndex];
+            //        }
+            //        _curIndex++;
+            //    }
+            //    return null;
+            //}
         }
     }
 }

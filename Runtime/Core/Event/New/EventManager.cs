@@ -5,6 +5,7 @@
  --------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using NUnit.Framework;
 using PBBox.Event;
 
 namespace PBBox
@@ -53,7 +54,35 @@ namespace PBBox
             _pendingEvents.Add(pendingEvent);
         }
 
-        public IEventSubject GetSubject<TEvent>(bool isLater = false, bool isInParamHandler = false)
+        public IEventSubject GetOrCreateSubject<TEvent>(bool isLater = false, bool isInParamHandler = false) where TEvent : IEvent
+        {
+            var type = typeof(TEvent);
+            if (!_typedSubjects.Value.TryGetValue(type, out var container))
+            {
+                container = new TypedSubjectContainer();
+                _typedSubjects.Value[type] = container;
+            }
+            if (!isInParamHandler)
+            {
+                return container.GetOrCreateSubject<TEvent>(isLater);
+            }
+            else
+            {
+                return container.GetOrCreateInParamSubject<TEvent>(isLater);
+            }
+        }
+
+        public IEventSubject GetOrCreateSubject(int eventId, bool isLater = false)
+        {
+            if (!_idSubjects.Value.TryGetValue(eventId, out var container))
+            {
+                container = new IdSubjectContainer();
+                _idSubjects.Value[eventId] = container;
+            }
+            return container.GetOrCreateSubject(isLater);
+        }
+
+        public IEventSubject GetSubject<TEvent>(bool isLater = false, bool isInParamHandler = false) where TEvent : IEvent
         {
             var type = typeof(TEvent);
             if (_typedSubjects.IsValueCreated && _typedSubjects.Value.TryGetValue(type, out var container))
@@ -80,24 +109,10 @@ namespace PBBox
         }
 
 
-        public EventSubscriptionNew Subscripte<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent
+        public EventSubscriptionNew Subscribe<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent
         {
-            var type = typeof(TEvent);
-            if (!_typedSubjects.Value.TryGetValue(type, out var container))
-            {
-                container = new TypedSubjectContainer();
-                _typedSubjects.Value[type] = container;
-            }
-            if (isLater)
-            {
-                var subject = (container.DefaultSubjectLater ?? (container.DefaultSubjectLater = new EventSubject<TEvent>())) as EventSubject<TEvent>;
-                return subject.Subscribe(handler, order);
-            }
-            else
-            {
-                var subject = (container.DefaultSubject ?? (container.DefaultSubject = new EventSubject<TEvent>())) as EventSubject<TEvent>;
-                return subject.Subscribe(handler, order);
-            }
+            var subject = GetOrCreateSubject<TEvent>(isLater, false);
+            return subject.Subscribe(handler, order);
             
         }
 
@@ -122,24 +137,10 @@ namespace PBBox
         }
 
 
-        public EventSubscriptionNew Subscripte<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent
+        public EventSubscriptionNew Subscribe<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent
         {
-            var type = typeof(TEvent);
-            if (!_typedSubjects.Value.TryGetValue(type, out var container))
-            {
-                container = new TypedSubjectContainer();
-                _typedSubjects.Value[type] = container;
-            }
-            if (isLater)
-            {
-                var subject = (container.InParamSubjectLater ?? (container.InParamSubjectLater = new EventSubjectIn<TEvent>())) as EventSubjectIn<TEvent>;
-                return subject.Subscribe(handler, order);
-            }
-            else
-            {
-                var subject = (container.InParamSubject ?? (container.InParamSubject = new EventSubjectIn<TEvent>())) as EventSubjectIn<TEvent>;
-                return subject.Subscribe(handler, order);
-            }
+            var subject = GetOrCreateSubject<TEvent>(isLater, true) as EventSubjectIn<TEvent>;
+            return subject.Subscribe(handler, order);
         }
 
         public void Unsubscribe<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent
@@ -162,23 +163,10 @@ namespace PBBox
             (container.InParamSubject as EventSubjectIn<TEvent>)?.Publish(in eventData);
         }
 
-        public EventSubscriptionNew SubscripteGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false)
+        public EventSubscriptionNew SubscribeGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false)
         {
-            if (!_idSubjects.Value.TryGetValue(eventId, out var container))
-            {
-                container = new IdSubjectContainer();
-                _idSubjects.Value[eventId] = container;
-            }
-            if (isLater)
-            {
-                IEventSubject subject = container.SubjectLater ?? (container.SubjectLater = new EventSubject());
-                return subject.Subscribe(handler, order);
-            }
-            else
-            {
-                IEventSubject subject = container.Subject ?? (container.Subject = new EventSubject());
-                return subject.Subscribe(handler, order);
-            }
+            var subject = GetOrCreateSubject(eventId, isLater);
+            return subject.Subscribe(handler, order);
         }
 
         public void UnsubscribeGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false)

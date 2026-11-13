@@ -116,7 +116,7 @@ namespace PBBox
 #endif
         }
 
-        private EventSubscription SubscribeImpl(int eventId, Delegate listener, int order, bool isLateEvent)
+        private EventSubscriptionOld SubscribeImpl(int eventId, Delegate listener, int order, bool isLateEvent)
         {
             //TODO 未进行线程保护
             if (!m_EventHandlerDict.TryGetValue(eventId, out var collections))
@@ -133,7 +133,7 @@ namespace PBBox
                 m_LaterListenerCountDict.Value[eventId] = eventList.Count;
             }
             //Log.Debug(eventId + " eventList created: " + eventList.IsCreated);
-            return new EventSubscription(this, eventId, listener, order, isLateEvent);
+            return new EventSubscriptionOld(this, eventId, listener, order, isLateEvent);
         }
 
         //TODO 进行事件触发时取消订阅的测试

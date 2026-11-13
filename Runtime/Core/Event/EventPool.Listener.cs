@@ -23,7 +23,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        public EventSubscription On(int eventId, Action<object> handler, int order = 0) => SubscribeImpl(eventId, handler, order, false);
+        public EventSubscriptionOld On(int eventId, Action<object> handler, int order = 0) => SubscribeImpl(eventId, handler, order, false);
 
         /// <summary>
         /// 添加带参数的事件监听器
@@ -33,7 +33,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        public EventSubscription On<T>(int eventId, Action<object,T> handler, int order = 0) => SubscribeImpl(eventId, handler, order, false);
+        public EventSubscriptionOld On<T>(int eventId, Action<object,T> handler, int order = 0) => SubscribeImpl(eventId, handler, order, false);
 
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        public EventSubscription On(int eventId, Func<object,bool> filter, int order = 0) => SubscribeImpl(eventId, filter, order, false);
+        public EventSubscriptionOld On(int eventId, Func<object,bool> filter, int order = 0) => SubscribeImpl(eventId, filter, order, false);
 
         /// <summary>
         /// 添加带参数的事件过滤器，可通过返回false中断事件传播
@@ -53,7 +53,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        public EventSubscription On<T>(int eventId, Func<object,T,bool> filter, int order = 0) => SubscribeImpl(eventId, filter, order, false);
+        public EventSubscriptionOld On<T>(int eventId, Func<object,T,bool> filter, int order = 0) => SubscribeImpl(eventId, filter, order, false);
 
         #endregion
 
@@ -66,7 +66,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        public EventSubscription OnLater(int eventId, Action<object> handler, int order = 0) => SubscribeImpl(eventId, handler, order, true);
+        public EventSubscriptionOld OnLater(int eventId, Action<object> handler, int order = 0) => SubscribeImpl(eventId, handler, order, true);
 
         /// <summary>
         /// 添加带参数的事件监听器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -76,7 +76,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        public EventSubscription OnLater<T>(int eventId, Action<object,T> handler, int order = 0) => SubscribeImpl(eventId, handler, order, true);
+        public EventSubscriptionOld OnLater<T>(int eventId, Action<object,T> handler, int order = 0) => SubscribeImpl(eventId, handler, order, true);
 
         /// <summary>
         /// 添加事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -85,7 +85,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        public EventSubscription OnLater(int eventId, Func<object,bool> filter, int order = 0) => SubscribeImpl(eventId, filter, order, true);
+        public EventSubscriptionOld OnLater(int eventId, Func<object,bool> filter, int order = 0) => SubscribeImpl(eventId, filter, order, true);
 
         /// <summary>
         /// 添加带参数的事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -95,7 +95,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        public EventSubscription OnLater<T>(int eventId, Func<object,T,bool> filter, int order = 0) => SubscribeImpl(eventId, filter, order, true);
+        public EventSubscriptionOld OnLater<T>(int eventId, Func<object,T,bool> filter, int order = 0) => SubscribeImpl(eventId, filter, order, true);
 
         #endregion
 
@@ -195,7 +195,7 @@ namespace PBBox
         public void Emit<TEventArgs>(int eventId, object sender, TEventArgs args, IReferenceCacheBase releaseEventArgsPool = null)=>
             EmitImpl(eventId, sender, args, releaseEventArgsPool);
 
-        EventSubscription ISubscriptionHandler.Subscribe(int eventId, Delegate handler, int order, bool isLateEvent) => SubscribeImpl(eventId, handler, order, isLateEvent);
+        EventSubscriptionOld ISubscriptionHandler.Subscribe(int eventId, Delegate handler, int order, bool isLateEvent) => SubscribeImpl(eventId, handler, order, isLateEvent);
 
         void ISubscriptionHandler.Unsubscripe(int eventId, Delegate listener, int order, bool isLateEvent) => UnsubscribeImpl(eventId, listener, order, isLateEvent);
 

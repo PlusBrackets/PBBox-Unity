@@ -9,9 +9,11 @@ using PBBox.Collections;
 
 namespace PBBox.Event
 {
+    
+    
     public abstract class EventSubjectBase<THandler> : IReferencePoolItem where THandler : Delegate
     {
-        protected EventHandlerCollection<THandler> _handlers = null;
+        protected EventHandlerCollection<THandler> _handlersCollection = null;
 
         protected bool _keepInBucketItemOrderly = true;
         protected int? _inBucketListCapacity = null;
@@ -30,18 +32,18 @@ namespace PBBox.Event
         {
         }
 
-        protected virtual EventSubscriptionNew SubscribeInternal(THandler handler, int order = 0)
+        protected virtual EventSubscription SubscribeInternal(THandler handler, int order = 0)
         {
             if (GetOrCreateHandlers().Add(handler, order))
             {
-                return new EventSubscriptionNew(Subject, handler, order);
+                return new EventSubscription(Subject, handler, order);
             }
             else
             {
 #if UNITY_EDITOR || PB_TEST_LOG
                 Log.Error($"Failed to add handler to EventSubject, may be already added, handler: {handler}, order: {order}", LogTag, Log.PBBoxLoggerName);
 #endif
-                return EventSubscriptionNew.Empty;
+                return EventSubscription.Empty;
             }
         }
         
@@ -71,9 +73,9 @@ namespace PBBox.Event
         /// <returns></returns>
         public bool SetCollectionParameter(bool keepInBucketItemOrderly, int? inBucketListCapacity = null)
         {
-            if (_handlers != null)
+            if (_handlersCollection != null)
             {
-                return _handlers.SetCollectionParameter(keepInBucketItemOrderly, inBucketListCapacity);
+                return _handlersCollection.SetCollectionParameter(keepInBucketItemOrderly, inBucketListCapacity);
             }
             _keepInBucketItemOrderly = keepInBucketItemOrderly;
             _inBucketListCapacity = inBucketListCapacity;
@@ -82,13 +84,13 @@ namespace PBBox.Event
 
         protected EventHandlerCollection<THandler> GetOrCreateHandlers()
         {
-            if (_handlers == null)
+            if (_handlersCollection == null)
             {
-                _handlers = _inBucketListCapacity.HasValue
+                _handlersCollection = _inBucketListCapacity.HasValue
                     ? new EventHandlerCollection<THandler>(_inBucketListCapacity.Value, _keepInBucketItemOrderly)
                     : new EventHandlerCollection<THandler>(_keepInBucketItemOrderly);
             }
-            return _handlers;
+            return _handlersCollection;
         }
 
         void IReferencePoolItem.OnReferenceAcquire()
@@ -107,7 +109,7 @@ namespace PBBox.Event
 
         protected virtual void OnReferenceRelease()
         {
-            _handlers.Clear();
+            _handlersCollection.Clear();
             _keepInBucketItemOrderly = true;
             _inBucketListCapacity = null;
         }

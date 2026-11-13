@@ -22,7 +22,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription On(int eventId, Action<object> handler, int order = 0);
+        EventSubscriptionOld On(int eventId, Action<object> handler, int order = 0);
 
         /// <summary>
         /// 添加事件监听器
@@ -31,7 +31,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription On(string eventName, Action<object> handler, int order = 0)=> On(eventName.GetStableHashCode(), handler, order);
+        EventSubscriptionOld On(string eventName, Action<object> handler, int order = 0)=> On(eventName.GetStableHashCode(), handler, order);
 
         /// <summary>
         /// 添加带参数的事件监听器
@@ -41,7 +41,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription On<T>(int eventId, Action<object, T> handler, int order = 0);
+        EventSubscriptionOld On<T>(int eventId, Action<object, T> handler, int order = 0);
 
         /// <summary>
         /// 添加带参数的事件监听器
@@ -51,7 +51,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription On<T>(string eventName, Action<object, T> handler, int order = 0) => On(eventName.GetStableHashCode(), handler, order);
+        EventSubscriptionOld On<T>(string eventName, Action<object, T> handler, int order = 0) => On(eventName.GetStableHashCode(), handler, order);
 
         /// <summary>
         /// 添加事件过滤器，可通过返回false中断事件传播
@@ -60,7 +60,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription On(int eventId, Func<object, bool> filter, int order = 0);
+        EventSubscriptionOld On(int eventId, Func<object, bool> filter, int order = 0);
 
         /// <summary>
         /// 添加事件过滤器，可通过返回false中断事件传播
@@ -69,7 +69,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription On(string eventName, Func<object, bool> filter, int order = 0) => On(eventName.GetStableHashCode(), filter, order);
+        EventSubscriptionOld On(string eventName, Func<object, bool> filter, int order = 0) => On(eventName.GetStableHashCode(), filter, order);
 
         /// <summary>
         /// 添加带参数的事件过滤器，可通过返回false中断事件传播
@@ -79,7 +79,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription On<T>(int eventId, Func<object, T, bool> filter, int order = 0);
+        EventSubscriptionOld On<T>(int eventId, Func<object, T, bool> filter, int order = 0);
 
         /// <summary>
         /// 添加带参数的事件过滤器，可通过返回false中断事件传播
@@ -89,7 +89,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription On<T>(string eventName, Func<object, T, bool> filter, int order = 0) => On(eventName.GetStableHashCode(), filter, order);
+        EventSubscriptionOld On<T>(string eventName, Func<object, T, bool> filter, int order = 0) => On(eventName.GetStableHashCode(), filter, order);
         #endregion
 
         #region 添加延迟事件监听器
@@ -100,7 +100,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription OnLater(int eventId, Action<object> handler, int order = 0);
+        EventSubscriptionOld OnLater(int eventId, Action<object> handler, int order = 0);
 
         /// <summary>
         /// 添加事件监听器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -109,7 +109,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription OnLater(string eventName, Action<object> handler, int order = 0)=> OnLater(eventName.GetStableHashCode(), handler, order);
+        EventSubscriptionOld OnLater(string eventName, Action<object> handler, int order = 0)=> OnLater(eventName.GetStableHashCode(), handler, order);
 
         /// <summary>
         /// 添加带参数的事件监听器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -119,7 +119,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription OnLater<T>(int eventId, Action<object, T> handler, int order = 0);
+        EventSubscriptionOld OnLater<T>(int eventId, Action<object, T> handler, int order = 0);
 
         /// <summary>
         /// 添加带参数的事件监听器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -129,7 +129,7 @@ namespace PBBox
         /// <param name="handler">事件处理器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription OnLater<T>(string eventName, Action<object, T> handler, int order = 0)=> OnLater(eventName.GetStableHashCode(), handler, order);
+        EventSubscriptionOld OnLater<T>(string eventName, Action<object, T> handler, int order = 0)=> OnLater(eventName.GetStableHashCode(), handler, order);
 
         /// <summary>
         /// 添加事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -138,7 +138,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription OnLater(int eventId, Func<object, bool> filter, int order = 0);
+        EventSubscriptionOld OnLater(int eventId, Func<object, bool> filter, int order = 0);
 
         /// <summary>
         /// 添加事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -147,7 +147,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription OnLater(string eventName, Func<object, bool> filter, int order = 0) => OnLater(eventName.GetStableHashCode(), filter, order);
+        EventSubscriptionOld OnLater(string eventName, Func<object, bool> filter, int order = 0) => OnLater(eventName.GetStableHashCode(), filter, order);
 
         /// <summary>
         /// 添加带参数的事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -157,7 +157,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription OnLater<T>(int eventId, Func<object, T, bool> filter, int order = 0);
+        EventSubscriptionOld OnLater<T>(int eventId, Func<object, T, bool> filter, int order = 0);
 
         /// <summary>
         /// 添加带参数的事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
@@ -167,7 +167,7 @@ namespace PBBox
         /// <param name="filter">事件过滤器</param>
         /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
         /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscription OnLater<T>(string eventName, Func<object, T, bool> filter, int order = 0) => OnLater(eventName.GetStableHashCode(), filter, order);
+        EventSubscriptionOld OnLater<T>(string eventName, Func<object, T, bool> filter, int order = 0) => OnLater(eventName.GetStableHashCode(), filter, order);
         #endregion
 
         #region 移除事件监听器

@@ -10,7 +10,7 @@ namespace PBBox
     /// <summary>
     /// 订阅事件的返回值，Disposse方法可以取消订阅
     /// </summary>
-    public struct EventSubscription : IDisposable
+    public struct EventSubscriptionOld : IDisposable
     {
         private readonly ISubscriptionHandler m_Handler;
         private readonly int m_EventId;
@@ -20,7 +20,7 @@ namespace PBBox
 
         public int EventId => m_EventId;
 
-        internal EventSubscription(ISubscriptionHandler handler, int eventId, Delegate listener, int order, bool isLateEvent)
+        internal EventSubscriptionOld(ISubscriptionHandler handler, int eventId, Delegate listener, int order, bool isLateEvent)
         {
             m_Handler = handler;
             m_EventId = eventId;

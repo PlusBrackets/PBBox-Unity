@@ -19,7 +19,7 @@ namespace PBBox
         /// <param name="order"></param>
         /// <param name="isLateEvent"></param>
         /// <returns></returns>
-        EventSubscription Subscribe(int eventId, Delegate handler, int order = 0, bool isLateEvent = false);
+        EventSubscriptionOld Subscribe(int eventId, Delegate handler, int order = 0, bool isLateEvent = false);
 
         /// <summary>
         /// 取消订阅事件
