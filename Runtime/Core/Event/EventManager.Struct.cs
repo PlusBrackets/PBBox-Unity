@@ -47,6 +47,8 @@ namespace PBBox
             }
         }
 
+
+        //TODO 视情况决定是否需要将PendingEvent进行池化处理
         private abstract class PendingEventBase
         {
             public abstract void Publish();
@@ -119,24 +121,6 @@ namespace PBBox
                 }
             }
         }
-
-//        private class PendingTypedInParamEvent<TEvent> : PendingEventBase where TEvent : struct, IEvent
-//        {
-//            private EventSubjectIn<TEvent> Subject;
-//            private TEvent _event;
-//
-//            public PendingTypedInParamEvent(EventSubjectIn<TEvent> subject, TEvent ev)
-//            {
-//                Subject = subject;
-//                _event = ev;
-//            }
-//
-//            public override void Publish()
-//            {
-//                Subject?.Publish(in _event);
-//            }
-//        }
-
 
     }
 }

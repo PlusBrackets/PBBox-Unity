@@ -3,7 +3,6 @@
  *@update: 2026.11.12
  *@author: PlusBrackets
  --------------------------------------------------------*/
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -13,7 +12,7 @@ namespace PBBox.Collections
 {
     /// <summary>
     /// <para>带索引优化的列表，当元素数量超过一定阈值时，会自动维护索引以加快查找速度和删除速度，同时支持有序和无序两种模式。</para>
-    /// <para>平衡遍历，添加和删除操作以及查找的性能，自动优化前性能和List相近，开始优化后会提高内存占用(使用字典维护索引);</para>
+    /// <para>平衡遍历，添加和删除操作以及查找的性能，自动优化前开销和List相近，开始优化后会提高内存占用(使用字典维护索引);</para>
     /// <para>当keepOrderly为true时，列表会保持添加顺序，删除操作会使用墓碑法延迟压缩。</para>
     /// <para>当keepOrderly为false时，删除操作会直接用最后一个元素覆盖被删除元素的位置。</para>
     /// <para>不能重复添加同一个元素，元素不能为null</para>
@@ -47,12 +46,15 @@ namespace PBBox.Collections
         /// 列表的实际容量，包括已删除的元素
         /// </summary>
         public int RawCount => _items.Count;
-        //public T this[int index] => _items[index];
+        /// <summary>
+        /// 原始列表，包含所有元素，包括已删除的元素(已设置为null)，不要对它进行修改。使用 RawItems 进行for循环遍历可提高遍历性能
+        /// </summary>
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public List<T> RawItems => _items;
 
         bool ICollection<T>.IsReadOnly => false;
 
-        public IndexedList(bool keepOrderly = false)
+        public IndexedList(bool keepOrderly = true)
         {
             _items = new List<T>();
             _keepOrderly = keepOrderly;
@@ -77,34 +79,47 @@ namespace PBBox.Collections
             }
         }
 
+        /// <summary>
+        /// 压缩列表，移除已删除的元素并更新索引映射
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void TryCompact()
+        public void Compact()
         {
-            //当当前有效元素占比低于一定阈值时，进行压缩
-            if (_items.Count > 0 && _indexMap != null && (float)Count / (float)_items.Count < COMPACT_THRESHOLD)
+            if (_indexMap == null || _items.Count == 0)
             {
-                int newIndex = 0;
-                for (int i = 0; i < _items.Count; i++)
-                {
-                    if (_items[i] != null)
-                    {
-                        if (i != newIndex)
-                        {
-                            _items[newIndex] = _items[i];
-                            _indexMap[_items[i]] = newIndex;
-                        }
-                        newIndex++;
-                    }
-                }
-                _items.RemoveRange(newIndex, _items.Count - newIndex);
+                return;
             }
+            int newIndex = 0;
+            var count = _items.Count;
+            for (int i = 0; i < count; i++)
+            {
+                if (_items[i] != null)
+                {
+                    if (i != newIndex)
+                    {
+                        _items[newIndex] = _items[i];
+                        _indexMap[_items[i]] = newIndex;
+                    }
+                    newIndex++;
+                }
+            }
+            _items.RemoveRange(newIndex, _items.Count - newIndex);
         }
 
-        public bool Add(T item)
+        /// <summary>
+        /// 尝试添加元素到列表，如果元素为null或已存在则返回false，否则返回true
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool TryAdd(T item)
         {
-            if (item == null) throw new ArgumentNullException(nameof(item));
+            if (item == null)
+            {
+                return false;
+            }
             if (_indexMap != null)
             {
+                //已开始优化，使用索引映射添加
                 if (_indexMap.TryAdd(item, _items.Count))
                 {
                     _items.Add(item);
@@ -114,6 +129,7 @@ namespace PBBox.Collections
             }
             else
             {
+                //未开始优化，使用列表检查添加
                 if (!_items.Contains(item))
                 {
                     _items.Add(item);
@@ -125,28 +141,20 @@ namespace PBBox.Collections
             return false;
         }
 
-        void ICollection<T>.Add(T item)
+        /// <summary>
+        /// 尝试从列表中移除元素
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool TryRemove(T item)
         {
-            Add(item);
-        }
-
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            if (array == null) throw new ArgumentNullException(nameof(array));
-            if (arrayIndex < 0) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            if (array.Length - arrayIndex < Count) throw new ArgumentException("The destination array is too small.", nameof(array));
-
-            foreach (T item in this)
+            if (item == null)
             {
-                array[arrayIndex++] = item;
+                return false;
             }
-        }
-
-        public bool Remove(T item)
-        {
-            if (item == null) throw new ArgumentNullException(nameof(item));
             if (_indexMap != null)
             {
+                //已开始优化，使用索引映射快速删除
                 if (_indexMap.Remove(item, out int index))
                 {
                     RemoveListImpl(index);
@@ -155,6 +163,7 @@ namespace PBBox.Collections
             }
             else
             {
+                //未开始优化，使用列表检查删除
                 if (_items.Remove(item))
                 {
                     Count--;
@@ -172,7 +181,11 @@ namespace PBBox.Collections
                 //使用墓碑法
                 _items[index] = null;
                 Count--;
-                TryCompact();
+                //当当前有效元素占比低于一定阈值时，进行压缩
+                if (Count / (float)_items.Count < COMPACT_THRESHOLD)
+                {
+                    Compact();
+                }
             }
             else
             {
@@ -191,7 +204,10 @@ namespace PBBox.Collections
 
         public bool Contains(T item)
         {
-            if (item == null) throw new ArgumentNullException(nameof(item));
+            if (item == null)
+            {
+                return false;
+            }
             if (_indexMap != null)
             {
                 return _indexMap.ContainsKey(item);
@@ -224,6 +240,21 @@ namespace PBBox.Collections
         {
             return GetEnumerator();
         }
+
+        void ICollection<T>.CopyTo(T[] array, int arrayIndex)
+        {
+            _items.CopyTo(array, arrayIndex);
+        }
+
+        void ICollection<T>.Add(T item)
+        {
+            if (!TryAdd(item))
+            {
+                Log.Error($"Failed to add item: {item}, it may already exist in the list.", nameof(IndexedList<T>), Log.PBBoxLoggerName);
+            }
+        }
+
+        bool ICollection<T>.Remove(T item) => TryRemove(item);
 
         [StructLayout(LayoutKind.Auto)]
         public struct Enumerator : IEnumerator<T>, IEnumerator

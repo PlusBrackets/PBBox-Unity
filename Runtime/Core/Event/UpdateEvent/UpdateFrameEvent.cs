@@ -18,7 +18,7 @@ namespace PBBox
 #if UNITY_5_3_OR_NEWER
         [AutoStaticsCleanup]
 #endif
-        public static EventSubjectIn<UpdateFrameEvent> Subject { get; private set; } = new EventSubjectIn<UpdateFrameEvent>();
+        public static EventSubject<UpdateFrameEvent> Subject { get; private set; } = new EventSubject<UpdateFrameEvent>();
 
         public readonly float DeltaTime;
         public readonly int FrameCount;

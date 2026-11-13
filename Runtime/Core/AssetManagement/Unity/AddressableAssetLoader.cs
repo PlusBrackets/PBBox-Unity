@@ -14,12 +14,6 @@ namespace PBBox.AssetManagement
     [AssetLoaderAssign(AssetLoadType.Addressable, -1)]
     public class AddressableAssetLoader : AssetLoaderBase
     {
-        //[AssetLoaderCreateMethod]
-        //public static IAssetLoader Create(string key)
-        //{
-        //    return new AddressableAssetLoader(key);
-        //}
-
         private AsyncOperationHandle m_Handler;
         protected override string LogTag => "AddressableLoader";
         

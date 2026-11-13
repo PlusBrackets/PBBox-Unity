@@ -10,12 +10,18 @@ using PBBox.Event;
 
 namespace PBBox
 {
+    /// <summary>
+    /// <para>默认事件管理器，用于管理和调度各种事件的订阅和发布</para>
+    /// <para>支持按类型和按ID的事件订阅与发布，提供延迟发布机制</para>
+    /// <para>有较好且稳定的订阅和取消订阅性能，发布遍历性能比多播委托稍慢(10000+事件时为多播委托的2倍左右)</para>
+    /// </summary>
+    [SingletonPriority(-1)]
     public sealed partial class EventManager : IEventManager, IEventSubjectManager, ISingletonLifecycle
     {
         private Lazy<Dictionary<Type, TypedSubjectContainer>> _typedSubjects = new Lazy<Dictionary<Type, TypedSubjectContainer>>(() => new Dictionary<Type, TypedSubjectContainer>());
         private Lazy<Dictionary<int, IdSubjectContainer>> _idSubjects = new Lazy<Dictionary<int, IdSubjectContainer>>(() => new Dictionary<int, IdSubjectContainer>());
 
-        private EventSubscriptionNew _updateFrameSubscription;
+        private EventSubscription _updateFrameSubscription;
         private List<PendingEventBase> _pendingEvents;
         private List<PendingEventBase> _pendingEventsTemp;
 
@@ -54,7 +60,7 @@ namespace PBBox
             _pendingEvents.Add(pendingEvent);
         }
 
-        public IEventSubject GetOrCreateSubject<TEvent>(bool isLater = false, bool isInParamHandler = false) where TEvent : IEvent
+        public IEventSubject GetOrCreateSubject<TEvent>(bool isLater = false) where TEvent : IEvent
         {
             var type = typeof(TEvent);
             if (!_typedSubjects.Value.TryGetValue(type, out var container))
@@ -62,14 +68,7 @@ namespace PBBox
                 container = new TypedSubjectContainer();
                 _typedSubjects.Value[type] = container;
             }
-            if (!isInParamHandler)
-            {
-                return container.GetOrCreateSubject<TEvent>(isLater);
-            }
-            else
-            {
-                return container.GetOrCreateInParamSubject<TEvent>(isLater);
-            }
+            return container.GetOrCreateSubject<TEvent>(isLater);
         }
 
         public IEventSubject GetOrCreateSubject(int eventId, bool isLater = false)
@@ -82,19 +81,12 @@ namespace PBBox
             return container.GetOrCreateSubject(isLater);
         }
 
-        public IEventSubject GetSubject<TEvent>(bool isLater = false, bool isInParamHandler = false) where TEvent : IEvent
+        public IEventSubject GetSubject<TEvent>(bool isLater = false) where TEvent : IEvent
         {
             var type = typeof(TEvent);
             if (_typedSubjects.IsValueCreated && _typedSubjects.Value.TryGetValue(type, out var container))
             {
-                if (isInParamHandler)
-                {
-                    return isLater ? container.InParamSubjectLater : container.InParamSubject;
-                }
-                else
-                {
-                    return isLater ? container.DefaultSubjectLater : container.DefaultSubject;
-                }
+                return isLater ? container.DefaultSubjectLater : container.DefaultSubject;
             }
             return null;
         }
@@ -108,17 +100,18 @@ namespace PBBox
             return null;
         }
 
+        #region Typed Event Methods
 
-        public EventSubscriptionNew Subscribe<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent
+        public EventSubscription Subscribe<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent
         {
-            var subject = GetOrCreateSubject<TEvent>(isLater, false);
+            var subject = GetOrCreateSubject<TEvent>(isLater) as EventSubject<TEvent>;
             return subject.Subscribe(handler, order);
             
         }
 
         public void Unsubscribe<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent
         {
-            var subject = GetSubject<TEvent>(isLater, false) as EventSubject<TEvent>;
+            var subject = GetSubject<TEvent>(isLater) as EventSubject<TEvent>;
             subject?.Unsubscribe(handler, order);
         }
 
@@ -131,21 +124,24 @@ namespace PBBox
             }
             if (container.DefaultSubjectLater != null && container.DefaultSubjectLater is EventSubject<TEvent> laterSubject)
             {
-                QueueLaterEvent(new PendingTypedEvent<TEvent>(laterSubject, eventData));
+                QueueLaterEvent(new PendingTypedEvent<TEvent>(laterSubject, eventData, false));
             }
             (container.DefaultSubject as EventSubject<TEvent>)?.Publish(eventData);
         }
 
+        #endregion
 
-        public EventSubscriptionNew Subscribe<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent
+        #region Typed Event Methods with In-Parameter
+
+        public EventSubscription Subscribe<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent
         {
-            var subject = GetOrCreateSubject<TEvent>(isLater, true) as EventSubjectIn<TEvent>;
+            var subject = GetOrCreateSubject<TEvent>(isLater) as EventSubject<TEvent>;
             return subject.Subscribe(handler, order);
         }
 
         public void Unsubscribe<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent
         {
-            var subject = GetSubject<TEvent>(isLater, true) as EventSubjectIn<TEvent>;
+            var subject = GetSubject<TEvent>(isLater) as EventSubject<TEvent>;
             subject?.Unsubscribe(handler, order);
         }
 
@@ -156,14 +152,17 @@ namespace PBBox
             {
                 return;
             }
-            if (container.InParamSubjectLater != null && container.InParamSubjectLater is EventSubjectIn<TEvent> laterSubject)
+            if (container.DefaultSubjectLater != null && container.DefaultSubjectLater is EventSubject<TEvent> laterSubject)
             {
-                QueueLaterEvent(new PendingTypedInParamEvent<TEvent>(laterSubject, eventData));
+                QueueLaterEvent(new PendingTypedEvent<TEvent>(laterSubject, eventData, true));
             }
-            (container.InParamSubject as EventSubjectIn<TEvent>)?.Publish(in eventData);
+            (container.DefaultSubject as EventSubject<TEvent>)?.Publish(in eventData);
         }
+        #endregion
 
-        public EventSubscriptionNew SubscribeGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false)
+        #region Generic Event Methods
+
+        public EventSubscription SubscribeGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false)
         {
             var subject = GetOrCreateSubject(eventId, isLater);
             return subject.Subscribe(handler, order);
@@ -213,6 +212,8 @@ namespace PBBox
             }
             container.Subject?.Publish();
         }
+
+        #endregion
 
     }
 }

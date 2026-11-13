@@ -1,40 +1,44 @@
 /*--------------------------------------------------------
- *Copyright (c) 2016-2025 PlusBrackets
- *@update: 2025.05.24
+ *Copyright (c) 2016-2026 PlusBrackets
+ *@update: 2026.11.11
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
+using PBBox.Event;
 
 namespace PBBox
 {
     /// <summary>
-    /// 订阅事件的返回值，Disposse方法可以取消订阅
+    /// 事件订阅结构体，可以用于管理事件订阅的生命周期
     /// </summary>
-    public struct EventSubscriptionOld : IDisposable
+    public struct EventSubscription : IDisposable
     {
-        private readonly ISubscriptionHandler m_Handler;
-        private readonly int m_EventId;
-        private readonly Delegate m_Listener;
-        private readonly int m_Order;
-        private readonly bool m_IsLateEvent;
+        public static readonly EventSubscription Empty = new EventSubscription(null, null, 0);
 
-        public int EventId => m_EventId;
+        private IEventSubject _subject;
+        private Delegate _handler;
+        private readonly int _order;
+        /// <summary>
+        /// 该订阅结构体是否有效
+        /// </summary>
+        public bool IsValid => _subject != null && _handler != null;
 
-        internal EventSubscriptionOld(ISubscriptionHandler handler, int eventId, Delegate listener, int order, bool isLateEvent)
+        public EventSubscription(IEventSubject subject, Delegate handler, int order)
         {
-            m_Handler = handler;
-            m_EventId = eventId;
-            m_Listener = listener;
-            m_Order = order;
-            m_IsLateEvent = isLateEvent;
+            _subject = subject;
+            _handler = handler;
+            _order = order;
         }
 
+        /// <summary>
+        /// 取消订阅
+        /// </summary>
         public void Dispose()
         {
-            if (m_Handler != null)
-            {
-                m_Handler.Unsubscripe(m_EventId, m_Listener, m_Order, m_IsLateEvent);
-            }
+            _subject?.Unsubscribe(_handler, _order);
+            _subject = null;
+            _handler = null;
+            // Implement disposal logic here
         }
     }
 }

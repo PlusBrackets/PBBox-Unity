@@ -10,21 +10,24 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Collections;
 
-namespace PBBox.Event
+namespace PBBox.Collections
 {
-    //public delegate void EventHandlerCollectionForeachHandle<T, in T2>(in T eventData, T2 handlers);
-
-    public class EventHandlerCollection<T> :IEnumerable<KeyValuePair<int, IndexedList<T>>>, IEnumerable where T : Delegate
+    /// <summary>
+    /// <para>有序的索引列表集合</para>
+    /// <para>对遍历时操作进行了延迟处理优化，不在遍历中的List不受影响，会改变集合本身(新建list或removelist)的除外</para>
+    /// <para>需要在遍历前后调用相应方法确保操作正常，或使用ForEach(handle)方法进行遍历</para>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class SortedIndexedList<T> : IEnumerable<KeyValuePair<int, IndexedList<T>>>, IEnumerable where T : Delegate
     {
-        public delegate void ForeachHandleIn<TValue>(in TValue eventData, List<T> handlers);
-        
-        private SortedDictionary<int, IndexedList<T>> _subscriptions = new SortedDictionary<int, IndexedList<T>>();
-        private bool _keepInBucketItemOrderly;
+        private const int MAX_CACHED_SUBSCRIPTION_BUCKET_DEFAULT = 8;
+        private SortedDictionary<int, IndexedList<T>> _orderedBuckets = new SortedDictionary<int, IndexedList<T>>();
+        private bool _keepInBucketItemOrderly = true;
         private int? _inBucketListCapacity;
         /// <summary>
         /// 最大缓存的订阅桶数量，超过该数量时会移除空的订阅桶
         /// </summary>
-        public int MaxCachedSubscriptionsBucket { get; set; } = 8;
+        public int MaxCachedSubscriptionsBucket { get; set; } = MAX_CACHED_SUBSCRIPTION_BUCKET_DEFAULT;
         /// <summary>
         /// 是否保持订阅桶内的项有序
         /// </summary>
@@ -36,35 +39,50 @@ namespace PBBox.Event
         private int _currentIteratingOrder;
         private List<AddRemoveOperation> _pendingOperations;
 
-        public EventHandlerCollection(bool keepInBucketItemOrderly = true)
+        public SortedIndexedList()
+        {
+            _keepInBucketItemOrderly = true;
+            _inBucketListCapacity = null;
+        }
+
+        public SortedIndexedList(bool keepInBucketItemOrderly = true)
         {
             _keepInBucketItemOrderly = keepInBucketItemOrderly;
             _inBucketListCapacity = null;
         }
 
-        public EventHandlerCollection(int inBucketListCapacity, bool keepInBucketItemOrderly = true)
+        public SortedIndexedList(int inBucketListCapacity, bool keepInBucketItemOrderly = true)
         {
             _keepInBucketItemOrderly = keepInBucketItemOrderly;
             _inBucketListCapacity = inBucketListCapacity;
         }
 
-        public bool SetCollectionParameter(bool keepInBucketItemOrderly, int? inBucketListCapacity = null)
+        public static SortedIndexedList<T> Create(bool keepInBucketItemOrderly = true, int? inBucketListCapacity = null)
         {
-            if (_subscriptions != null && _subscriptions.Count > 0)
+            return inBucketListCapacity.HasValue
+                ? new SortedIndexedList<T>(inBucketListCapacity.Value, keepInBucketItemOrderly)
+                : new SortedIndexedList<T>(keepInBucketItemOrderly);
+        }
+
+        /// <summary>
+        /// 设置集合的参数
+        /// </summary>
+        /// <param name="keepInBucketItemOrderly"></param>
+        /// <param name="inBucketListCapacity"></param>
+        /// <returns>False表示未能完全应用参数，存在已填充的集合</returns>
+        public bool SetCollectionParameter(bool keepInBucketItemOrderly, int? inBucketListCapacity = null, int? maxCachedSubscriptionsBucket = null)
+        {
+            bool result = true;
+            if (_orderedBuckets != null && _orderedBuckets.Count > 0)
             {
-                Log.Error("Cannot change collection parameters while there are existing subscriptions.", nameof(EventHandlerCollection<T>), Log.PBBoxLoggerName);
-                return false;
+                //提示无法将参数应用到已存在的indexedList中，新建的集合将使用新的参数，最好是在集合为空时设置参数，或者Clear后设置
+                Log.Warning("Cannot apply collection parameters to an already populated collection. But new collections will use the new parameters. It is recommended to set parameters when the collection is empty or after calling Clear.", nameof(SortedIndexedList<T>), Log.PBBoxLoggerName);
+                result = false;
             }
             _keepInBucketItemOrderly = keepInBucketItemOrderly;
             _inBucketListCapacity = inBucketListCapacity;
-            return true;
-        }
-
-        public static EventHandlerCollection<T> Create(bool keepInBucketItemOrderly = true, int? inBucketListCapacity = null)
-        {
-            return inBucketListCapacity.HasValue
-                ? new EventHandlerCollection<T>(inBucketListCapacity.Value, keepInBucketItemOrderly)
-                : new EventHandlerCollection<T>(keepInBucketItemOrderly);
+            MaxCachedSubscriptionsBucket = maxCachedSubscriptionsBucket ?? MAX_CACHED_SUBSCRIPTION_BUCKET_DEFAULT;
+            return result;
         }
 
         /// <summary>
@@ -86,21 +104,62 @@ namespace PBBox.Event
             if (_pendingOperations == null) return;
             if (_isIterating)
             {
-                Log.Error("Cannot apply pending operations while iterating.", nameof(EventHandlerCollection<T>), Log.PBBoxLoggerName);
+                Log.Error("Cannot apply pending operations while iterating.", nameof(SortedIndexedList<T>), Log.PBBoxLoggerName);
                 return;
             }
             foreach (var op in _pendingOperations)
             {
                 if (op.IsAdd)
                 {
-                    Add(op.Handler, op.Order);
+                    TryAdd(op.Handler, op.Order);
                 }
                 else
                 {
-                    Remove(op.Handler, op.Order);
+                    TryRemove(op.Handler, op.Order);
                 }
             }
             _pendingOperations.Clear();
+        }
+
+        /// <summary>
+        /// <para>遍历当前集合中的所有桶，并对每个桶的原始IndexedList项目列表执行指定的操作</para>
+        /// <para>在遍历过程中，对集合的修改会被延迟处理，直到遍历结束后应用</para>
+        /// <para>根据列表是否保持有序的设置，传入的List<T>中的项目可能为null(已被移除但仍占据位置)</para>
+        /// </summary>
+        /// <param name="handle"></param>
+        public void ForEach(Action<List<T>> handle)
+        {
+            foreach (var kvp in _orderedBuckets)
+            {
+                SetIterating(true, kvp.Key);
+                handle(kvp.Value.RawItems);
+            }
+            SetIterating(false, 0);
+            ApplyPendingOperations();
+        }
+
+        /// <summary>
+        /// 遍历当前集合中的所有有效项
+        /// </summary>
+        /// <param name="handle"></param>
+        public void ForEach(Action<T> handle)
+        {
+            foreach (var kvp in _orderedBuckets)
+            {
+                SetIterating(true, kvp.Key);
+                var rawItems = kvp.Value.RawItems;
+                var count = rawItems.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    var item = rawItems[i];
+                    if (item != null)
+                    {
+                        handle(item);
+                    }
+                }
+            }
+            SetIterating(false, 0);
+            ApplyPendingOperations();
         }
 
         private bool TryQueueAddOperation(T handler, int order, IndexedList<T> list)
@@ -139,7 +198,7 @@ namespace PBBox.Event
                 }
             }
 #if PB_TEST_LOG || UNITY_EDITOR
-            Log.Warning($"处于遍历中，尝试添加AddRemoveOperation: IsAdd={true}, Handler={handler}, Order={order} QueueSuccess={result}，此操作性能消耗较高，建议避免在遍历过程中频繁进行", nameof(EventHandlerCollection<T>), Log.PBBoxLoggerName);
+            Log.Warning($"处于遍历中，尝试添加AddRemoveOperation: IsAdd={true}, Handler={handler}, Order={order} QueueSuccess={result}，此操作性能消耗较高，建议避免在遍历过程中频繁进行", nameof(SortedIndexedList<T>), Log.PBBoxLoggerName);
 #endif
             return result;
         }
@@ -181,20 +240,20 @@ namespace PBBox.Event
                 }
             }
 #if PB_TEST_LOG || UNITY_EDITOR
-            Log.Warning($"处于遍历中，尝试添加AddRemoveOperation: IsAdd={false}, Handler={handler}, Order={order} QueueSuccess={result}，此操作性能消耗较高，建议避免在遍历过程中频繁进行", nameof(EventHandlerCollection<T>), Log.PBBoxLoggerName);
+            Log.Warning($"处于遍历中，尝试添加AddRemoveOperation: IsAdd={false}, Handler={handler}, Order={order} QueueSuccess={result}，此操作性能消耗较高，建议避免在遍历过程中频繁进行", nameof(SortedIndexedList<T>), Log.PBBoxLoggerName);
 #endif
             return result;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int FindLastPendingOperation(bool? isAdd, T handler, int order)
         {
             return _pendingOperations.FindLastIndex(op => (!isAdd.HasValue || op.IsAdd == isAdd) && EqualityComparer<T>.Default.Equals(op.Handler, handler) && op.Order == order);
         }
 
-        public bool Add(T handler, int order = 0)
+        public bool TryAdd(T handler, int order = 0)
         {
-            if (!_subscriptions.TryGetValue(order, out var list))
+            if (!_orderedBuckets.TryGetValue(order, out var list))
             {
                 if (_isIterating)
                 {
@@ -208,13 +267,13 @@ namespace PBBox.Event
                 {
                     list = new IndexedList<T>(_keepInBucketItemOrderly);
                 }
-                _subscriptions.Add(order, list);
+                _orderedBuckets.Add(order, list);
             }
-            if(_isIterating && order == _currentIteratingOrder)
+            if (_isIterating && order == _currentIteratingOrder)
             {
                 return TryQueueAddOperation(handler, order, list);
             }
-            if (list.Add(handler))
+            if (list.TryAdd(handler))
             {
                 Count++;
                 return true;
@@ -222,22 +281,19 @@ namespace PBBox.Event
             return false;
         }
 
-        public bool Remove(T handler, int order = 0)
+        public bool TryRemove(T handler, int order = 0)
         {
-            if (_subscriptions.TryGetValue(order, out var list))
+            if (_orderedBuckets.TryGetValue(order, out var list))
             {
                 if (_isIterating && order == _currentIteratingOrder)
                 {
                     return TryQueueRemoveOperation(handler, order, list);
                 }
-                if (list.Remove(handler))
+                if (list.TryRemove(handler))
                 {
-                    if (list.Count == 0 && _subscriptions.Count > MaxCachedSubscriptionsBucket)
+                    if (list.Count == 0 && _orderedBuckets.Count > MaxCachedSubscriptionsBucket)
                     {
-                        _subscriptions.Remove(order);
-//#if UNITY_EDITOR || PB_TEST_LOG
-//                        Log.Warning($"因超出最大缓存订阅桶数量({MAX_CACHED_SUBSCRIPTIONS_BUCKET})而移除订阅桶 {order}，当前订阅桶数量为 {_subscriptions.Count}，请注意开销", nameof(EventHandlerCollection<T>), Log.PBBoxLoggerName);
-//#endif
+                        _orderedBuckets.Remove(order);
                     }
                     Count--;
                     return true;
@@ -246,16 +302,25 @@ namespace PBBox.Event
             return false;
         }
 
+        public bool Contains(T handler, int order = 0)
+        {
+            if (_orderedBuckets.TryGetValue(order, out var list))
+            {
+                return list.Contains(handler);
+            }
+            return false;
+        }
+
         public void Clear()
         {
-            _subscriptions.Clear();
+            _orderedBuckets.Clear();
             Count = 0;
             _pendingOperations.Clear();
         }
 
         public SortedDictionary<int, IndexedList<T>>.Enumerator GetEnumerator()
         {
-            return _subscriptions.GetEnumerator();
+            return _orderedBuckets.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -267,28 +332,6 @@ namespace PBBox.Event
         {
             return GetEnumerator();
         }
-        
-        public void ForEachIn<TValue>(in TValue eventData, ForeachHandleIn<TValue> handle)
-        {
-
-        }
-
-        public void ForEach(Action<List<T>> handle)
-        {
-            foreach (var kvp in _subscriptions)
-            {
-                SetIterating(true, kvp.Key);
-                handle(kvp.Value.RawItems);
-            }
-            SetIterating(false, 0);
-            ApplyPendingOperations();
-        }
-
-        public void ForEach<TValue>(TValue eventData, Action<TValue, List<T>> handle)
-        {
-            
-        }
-
 
         [StructLayout(LayoutKind.Auto)]
         private struct AddRemoveOperation

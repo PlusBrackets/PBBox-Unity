@@ -8,15 +8,18 @@ using System.Collections.Generic;
 using PBBox.Collections;
 
 namespace PBBox.Event
-{
-    
-    
+{   
+    /// <summary>
+    /// 事件主题的基类，管理事件处理器的订阅和取消订阅
+    /// </summary>
+    /// <typeparam name="THandler"></typeparam>
     public abstract class EventSubjectBase<THandler> : IReferencePoolItem where THandler : Delegate
     {
-        protected EventHandlerCollection<THandler> _handlersCollection = null;
+        protected SortedIndexedList<THandler> _handlersCollection = null;
 
         protected bool _keepInBucketItemOrderly = true;
         protected int? _inBucketListCapacity = null;
+        protected int? _maxCachedBucketCount = null;
 
         /// <summary>
         /// 当前集合是否严格按照处理器的添加顺序执行
@@ -34,7 +37,11 @@ namespace PBBox.Event
 
         protected virtual EventSubscription SubscribeInternal(THandler handler, int order = 0)
         {
-            if (GetOrCreateHandlers().Add(handler, order))
+            if(handler == null)
+            {
+                return EventSubscription.Empty;
+            }
+            if (GetOrCreateHandlers().TryAdd(handler, order))
             {
                 return new EventSubscription(Subject, handler, order);
             }
@@ -46,14 +53,14 @@ namespace PBBox.Event
                 return EventSubscription.Empty;
             }
         }
-        
+
         protected virtual void UnsubscribeInternal(THandler handler, int order = 0)
         {
             if (handler == null)
             {
                 return;
             }
-            if (GetOrCreateHandlers().Remove(handler, order))
+            if (GetOrCreateHandlers().TryRemove(handler, order))
             {
                 return;
             }
@@ -70,25 +77,29 @@ namespace PBBox.Event
         /// </summary>
         /// <param name="keepInBucketItemOrderly"></param>
         /// <param name="inBucketListCapacity"></param>
-        /// <returns></returns>
-        public bool SetCollectionParameter(bool keepInBucketItemOrderly, int? inBucketListCapacity = null)
+        /// <param name="maxCachedBucketCount"></param>
+        /// <returns>是否成功应用参数，False表示未能应用全部参数</returns>
+        public bool SetSubjectParameter(bool keepInBucketItemOrderly, int? inBucketListCapacity = null, int? maxCachedBucketCount = null)
         {
+            bool result = true;
             if (_handlersCollection != null)
             {
-                return _handlersCollection.SetCollectionParameter(keepInBucketItemOrderly, inBucketListCapacity);
+                result = _handlersCollection.SetCollectionParameter(keepInBucketItemOrderly, inBucketListCapacity, maxCachedBucketCount);
             }
             _keepInBucketItemOrderly = keepInBucketItemOrderly;
             _inBucketListCapacity = inBucketListCapacity;
-            return true;
+            _maxCachedBucketCount = maxCachedBucketCount;
+            return result;
         }
 
-        protected EventHandlerCollection<THandler> GetOrCreateHandlers()
+        protected SortedIndexedList<THandler> GetOrCreateHandlers()
         {
             if (_handlersCollection == null)
             {
                 _handlersCollection = _inBucketListCapacity.HasValue
-                    ? new EventHandlerCollection<THandler>(_inBucketListCapacity.Value, _keepInBucketItemOrderly)
-                    : new EventHandlerCollection<THandler>(_keepInBucketItemOrderly);
+                    ? new SortedIndexedList<THandler>(_inBucketListCapacity.Value, _keepInBucketItemOrderly)
+                    : new SortedIndexedList<THandler>(_keepInBucketItemOrderly);
+                _handlersCollection.SetCollectionParameter(_keepInBucketItemOrderly, _inBucketListCapacity, _maxCachedBucketCount);
             }
             return _handlersCollection;
         }

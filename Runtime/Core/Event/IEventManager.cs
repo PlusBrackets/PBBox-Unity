@@ -1,350 +1,167 @@
 /*--------------------------------------------------------
- *Copyright (c) 2016-2025 PlusBrackets
- *@update: 2025.05.24
+ *Copyright (c) 2016-2026 PlusBrackets
+ *@update: 2026.11.11
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
-using PBBox.Collections;
 
 namespace PBBox
 {
     /// <summary>
-    /// 事件管理器接口
+    /// 表示带有输入参数的事件处理委托，用于处理结构体类型的事件数据
     /// </summary>
-    public interface IEventManagerOld : ISingleton<IEventManagerOld>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="eventData"></param>
+    public delegate void ActionIn<T>(in T eventData);
+    
+    /// <summary>
+    /// 事件管理器接口，提供订阅、取消订阅和发布事件的方法
+    /// </summary>
+    public interface IEventManager : ISingleton<IEventManager>
     {
-
-        #region 添加事件监听器
         /// <summary>
-        /// 添加事件监听器
+        /// 订阅特定事件类型的事件
         /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld On(int eventId, Action<object> handler, int order = 0);
-
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        /// <returns>返回事件订阅对象，可用于管理订阅的生命周期</returns>
+        EventSubscription Subscribe<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent;
         /// <summary>
-        /// 添加事件监听器
+        /// 取消订阅特定事件类型的事件
         /// </summary>
-        /// <param name="eventName">事件名称，将被转换为事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld On(string eventName, Action<object> handler, int order = 0)=> On(eventName.GetStableHashCode(), handler, order);
-
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        void Unsubscribe<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent;
         /// <summary>
-        /// 添加带参数的事件监听器
+        /// 发布特定事件类型的事件
         /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld On<T>(int eventId, Action<object, T> handler, int order = 0);
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="eventData"></param>
+        void Publish<TEvent>(TEvent eventData) where TEvent : IEvent;
 
         /// <summary>
-        /// 添加带参数的事件监听器
+        /// 订阅特定值类型事件，可用于大型结构体类型的事件数据
         /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称，将被转换为事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld On<T>(string eventName, Action<object, T> handler, int order = 0) => On(eventName.GetStableHashCode(), handler, order);
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        /// <returns>返回事件订阅对象，可用于管理订阅的生命周期</returns>
+        EventSubscription Subscribe<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent;
+        /// <summary>
+        /// 取消订阅特定值类型事件，可用于大型结构体类型的事件数据
+        /// </summary>
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        void Unsubscribe<TEvent>(ActionIn<TEvent> handler, int order = 0, bool isLater = false) where TEvent : struct, IEvent;
+        /// <summary>
+        /// 发布特定值类型事件，可用于大型结构体类型的事件数据
+        /// </summary>
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="eventData"></param>
+        void Publish<TEvent>(in TEvent eventData) where TEvent : struct, IEvent;
 
         /// <summary>
-        /// 添加事件过滤器，可通过返回false中断事件传播
+        /// 订阅通用事件, 通过事件ID进行订阅
         /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld On(int eventId, Func<object, bool> filter, int order = 0);
+        /// <param name="eventId"></param>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        /// <returns>返回事件订阅对象，可用于管理订阅的生命周期</returns>
+        EventSubscription SubscribeGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false);
+        /// <summary>
+        /// 取消订阅通用事件, 通过事件ID进行取消订阅
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        void UnsubscribeGeneric(int eventId, Delegate handler, int order = 0, bool isLater = false);
+        /// <summary>
+        /// 发布通用事件, 通过事件ID进行发布
+        /// </summary>
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="eventId"></param>
+        /// <param name="eventData"></param>
+        void Publish<TData>(int eventId, TData eventData);
 
         /// <summary>
-        /// 添加事件过滤器，可通过返回false中断事件传播
+        /// 发布通用事件，通过事件ID进行发布，可用于大型结构体类型的事件数据
         /// </summary>
-        /// <param name="eventName">事件名称，将被转换为事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld On(string eventName, Func<object, bool> filter, int order = 0) => On(eventName.GetStableHashCode(), filter, order);
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="eventId"></param>
+        /// <param name="eventData"></param>
+        void Publish<TData>(int eventId, in TData eventData) where TData : struct;
 
         /// <summary>
-        /// 添加带参数的事件过滤器，可通过返回false中断事件传播
+        /// 发布通用事件，通过事件ID进行发布
         /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld On<T>(int eventId, Func<object, T, bool> filter, int order = 0);
+        /// <param name="eventId"></param>
+        void Publish(int eventId);
 
         /// <summary>
-        /// 添加带参数的事件过滤器，可通过返回false中断事件传播
+        /// 订阅通用事件，通过事件ID进行订阅
         /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称，将被转换为事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld On<T>(string eventName, Func<object, T, bool> filter, int order = 0) => On(eventName.GetStableHashCode(), filter, order);
-        #endregion
-
-        #region 添加延迟事件监听器
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="eventId"></param>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        /// <returns>返回事件订阅对象</returns>
+        EventSubscription Subscribe<TData>(int eventId, Action<TData> handler, int order = 0, bool isLater = false) => SubscribeGeneric(eventId, handler, order, isLater);
+        
         /// <summary>
-        /// 添加事件监听器，触发事件时不会立刻调用，而是会等到Update时调用
+        /// 订阅通用事件，通过事件ID进行订阅
         /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld OnLater(int eventId, Action<object> handler, int order = 0);
-
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="eventId"></param>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        /// <returns>返回事件订阅对象</returns>
+        EventSubscription Subscribe<TData>(int eventId, ActionIn<TData> handler, int order = 0, bool isLater = false) where TData : struct => SubscribeGeneric(eventId, handler, order, isLater);
         /// <summary>
-        /// 添加事件监听器，触发事件时不会立刻调用，而是会等到Update时调用
+        /// 订阅通用事件，通过事件ID进行订阅
         /// </summary>
-        /// <param name="eventName">事件名称，将被转换为事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld OnLater(string eventName, Action<object> handler, int order = 0)=> OnLater(eventName.GetStableHashCode(), handler, order);
-
+        /// <param name="eventId"></param>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        /// <returns>返回事件订阅对象</returns>
+        EventSubscription Subscribe<TData>(int eventId, Action handler, int order = 0, bool isLater = false) => SubscribeGeneric(eventId, handler, order, isLater);
         /// <summary>
-        /// 添加带参数的事件监听器，触发事件时不会立刻调用，而是会等到Update时调用
+        /// 取消订阅通用事件，通过事件ID进行取消订阅
         /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld OnLater<T>(int eventId, Action<object, T> handler, int order = 0);
-
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="eventId"></param>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        void Unsubscribe<TData>(int eventId, Action<TData> handler, int order = 0, bool isLater = false) => UnsubscribeGeneric(eventId, handler, order, isLater);
         /// <summary>
-        /// 添加带参数的事件监听器，触发事件时不会立刻调用，而是会等到Update时调用
+        /// 取消订阅通用事件，通过事件ID进行取消订阅
         /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称，将被转换为事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld OnLater<T>(string eventName, Action<object, T> handler, int order = 0)=> OnLater(eventName.GetStableHashCode(), handler, order);
-
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="eventId"></param>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        void Unsubscribe<TData>(int eventId, ActionIn<TData> handler, int order = 0, bool isLater = false) where TData : struct => UnsubscribeGeneric(eventId, handler, order, isLater);
         /// <summary>
-        /// 添加事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
+        /// 取消订阅通用事件，通过事件ID进行取消订阅
         /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld OnLater(int eventId, Func<object, bool> filter, int order = 0);
-
-        /// <summary>
-        /// 添加事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
-        /// </summary>
-        /// <param name="eventName">事件名称，将被转换为事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld OnLater(string eventName, Func<object, bool> filter, int order = 0) => OnLater(eventName.GetStableHashCode(), filter, order);
-
-        /// <summary>
-        /// 添加带参数的事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld OnLater<T>(int eventId, Func<object, T, bool> filter, int order = 0);
-
-        /// <summary>
-        /// 添加带参数的事件过滤器，触发事件时不会立刻调用，而是会等到Update时调用
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称，将被转换为事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">接收事件的顺序，默认为0，越小越早接收事件，若无必要，请保持order=0</param>
-        /// <returns>订阅对象，可用于取消订阅</returns>
-        EventSubscriptionOld OnLater<T>(string eventName, Func<object, T, bool> filter, int order = 0) => OnLater(eventName.GetStableHashCode(), filter, order);
-        #endregion
-
-        #region 移除事件监听器
-        /// <summary>
-        /// 移除事件监听器
-        /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void Off(int eventId, Action<object> handler, int order = 0);
-
-        /// <summary>
-        /// 移除事件监听器
-        /// </summary>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void Off(string eventName, Action<object> handler, int order = 0) => Off(eventName.GetStableHashCode(), handler, order);
-
-        /// <summary>
-        /// 移除带参数的事件监听器
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void Off<T>(int eventId, Action<object, T> handler, int order = 0);
-
-        /// <summary>
-        /// 移除带参数的事件监听器
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void Off<T>(string eventName, Action<object, T> handler, int order = 0) => Off(eventName.GetStableHashCode(), handler, order);
-
-        /// <summary>
-        /// 移除事件过滤器
-        /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void Off(int eventId, Func<object, bool> filter, int order = 0);
-
-        /// <summary>
-        /// 移除事件过滤器
-        /// </summary>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void Off(string eventName, Func<object, bool> filter, int order = 0) => Off(eventName.GetStableHashCode(), filter, order);
-
-        /// <summary>
-        /// 移除带参数的事件过滤器
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void Off<T>(int eventId, Func<object, T, bool> filter, int order = 0);
-
-        /// <summary>
-        /// 移除带参数的事件过滤器
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void Off<T>(string eventName, Func<object, T, bool> filter, int order = 0) => Off(eventName.GetStableHashCode(), filter, order);
-        #endregion
-
-        #region 移除延迟事件监听器
-        /// <summary>
-        /// 移除延迟事件监听器
-        /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void OffLater(int eventId, Action<object> handler, int order = 0);
-
-        /// <summary>
-        /// 移除延迟事件监听器
-        /// </summary>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void OffLater(string eventName, Action<object> handler, int order = 0) => OffLater(eventName.GetStableHashCode(), handler, order);
-
-        /// <summary>
-        /// 移除带参数的延迟事件监听器
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void OffLater<T>(int eventId, Action<object, T> handler, int order = 0);
-
-        /// <summary>
-        /// 移除带参数的延迟事件监听器
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="handler">事件处理器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void OffLater<T>(string eventName, Action<object, T> handler, int order = 0) => OffLater(eventName.GetStableHashCode(), handler, order);
-
-        /// <summary>
-        /// 移除延迟事件过滤器
-        /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void OffLater(int eventId, Func<object, bool> filter, int order = 0);
-
-        /// <summary>
-        /// 移除延迟事件过滤器
-        /// </summary>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void OffLater(string eventName, Func<object, bool> filter, int order = 0) => OffLater(eventName.GetStableHashCode(), filter, order);
-
-        /// <summary>
-        /// 移除带参数的延迟事件过滤器
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void OffLater<T>(int eventId, Func<object, T, bool> filter, int order = 0);
-
-        /// <summary>
-        /// 移除带参数的延迟事件过滤器
-        /// </summary>
-        /// <typeparam name="T">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="filter">事件过滤器</param>
-        /// <param name="order">注册时使用的顺序值</param>
-        void OffLater<T>(string eventName, Func<object, T, bool> filter, int order = 0) => OffLater(eventName.GetStableHashCode(), filter, order);
-        #endregion
-
-        #region 触发事件
-        /// <summary>
-        /// 触发事件
-        /// </summary>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="sender">发送者</param>
-        void Emit(int eventId, object sender);
-
-        /// <summary>
-        /// 触发事件
-        /// </summary>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="sender">发送者</param>
-        void Emit(string eventName, object sender) => Emit(eventName.GetStableHashCode(), sender);
-
-        /// <summary>
-        /// 触发事件
-        /// </summary>
-        /// <typeparam name="TEventArgs">事件参数类型</typeparam>
-        /// <param name="eventId">事件ID</param>
-        /// <param name="sender">发送者</param>
-        /// <param name="args">参数</param>
-        /// <param name="releaseEventArgsPool">如果传入的参数需要在触发完毕后Release，则传入</param>
-        void Emit<TEventArgs>(int eventId, object sender, TEventArgs args, IReferenceCacheBase releaseEventArgsPool = null);
-
-        /// <summary>
-        /// 触发事件
-        /// </summary>
-        /// <typeparam name="TEventArgs">事件参数类型</typeparam>
-        /// <param name="eventName">事件名称</param>
-        /// <param name="sender">发送者</param>
-        /// <param name="args">参入</param>
-        /// <param name="releaseEventArgsPool">如果传入的参数需要在触发完毕后Release，则传入</param>
-        void Emit<TEventArgs>(string eventName, object sender, TEventArgs args, IReferenceCacheBase releaseEventArgsPool = null) => Emit(eventName.GetStableHashCode(), sender, args, releaseEventArgsPool);
-        #endregion
-
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="eventId"></param>
+        /// <param name="handler"></param>
+        /// <param name="order">订阅的优先级顺序</param>
+        /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
+        void Unsubscribe(int eventId, Action handler, int order = 0, bool isLater = false) => UnsubscribeGeneric(eventId, handler, order, isLater);
     }
 }
