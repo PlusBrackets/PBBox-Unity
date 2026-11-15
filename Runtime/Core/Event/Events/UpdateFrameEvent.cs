@@ -13,20 +13,13 @@ namespace PBBox
     /// <summary>
     /// 帧更新事件
     /// </summary>
-    public partial struct UpdateFrameEvent : IEvent
+    public readonly partial struct UpdateFrameEvent
     {
-#if UNITY_5_3_OR_NEWER
-        [AutoStaticsCleanup]
-#endif
-        public static EventSubject<UpdateFrameEvent> Subject { get; private set; } = new EventSubject<UpdateFrameEvent>();
-
         public readonly float DeltaTime;
-        public readonly int FrameCount;
 
-        public UpdateFrameEvent(float deltaTime, int frameCount)
+        public UpdateFrameEvent(float deltaTime)
         {
             DeltaTime = deltaTime;
-            FrameCount = frameCount;
         }
     }
 }

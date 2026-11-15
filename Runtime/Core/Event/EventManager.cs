@@ -27,7 +27,11 @@ namespace PBBox
 
         public void OnCreateAsSingleton()
         {
-            _updateFrameSubscription = UpdateFrameEvent.Subject.Subscribe(Update, 100);
+#if UNITY_5_3_OR_NEWER
+            _updateFrameSubscription = PBEventBus.LateUpdateSubject.Subscribe(Update, 100);
+#else
+            _updateFrameSubscription = PBEventBus.FrameUpdateSubject.Subscribe(Update, 100);
+#endif
         }
 
         public void OnDestroyAsSingleton()
@@ -106,7 +110,7 @@ namespace PBBox
         {
             var subject = GetOrCreateSubject<TEvent>(isLater) as EventSubject<TEvent>;
             return subject.Subscribe(handler, order);
-            
+
         }
 
         public void Unsubscribe<TEvent>(Action<TEvent> handler, int order = 0, bool isLater = false) where TEvent : IEvent
@@ -189,7 +193,7 @@ namespace PBBox
 
         public void Publish<TData>(int eventId, in TData eventData) where TData : struct
         {
-            if(!_idSubjects.Value.TryGetValue(eventId, out var container))
+            if (!_idSubjects.Value.TryGetValue(eventId, out var container))
             {
                 return;
             }

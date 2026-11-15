@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace PBBox.Event
 {
+    [DisallowMultipleComponent, AddComponentMenu("")]
     internal class UnityLifecyclePublisher : MonoBehaviour
     {
         private static UnityLifecyclePublisher _instance;
@@ -32,7 +33,22 @@ namespace PBBox.Event
 
         private void Update()
         {
-            UpdateFrameEvent.Subject.Publish(new UpdateFrameEvent(Time.deltaTime, Time.frameCount));
+            PBEventBus.FrameUpdateSubject.Publish(new UpdateFrameEvent(Time.deltaTime));
+        }
+
+        private void LateUpdate()
+        {
+            PBEventBus.LateUpdateSubject.Publish(new UpdateFrameEvent(Time.deltaTime));
+        }
+
+        private void FixedUpdate()
+        {
+            PBEventBus.FixedUpdateSubject.Publish(new UpdateFrameEvent(Time.fixedDeltaTime));
+        }
+
+        private void OnApplicationQuit()
+        {
+            PBEventBus.ApplicationQuitSubject.Publish();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace PBBox
     /// <para>有较好且稳定的订阅和取消订阅性能，发布遍历性能比多播委托稍慢(10000+事件时为多播委托的2倍左右)</para>
     /// <para>Order数量建议不要过多，以避免性能下降</para>
     /// </summary>
-    public sealed class EventSubject : EventSubjectBase<Delegate>, IEventSubject, IEventSubjectGeneric
+    public sealed class EventSubject : EventSubjectBase<Delegate>, IEventSubject, IEventSubjectGeneric, IEventPublisherGeneric, IEventPublisherNoParam
     {
         protected override string LogTag => "EventSubject";
         protected override IEventSubject Subject => this;
@@ -199,7 +199,7 @@ namespace PBBox
     /// <para>Order数量建议不要过多，以避免性能下降</para>
     /// </summary>
     /// <typeparam name="TEvent"></typeparam>
-    public sealed class EventSubject<TEvent> : EventSubjectBase<Delegate>, IEventSubject, IEventSubject<TEvent>, IEventSubjectIn<TEvent>
+    public sealed class EventSubject<TEvent> : EventSubjectBase<Delegate>, IEventSubject, IEventSubject<TEvent>, IEventSubjectIn<TEvent>, IEventPublisher<TEvent>
     {
         private static readonly string _logTag = $"EventSubject<{nameof(TEvent)}>";
         protected override string LogTag => _logTag;

@@ -13,11 +13,11 @@ using UnityEngine.Events;
 namespace PBBox.Timeline
 {
     [AddComponentMenu("PBBox/Timeline/PB Signal Receiver")]
-    public class PBSignalReceiver : MonoBehaviour, INotificationReceiver, IAttachDatas
+    public class PBSignalReceiver : MonoBehaviour, INotificationReceiver//, IAttachDatas
     {
         public UnityAction<string, TimelineCmdExtraParams> OnLocalMessage { get; private set; }
 
-        public Dictionary<string, object> AttachDatas { get; } = new Dictionary<string, object>();
+        //public Dictionary<string, object> AttachDatas { get; } = new Dictionary<string, object>();
 
         public void OnNotify(Playable origin, INotification notification, object context)
         {
