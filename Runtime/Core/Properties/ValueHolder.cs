@@ -18,6 +18,12 @@ namespace PBBox.Properties
         /// <param name="value"></param>
         /// <returns></returns>
         bool TryGet<T>(out T value);
+        /// <summary>
+        /// 尝试设置值，若类型匹配则返回true并设置值，否则返回false
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         bool TrySet<T>(T value);
     }
 
