@@ -66,11 +66,11 @@ namespace PBBox.AssetManagement
         {
             if (IsAssetVaild())
             {
-                if (m_Asset is Object asset)
+                if (_asset is Object asset)
                 {
                     TryUnloadAsset(asset);
                 }
-                else if (m_Asset is IList assetList)
+                else if (_asset is IList assetList)
                 {
                     foreach (var item in assetList)
                     {

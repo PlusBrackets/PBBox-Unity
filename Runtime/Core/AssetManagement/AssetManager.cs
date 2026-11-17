@@ -10,24 +10,22 @@ using System.Threading.Tasks;
 namespace PBBox.AssetManagement
 {
     [SingletonPriority(-1)]
-    internal sealed partial class AssetManager : IAssetManager, ISingletonLifecycle, ILogicUpdateHandler<LogicUpdater.Default>
+    internal sealed partial class AssetManager : IAssetManager, ISingletonLifecycle
     {
         // 当前资源管理器的卸载策略
         public AssetUnloadStrategy UnloadStrategy { get; private set; }
         // 待卸载的资源加载器列表
-        private HashSet<IAssetLoader> m_PendingUnloadList = new HashSet<IAssetLoader>();
-        private HashSet<IAssetLoader> m_RemovePendingUnloadList = new HashSet<IAssetLoader>();
+        private HashSet<IAssetLoader> _pendingUnloadList = new HashSet<IAssetLoader>();
+        private HashSet<IAssetLoader> _removePendingUnloadList = new HashSet<IAssetLoader>();
         /// <summary>
         /// 当前帧已卸载的资源数量。
         /// </summary>
-        private int m_CurUnloadedAssetCountOnFrame = 0;
+        private int _curUnloadedAssetCountOnFrame = 0;
         /// <summary>
         /// 上一次卸载更新的时间（毫秒）
         /// </summary>
-        private long m_LastUnloadUpdateTimeMs = 0;
-
-        LogicUpdater.Default ILogicUpdateHandler<LogicUpdater.Default>.CurrentUpdater { get; set; }
-        int ILogicUpdateHandler<LogicUpdater.Default>.SortedOrder => 0;
+        private long _lastUnloadUpdateTimeMs = 0;
+        private EventSubscription _updateSubscription;
 
 
         public void OnCreateAsSingleton()
@@ -37,12 +35,16 @@ namespace PBBox.AssetManagement
             //ReleaseStrategy = AssetReleaseStrategy.DefaultAuto;
             RegisterDefaultUnloadStrategy();
             RegisterLoaderFactories();
-            LogicUpdater.Attach(this);
+#if UNITY_5_3_OR_NEWER
+            _updateSubscription = PBEvents.OnLateUpdate.Subscribe(OnUpdate, 100);
+#else
+            _updateSubscription = PBEvents.OnFrameUpdate.Subscribe(OnUpdate, 100);
+#endif
         }
 
         public void OnDestroyAsSingleton()
         {
-            LogicUpdater.Detach(this);
+            _updateSubscription.Dispose();
         }
 
         partial void RegisterDefaultUnloadStrategy();
@@ -155,19 +157,19 @@ namespace PBBox.AssetManagement
                 {
                     if (loader.TryUnloadAsset())
                     {
-                        m_PendingUnloadList.Remove(loader);
+                        _pendingUnloadList.Remove(loader);
                         return;
                     }
                 }
             }
             //资源未能正确卸载或未到卸载时机，加入待卸载列表
-            m_PendingUnloadList.Add(loader);
+            _pendingUnloadList.Add(loader);
             return;
         }
 
         public void UnloadAllUnusedAssets()
         {
-            foreach (var container in m_LoaderContainers)
+            foreach (var container in _loaderContainers)
             {
                 foreach (var kvp in container.Loaders)
                 {
@@ -176,7 +178,7 @@ namespace PBBox.AssetManagement
                     {
                         if (loader.TryUnloadAsset())
                         {
-                            m_PendingUnloadList.Remove(loader);
+                            _pendingUnloadList.Remove(loader);
                         }
                     }
                 }
@@ -190,7 +192,7 @@ namespace PBBox.AssetManagement
             {
                 if (loader.TryUnloadAsset())
                 {
-                    m_PendingUnloadList.Remove(loader);
+                    _pendingUnloadList.Remove(loader);
                     return true;
                 }
             }
@@ -206,26 +208,26 @@ namespace PBBox.AssetManagement
         private bool IsUnloadMaxCountReached()
         {
             var maxUnloadCount = UnloadStrategy.MaxUnloadCountPerFrame;
-            return maxUnloadCount > 0 && m_CurUnloadedAssetCountOnFrame >= maxUnloadCount;
+            return maxUnloadCount > 0 && _curUnloadedAssetCountOnFrame >= maxUnloadCount;
         }
 
-        private void OnUpdate(float deltaTime)
+        private void OnUpdate(in UpdateFrameEvent ev)
         {
             var currentTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            m_CurUnloadedAssetCountOnFrame = 0;
-            if (currentTimeMs - m_LastUnloadUpdateTimeMs < UnloadStrategy.IntervalMs)
+            _curUnloadedAssetCountOnFrame = 0;
+            if (currentTimeMs - _lastUnloadUpdateTimeMs < UnloadStrategy.IntervalMs)
             {
                 //未到更新间隔，跳过本次卸载
                 return;
             }
-            if (m_PendingUnloadList.Count > 0)
+            if (_pendingUnloadList.Count > 0)
             {
-                foreach (var loader in m_PendingUnloadList)
+                foreach (var loader in _pendingUnloadList)
                 {
                     if (loader.ReferenceCount > 0)
                     {
                         //还有引用，不需要卸载
-                        m_RemovePendingUnloadList.Add(loader);
+                        _removePendingUnloadList.Add(loader);
                         continue;
                     }
                     if (loader.IsLoading || loader.LastReleaseTimeMs + UnloadStrategy.DelayMs > currentTimeMs)
@@ -239,31 +241,26 @@ namespace PBBox.AssetManagement
                         continue;
                     }
                     // 资源已成功卸载，加入移除列表
-                    m_RemovePendingUnloadList.Add(loader);
-                    m_CurUnloadedAssetCountOnFrame++;
+                    _removePendingUnloadList.Add(loader);
+                    _curUnloadedAssetCountOnFrame++;
                     if (IsUnloadMaxCountReached())
                     {
                         break;
                     }
                 }
                 // 移除已成功卸载的资源加载器
-                m_PendingUnloadList.ExceptWith(m_RemovePendingUnloadList);
-                m_RemovePendingUnloadList.Clear();
+                _pendingUnloadList.ExceptWith(_removePendingUnloadList);
+                _removePendingUnloadList.Clear();
             }
-            if (IsUnloadMaxCountReached() && m_PendingUnloadList.Count > 0)
+            if (IsUnloadMaxCountReached() && _pendingUnloadList.Count > 0)
             {
                 //超过最大卸载数量，且仍有待卸载资源，使下次卸载在下一帧立即进行
-                m_LastUnloadUpdateTimeMs = 0;
+                _lastUnloadUpdateTimeMs = 0;
             }
             else
             {
-                m_LastUnloadUpdateTimeMs = currentTimeMs;
+                _lastUnloadUpdateTimeMs = currentTimeMs;
             }
-        }
-
-        void ILogicUpdateHandler<LogicUpdater.Default>.OnUpdate(float deltaTime)
-        {
-            OnUpdate(deltaTime);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace PBBox.AssetManagement
     {
         protected bool IsAssetVaildUnity()
         {
-            if (m_Asset is Object unityObject)
+            if (_asset is Object unityObject)
             {
                 return unityObject != null;
             }

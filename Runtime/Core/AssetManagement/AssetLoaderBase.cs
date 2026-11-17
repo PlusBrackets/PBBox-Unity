@@ -16,10 +16,10 @@ namespace PBBox.AssetManagement
         public long LastReleaseTimeMs { get; protected set; } = 0;
         //public event Action<IAssetLoader> OnLoadCompleted;
 
-        protected object m_Asset = null;
-        protected Task m_LoadingTask = null;
+        protected object _asset = null;
+        protected Task _loadingTask = null;
         protected abstract string LogTag { get; }
-        public bool IsLoading => m_LoadingTask != null;
+        public bool IsLoading => _loadingTask != null;
 
 
         public AssetLoaderBase(string key)
@@ -29,12 +29,12 @@ namespace PBBox.AssetManagement
         
         public object GetCachedAsset()
         {
-            return m_Asset;
+            return _asset;
         }
 
         public virtual bool IsAssetVaild()
         {
-            return m_Asset != null;
+            return _asset != null;
         }
 
         public TAsset AcquireAsset<TAsset>() where TAsset : class
@@ -42,13 +42,13 @@ namespace PBBox.AssetManagement
             ReferenceCount++;
             if (IsAssetVaild())
             {
-                return m_Asset as TAsset;
+                return _asset as TAsset;
             }
-            m_Asset = LoadImpl<TAsset>();
+            _asset = LoadImpl<TAsset>();
 #if PB_TEST_LOG
             Log.Debug($"Asset loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
-            return m_Asset as TAsset;
+            return _asset as TAsset;
         }
 
         public async Task<TAsset> AcquireAssetAsync<TAsset>(Action<TAsset> onFinish = null) where TAsset : class
@@ -57,12 +57,12 @@ namespace PBBox.AssetManagement
             TAsset asset = null;
             if (IsAssetVaild())
             {
-                asset = m_Asset as TAsset;
+                asset = _asset as TAsset;
             }
-            else if (m_LoadingTask != null)
+            else if (_loadingTask != null)
             {
                 // 等待之前的加载完成
-                if (m_LoadingTask is Task<TAsset> assetTask)
+                if (_loadingTask is Task<TAsset> assetTask)
                 {
                     asset = await assetTask;
                 }
@@ -80,10 +80,10 @@ namespace PBBox.AssetManagement
 #if PB_TEST_LOG
             Log.Debug($"Starting async load for asset: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
-            m_LoadingTask = LoadImplAsync<TAsset>();
-            asset = await (m_LoadingTask as Task<TAsset>);
-            m_Asset = asset;
-            m_LoadingTask = null;
+            _loadingTask = LoadImplAsync<TAsset>();
+            asset = await (_loadingTask as Task<TAsset>);
+            _asset = asset;
+            _loadingTask = null;
 #if PB_TEST_LOG
             Log.Debug($"Async asset loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
@@ -96,13 +96,13 @@ namespace PBBox.AssetManagement
             ReferenceCount++;
             if (IsAssetVaild())
             {
-                return m_Asset as IList<TAsset>;
+                return _asset as IList<TAsset>;
             }
-            m_Asset = LoadAllImpl<TAsset>();
+            _asset = LoadAllImpl<TAsset>();
 #if PB_TEST_LOG
             Log.Debug($"Assets loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
-            return m_Asset as IList<TAsset>;
+            return _asset as IList<TAsset>;
         }
 
         public async Task<IList<TAsset>> AcquireAssetsAsync<TAsset>(Action<IList<TAsset>> onFinish = null, Action<TAsset> onLoadOne = null) where TAsset : class
@@ -111,12 +111,12 @@ namespace PBBox.AssetManagement
             IList<TAsset> assets = null;
             if (IsAssetVaild())
             {
-                assets = m_Asset as IList<TAsset>;
+                assets = _asset as IList<TAsset>;
             }
-            else if (m_LoadingTask != null)
+            else if (_loadingTask != null)
             {
                 // 等待之前的加载完成
-                if (m_LoadingTask is Task<IList<TAsset>> assetTask)
+                if (_loadingTask is Task<IList<TAsset>> assetTask)
                 {
                     assets = await assetTask;
                 }
@@ -138,10 +138,10 @@ namespace PBBox.AssetManagement
 #if PB_TEST_LOG
             Log.Debug($"Starting async load for assets: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
-            m_LoadingTask = LoadAllImplAsync<TAsset>(onLoadOne);
-            assets = await (m_LoadingTask as Task<IList<TAsset>>);
-            m_LoadingTask = null;
-            m_Asset = assets;
+            _loadingTask = LoadAllImplAsync<TAsset>(onLoadOne);
+            assets = await (_loadingTask as Task<IList<TAsset>>);
+            _loadingTask = null;
+            _asset = assets;
 #if PB_TEST_LOG
             Log.Debug($"Async assets loaded: {Key}, Type: {typeof(TAsset)}", LogTag, Log.PBBoxLoggerName);
 #endif
@@ -190,7 +190,7 @@ namespace PBBox.AssetManagement
             }
             if (UnloadImpl())
             {
-                m_Asset = null;
+                _asset = null;
 #if PB_TEST_LOG || UNITY_EDITOR
                 Log.Debug($"Asset unloaded: {Key}", LogTag, Log.PBBoxLoggerName);
 #endif

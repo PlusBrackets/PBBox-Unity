@@ -14,38 +14,38 @@ namespace PBBox
 #if UNITY_5_3_OR_NEWER
         [UnityEngine.SerializeField]
 #endif
-        private string m_Key;
+        private string _key;
 #if UNITY_5_3_OR_NEWER
         [UnityEngine.SerializeField]
 #endif
-        private AssetLoadType m_LoadType;
+        private AssetLoadType _loadType;
 
-        public string Key => m_Key;
+        public string Key => _key;
         /// <summary>
         /// 加载方式
         /// </summary>
-        public int LoadTypeId => (int)m_LoadType;
+        public int LoadTypeId => (int)_loadType;
         /// <summary>
         /// 加载方式
         /// </summary>
-        public AssetLoadType LoadType => m_LoadType;
+        public AssetLoadType LoadType => _loadType;
 
         public AssetKey(string key, AssetLoadType loadType)
         {
-            m_Key = key;
-            m_LoadType = loadType;
+            _key = key;
+            _loadType = loadType;
         }
 
         public AssetKey(string key, int loadTypeId)
         {
-            m_Key = key;
-            m_LoadType = (AssetLoadType)loadTypeId;
+            _key = key;
+            _loadType = (AssetLoadType)loadTypeId;
         }
 
         public AssetKey(string key)
         {
-            m_Key = key;
-            m_LoadType = AssetLoadType.Default;
+            _key = key;
+            _loadType = AssetLoadType.Default;
         }
     }
 

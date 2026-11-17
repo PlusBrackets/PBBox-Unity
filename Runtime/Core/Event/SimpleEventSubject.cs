@@ -10,7 +10,7 @@ using PBBox.Event;
 namespace PBBox
 {
     /// <summary>
-    /// 简单的事件主题，使用 Action<T> 进行事件订阅和发布，Order 参数在此实现中被忽略。
+    /// 简单的事件主题，使用 Action<T> 进行事件订阅和发布，Order参数在此实现中被忽略。
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public sealed class SimpleEventSubject<T> : IEventSubject, IEventSubject<T>, IEventPublisher<T>
@@ -22,7 +22,7 @@ namespace PBBox
             _event?.Invoke(eventData);
         }
 
-        public void Publish(in T eventData)
+        void IEventPublisher<T>.Publish(in T eventData)
         {
             _event?.Invoke(eventData);
         }
@@ -64,5 +64,62 @@ namespace PBBox
                 Unsubscribe(action);
             }
         }
+    }
+    
+    /// <summary>
+    /// 简单的事件主题，使用 ActionIn<T> 进行事件订阅和发布，Order参数在此实现中被忽略。
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public sealed class SimpleEventSubjectIn<T> : IEventSubject, IEventSubjectIn<T>, IEventPublisher<T>
+    {
+        private ActionIn<T> _event;
+
+        public void Publish(in T eventData)
+        {
+            _event?.Invoke(eventData);
+        }
+
+        void IEventPublisher<T>.Publish(T eventData)
+        {
+            _event?.Invoke(in eventData);
+        }
+
+        public EventSubscription Subscribe(ActionIn<T> handler)
+        {
+            _event += handler;
+            return new EventSubscription(this, handler, 0);
+        }
+
+        public void Unsubscribe(ActionIn<T> handler)
+        {
+            _event -= handler;
+        }
+
+        EventSubscription IEventSubjectIn<T>.Subscribe(ActionIn<T> handler, int order) => Subscribe(handler);
+        void IEventSubjectIn<T>.Unsubscribe(ActionIn<T> handler, int order) => Unsubscribe(handler);
+
+        EventSubscription IEventSubject.Subscribe(Delegate handler, int order)
+        {
+            if (handler is ActionIn<T> action)
+            {
+                return Subscribe(action);
+            }
+            else
+            {
+#if UNITY_EDITOR || PB_TEST_LOG
+                Log.Error($"Failed to add handler to SimpleEventSubjectIn<{nameof(T)}>, handler: {handler}", "SimpleEventSubjectIn", Log.PBBoxLoggerName);
+#endif
+                return EventSubscription.Empty;
+            }
+        }
+
+        void IEventSubject.Unsubscribe(Delegate handler, int order)
+        {
+            if (handler is ActionIn<T> action)
+            {
+                Unsubscribe(action);
+            }
+        }
+
     }
 }

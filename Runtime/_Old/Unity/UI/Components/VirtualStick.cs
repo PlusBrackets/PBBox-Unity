@@ -17,7 +17,7 @@ namespace PBBox.Unity.UI
     /// 虚拟摇杆UI
     /// </summary>
     [AddComponentMenu("PBBox/UI/Components/Virtual Stick")]
-    public class VirtualStick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler, IStickInput, ILogicUpdateHandler<LogicUpdater.Default>
+    public class VirtualStick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler, IStickInput
     {
         [Tooltip("虚拟摇杆背景组件")]
         [SerializeField]
@@ -80,9 +80,10 @@ namespace PBBox.Unity.UI
             }
         }
 
-        LogicUpdater.Default ILogicUpdateHandler<LogicUpdater.Default>.CurrentUpdater { get; set; }
-
-        int ILogicUpdateHandler<LogicUpdater.Default>.SortedOrder => 0;
+        //        LogicUpdater.Default ILogicUpdateHandler<LogicUpdater.Default>.CurrentUpdater { get; set; }
+        //
+        //        int ILogicUpdateHandler<LogicUpdater.Default>.SortedOrder => 0;
+        private EventSubscription _onUpdateSubscription;
 
         private void Start()
         {
@@ -93,18 +94,20 @@ namespace PBBox.Unity.UI
         {
             if (m_DragInterruptChecker != null)
             {
-                LogicUpdater.Attach(this);
+                //LogicUpdater.Attach(this);
+                 _onUpdateSubscription = PBEvents.OnFrameUpdate.Subscribe(OnUpdate);
             }
         }
 
         private void OnDisable()
         {
             Interrupt();
-            var _updater = ((ILogicUpdateHandler<LogicUpdater.Default>)this).CurrentUpdater;
-            if (_updater != null)
-            {
-                _updater.Detach(this);
-            }
+            //var _updater = ((ILogicUpdateHandler<LogicUpdater.Default>)this).CurrentUpdater;
+            //if (_updater != null)
+            //{
+            //    _updater.Detach(this);
+            //}
+            _onUpdateSubscription.Dispose();
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
@@ -188,7 +191,8 @@ namespace PBBox.Unity.UI
             EndInput();
         }
 
-        void ILogicUpdateHandler<LogicUpdater.Default>.OnUpdate(float deltaTime)
+        //void ILogicUpdateHandler<LogicUpdater.Default>.OnUpdate(float deltaTime)
+        private void OnUpdate(in UpdateFrameEvent ev)
         {
             if (m_CurEventData != null && m_DragInterruptChecker != null && !m_CurEventData.hovered.Contains(m_DragInterruptChecker.gameObject))
             {

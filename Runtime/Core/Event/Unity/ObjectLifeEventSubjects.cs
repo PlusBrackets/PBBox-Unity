@@ -6,12 +6,17 @@
  --------------------------------------------------------*/
 using System;
 using UnityEngine;
+using PBBox.Event;
 
-namespace PBBox.Event
+namespace PBBox.Unity.Event
 {
+    /// <summary>
+    /// 监听对象生命周期事件的组件，包括启用、禁用和销毁事件。
+    /// 使用SimpleEventSubject处理事件，请避免频繁大量订阅和移除操作（耗时）。
+    /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("PBBox/Events/Object Life Events")]
-    public class ObjectLifeEvents : MonoBehaviour
+    [AddComponentMenu("PBBox/Events/Object Life Event Subjects")]
+    public class ObjectLifeEventSubjects : MonoBehaviour
     {
         private SimpleEventSubject<GameObject> _onEnabled = null;
         private SimpleEventSubject<GameObject> _onDisabled = null;
@@ -71,50 +76,23 @@ namespace PBBox.Event
 
 namespace PBBox
 {
-    using PBBox.Event;
+    using PBBox.Unity.Event;
 
     public static partial class PBExtensions
     {
-        public static EventSubscription SubscribeEnabled(this GameObject gameObject, Action<GameObject> handler)
+        public static IEventSubject<GameObject> OnEnabledEvent(this GameObject gameObject)
         {
-            return gameObject.GetOrAddComponent<ObjectLifeEvents>().OnEnabled.Subscribe(handler);
+            return gameObject.GetOrAddComponent<ObjectLifeEventSubjects>().OnEnabled;
         }
 
-        public static EventSubscription SubscribeDisabled(this GameObject gameObject, Action<GameObject> handler)
+        public static IEventSubject<GameObject> OnDisabledEvent(this GameObject gameObject)
         {
-            return gameObject.GetOrAddComponent<ObjectLifeEvents>().OnDisabled.Subscribe(handler);
+            return gameObject.GetOrAddComponent<ObjectLifeEventSubjects>().OnDisabled;
         }
 
-        public static EventSubscription SubscribeDestroyed(this GameObject gameObject, Action<GameObject> handler)
+        public static IEventSubject<GameObject> OnDestroyedEvent(this GameObject gameObject)
         {
-            return gameObject.GetOrAddComponent<ObjectLifeEvents>().OnDestroyed.Subscribe(handler);
-        }
-
-        public static void UnsubscribeEnabled(this GameObject gameObject, Action<GameObject> handler)
-        {
-            var lifeEvents = gameObject.GetComponent<ObjectLifeEvents>();
-            if (lifeEvents != null)
-            {
-                lifeEvents.OnEnabled.Unsubscribe(handler);
-            }
-        }
-
-        public static void UnsubscribeDisabled(this GameObject gameObject, Action<GameObject> handler)
-        {
-            var lifeEvents = gameObject.GetComponent<ObjectLifeEvents>();
-            if (lifeEvents != null)
-            {
-                lifeEvents.OnDisabled.Unsubscribe(handler);
-            }
-        }
-
-        public static void UnsubscribeDestroyed(this GameObject gameObject, Action<GameObject> handler)
-        {
-            var lifeEvents = gameObject.GetComponent<ObjectLifeEvents>();
-            if (lifeEvents != null)
-            {
-                lifeEvents.OnDestroyed.Unsubscribe(handler);
-            }
+            return gameObject.GetOrAddComponent<ObjectLifeEventSubjects>().OnDestroyed;
         }
     }
 }

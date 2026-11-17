@@ -24,7 +24,7 @@ namespace PBBox.Unity.UI
         [SerializeField]
         private RectTransform m_LinkTarget;
         private LayoutElement m_LayoutElement;
-        private IDisposable m_TargetSizeChangeSubscription = null;
+        private EventSubscription m_TargetSizeChangeSubscription;
         [SerializeField, Tooltip("是否控制宽度")]
         private bool m_ControlWidth = false;
         [SerializeField, Tooltip("是否控制高度")]
@@ -39,16 +39,16 @@ namespace PBBox.Unity.UI
 
         private void OnValidate()
         {
-            if (m_LinkTarget == null && m_TargetSizeChangeSubscription != null)
+            if (m_LinkTarget == null && m_TargetSizeChangeSubscription.IsValid)
             {
                 m_TargetSizeChangeSubscription.Dispose();
-                m_TargetSizeChangeSubscription = null;
+                //m_TargetSizeChangeSubscription = null;
             }
             if (m_IsEditorRunning)
             {
                 if (m_LinkTarget != null)
                 {
-                    if (m_TargetSizeChangeSubscription == null)
+                    if (!m_TargetSizeChangeSubscription.IsValid)
                     {
                         SubscribeTargetSizeChange();
                     }
@@ -80,11 +80,8 @@ namespace PBBox.Unity.UI
         {
             if (m_LinkTarget != null)
             {
-                if (m_TargetSizeChangeSubscription != null)
-                {
-                    m_TargetSizeChangeSubscription.Dispose();
-                }
-                m_TargetSizeChangeSubscription = m_LinkTarget.ObservedRectDemensionsChange(OnTargetSizeChange);
+                m_TargetSizeChangeSubscription.Dispose();
+                m_TargetSizeChangeSubscription = m_LinkTarget.OnRectDimensionsChangedEvent().Subscribe(OnTargetSizeChange);
             }
         }
 
@@ -93,11 +90,12 @@ namespace PBBox.Unity.UI
 #if UNITY_EDITOR
             m_IsEditorRunning = false;
 #endif
-            if (m_TargetSizeChangeSubscription != null)
-            {
-                m_TargetSizeChangeSubscription.Dispose();
-                m_TargetSizeChangeSubscription = null;
-            }
+            //if (m_TargetSizeChangeSubscription != null)
+            //{
+            //    m_TargetSizeChangeSubscription.Dispose();
+            //    m_TargetSizeChangeSubscription = null;
+            //}
+            m_TargetSizeChangeSubscription.Dispose();
         }
 
         private void OnTargetSizeChange(RectTransform target)

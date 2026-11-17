@@ -16,7 +16,7 @@ namespace PBBox.AssetManagement
         /// 加载器容器列表
         /// ?种类不多，直接用List存储
         /// </summary>
-        private List<Container> m_LoaderContainers = new List<Container>();
+        private List<Container> _loaderContainers = new List<Container>();
 
 
         public Func<string, IAssetLoader> GetLoaderFactory(int loadTypeId)
@@ -34,7 +34,7 @@ namespace PBBox.AssetManagement
                 {
                     LoaderTypeId = loadTypeId
                 };
-                m_LoaderContainers.Add(container);
+                _loaderContainers.Add(container);
             }
             container.LoaderFactory = loaderFactory;
         }
@@ -43,7 +43,7 @@ namespace PBBox.AssetManagement
         private Container GetContainer(int loadTypeId)
         {
             loadTypeId = GetRealLoadTypeId(loadTypeId);
-            return m_LoaderContainers.Find(c => c.LoaderTypeId == loadTypeId);
+            return _loaderContainers.Find(c => c.LoaderTypeId == loadTypeId);
         }
         
         /// <summary>

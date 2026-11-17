@@ -1,13 +1,11 @@
+#if UNITY_EDITOR
 /*--------------------------------------------------------
  *Copyright (c) 2016-2022 PlusBrackets
  *@update: 2022.12.15
  *@author: PlusBrackets
  --------------------------------------------------------*/
-using System.IO;
 using System.Collections.Generic;
 using System;
-using UnityEngine;
-#if UNITY_EDITOR 
 using UnityEditor;
 using UnityEditor.Build;
 
@@ -15,13 +13,11 @@ using UnityEditor.Build;
 using System.Reflection;
 using System.Text.RegularExpressions;
 #endif
-#endif
 
 namespace PBBox
 {
     public static partial class Log
     {
-#if UNITY_EDITOR
         private static string[] s_LogLevelDefineSymbols = new string[]{
             "PB_LOG_0", "PB_LOG_1", "PB_LOG_2", "PB_LOG_3"
         };
@@ -236,6 +232,6 @@ namespace PBBox
 #endif
         #endregion
 
-#endif
     }
 }
+#endif

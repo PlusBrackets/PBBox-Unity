@@ -33,22 +33,22 @@ namespace PBBox.Event
 
         private void Update()
         {
-            PBEventBus.FrameUpdateSubject.Publish(new UpdateFrameEvent(Time.deltaTime));
+            PBEvents.FrameUpdateSubject.Publish(new UpdateFrameEvent(Time.deltaTime, Time.unscaledDeltaTime));
         }
 
         private void LateUpdate()
         {
-            PBEventBus.LateUpdateSubject.Publish(new UpdateFrameEvent(Time.deltaTime));
+            PBEvents.LateUpdateSubject.Publish(new UpdateFrameEvent(Time.deltaTime, Time.unscaledDeltaTime));
         }
 
         private void FixedUpdate()
         {
-            PBEventBus.FixedUpdateSubject.Publish(new UpdateFrameEvent(Time.fixedDeltaTime));
+            PBEvents.FixedUpdateSubject.Publish(new UpdateFrameEvent(Time.fixedDeltaTime, Time.fixedUnscaledDeltaTime));
         }
 
         private void OnApplicationQuit()
         {
-            PBEventBus.ApplicationQuitSubject.Publish();
+            PBEvents.ApplicationQuitSubject.Publish();
         }
     }
 }

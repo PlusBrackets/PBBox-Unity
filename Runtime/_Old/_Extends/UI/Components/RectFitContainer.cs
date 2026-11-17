@@ -76,7 +76,7 @@ namespace PBBox.UI
         private Canvas m_Canvas;
         private CanvasScaler m_CanvasScaler;
         private Vector2? m_ParentOriginSize;
-        private IDisposable m_ParentSizeChangeSubscription;
+        private EventSubscription m_ParentSizeChangeSubscription;
 
 #if UNITY_EDITOR
         protected override void OnValidate()
@@ -90,8 +90,8 @@ namespace PBBox.UI
                 m_Canvas = null;
                 m_CanvasScaler = null;
                 m_ParentOriginSize = null;
-                m_ParentSizeChangeSubscription?.Dispose();
-                m_ParentSizeChangeSubscription = null;
+                m_ParentSizeChangeSubscription.Dispose();
+                //m_ParentSizeChangeSubscription = null;
             }
             else
             {
@@ -134,11 +134,12 @@ namespace PBBox.UI
         protected override void OnDisable()
         {
             base.OnDisable();
-            if (m_ParentSizeChangeSubscription != null)
-            {
-                m_ParentSizeChangeSubscription?.Dispose();
-                m_ParentSizeChangeSubscription = null;
-            }
+            //if (m_ParentSizeChangeSubscription != null)
+            //{
+            //    m_ParentSizeChangeSubscription?.Dispose();
+            //    m_ParentSizeChangeSubscription = null;
+            //}
+            m_ParentSizeChangeSubscription.Dispose();
         }
 
         private bool TryInit()
@@ -149,10 +150,11 @@ namespace PBBox.UI
             _result = TryInitCanvasData();
             _result = TryInitParentOriginSize() && _result;
 
-            if (m_IsObservedParent && m_ParentSizeChangeSubscription == null)
+            //if (m_IsObservedParent && m_ParentSizeChangeSubscription == null)
+            if (m_IsObservedParent && !m_ParentSizeChangeSubscription.IsValid)
             {
                 var _parentRect = RectTransform.parent as RectTransform;
-                m_ParentSizeChangeSubscription = _parentRect.ObservedRectDemensionsChange(OnParentSizeChanged);
+                m_ParentSizeChangeSubscription = _parentRect.OnRectDimensionsChangedEvent().Subscribe(OnParentSizeChanged);
             }
             return _result;
         }
@@ -230,11 +232,12 @@ namespace PBBox.UI
             }
 #endif
             m_ParentOriginSize = null;
-            if (m_ParentSizeChangeSubscription != null)
-            {
-                m_ParentSizeChangeSubscription?.Dispose();
-                m_ParentSizeChangeSubscription = null;
-            }
+            //if (m_ParentSizeChangeSubscription != null)
+            //{
+            //    m_ParentSizeChangeSubscription?.Dispose();
+            //    m_ParentSizeChangeSubscription = null;
+            //}
+            m_ParentSizeChangeSubscription.Dispose();
         }
 
         protected override void OnTransformParentChanged()
@@ -248,10 +251,11 @@ namespace PBBox.UI
             }
 #endif
             TryInitParentOriginSize();
-            if (m_IsObservedParent && m_ParentSizeChangeSubscription == null)
+            //if (m_IsObservedParent && m_ParentSizeChangeSubscription == null)
+            if (m_IsObservedParent && !m_ParentSizeChangeSubscription.IsValid)
             {
                 var _parentRect = RectTransform.parent as RectTransform;
-                m_ParentSizeChangeSubscription = _parentRect.ObservedRectDemensionsChange(OnParentSizeChanged);
+                m_ParentSizeChangeSubscription = _parentRect.OnRectDimensionsChangedEvent().Subscribe(OnParentSizeChanged);
             }
         }
 

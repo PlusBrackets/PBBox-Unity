@@ -211,8 +211,8 @@ namespace PBBox
         public void Unsubscribe(Action<TEvent> handler, int order = 0) => UnsubscribeInternal(handler, order);
         public void Unsubscribe(ActionIn<TEvent> handler, int order = 0) => UnsubscribeInternal(handler, order);
 
-        EventSubscription IEventSubject.Subscribe(Delegate handler, int order) => SubscribeInternal(handler as Action<TEvent>, order);
-        void IEventSubject.Unsubscribe(Delegate handler, int order) => UnsubscribeInternal(handler as Action<TEvent>, order);
+        EventSubscription IEventSubject.Subscribe(Delegate handler, int order) => SubscribeInternal(handler, order);
+        void IEventSubject.Unsubscribe(Delegate handler, int order) => UnsubscribeInternal(handler, order);
 
         public void Publish(TEvent eventData)
         {

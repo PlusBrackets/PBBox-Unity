@@ -28,7 +28,7 @@ namespace PBBox
         public void OnCreateAsSingleton()
         {
 #if UNITY_5_3_OR_NEWER
-            _updateFrameSubscription = PBEventBus.LateUpdateSubject.Subscribe(Update, 100);
+            _updateFrameSubscription = PBEvents.LateUpdateSubject.Subscribe(Update, 100);
 #else
             _updateFrameSubscription = PBEventBus.FrameUpdateSubject.Subscribe(Update, 100);
 #endif

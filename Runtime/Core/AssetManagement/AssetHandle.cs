@@ -12,51 +12,51 @@ namespace PBBox
     public class AssetHandle<TAsset> : IDisposable where TAsset : class
     {
         [NonSerialized]
-        private TAsset m_Asset;
+        private TAsset _asset;
 #if UNITY_5_3_OR_NEWER
         [UnityEngine.SerializeField, UnityEngine.Tooltip("资源加载器的键，一般是资源的路径。")]
 #endif
-        private string m_Key;
+        private string _key;
 
 #if UNITY_5_3_OR_NEWER
         [UnityEngine.SerializeField, UnityEngine.Tooltip("资源加载器的类型。")]
 #endif
-        private AssetLoadType m_LoadType;
+        private AssetLoadType _loadType;
 
         /// <summary>
         /// 资源Key
         /// </summary>
-        public string Key => m_Key;
+        public string Key => _key;
         /// <summary>
         /// 资源加载类型
         /// </summary>
-        public AssetLoadType LoadType => m_LoadType;
-        public TAsset Asset => m_Asset;
+        public AssetLoadType LoadType => _loadType;
+        public TAsset Asset => _asset;
 
         public AssetHandle(string key, AssetLoadType loaderTypeId = AssetLoadType.Default)
         {
-            m_Key = key;
-            m_Asset = null;
-            m_LoadType = loaderTypeId;
+            _key = key;
+            _asset = null;
+            _loadType = loaderTypeId;
         }
 
         public AssetHandle(string key, int loaderTypeId)
         {
-            m_Key = key;
-            m_Asset = null;
-            m_LoadType = (AssetLoadType)loaderTypeId;
+            _key = key;
+            _asset = null;
+            _loadType = (AssetLoadType)loaderTypeId;
         }
 
         public AssetHandle(AssetHandle<TAsset> other)
         {
-            m_Key = other.m_Key;
-            m_Asset = null;
-            m_LoadType = other.m_LoadType;
+            _key = other._key;
+            _asset = null;
+            _loadType = other._loadType;
         }
 
         public bool IsVaild()
         {
-            return !string.IsNullOrEmpty(m_Key) && m_Asset != null;
+            return !string.IsNullOrEmpty(_key) && _asset != null;
         }
 
         /// <summary>
@@ -65,9 +65,9 @@ namespace PBBox
         /// <returns></returns>
         public TAsset GetOrLoad()
         {
-            if (m_Asset == null)
+            if (_asset == null)
             {
-                m_Asset = IAssetManager.Instance.LoadAsset<TAsset>(Key, LoadType);
+                _asset = IAssetManager.Instance.LoadAsset<TAsset>(Key, LoadType);
             }
 #if PB_TEST_LOG || UNITY_EDITOR
             else
@@ -75,7 +75,7 @@ namespace PBBox
                 Log.Warning($"Asset '{Key}' is already loaded. Returning the cached asset.", nameof(AssetHandle<TAsset>), Log.PBBoxLoggerName);
             }
 #endif
-            return m_Asset;
+            return _asset;
         }
 
         /// <summary>
@@ -85,9 +85,9 @@ namespace PBBox
         /// <returns></returns>
         public async Task<TAsset> GetOrLoadAsync(Action<TAsset> onFinish = null)
         {
-            if (m_Asset == null)
+            if (_asset == null)
             {
-                m_Asset = await IAssetManager.Instance.LoadAssetAsync<TAsset>(Key, LoadType, null);
+                _asset = await IAssetManager.Instance.LoadAssetAsync<TAsset>(Key, LoadType, null);
             }
 #if PB_TEST_LOG || UNITY_EDITOR
             else
@@ -95,8 +95,8 @@ namespace PBBox
                 Log.Warning($"Asset '{Key}' is already loaded. Returning the cached asset.", nameof(AssetHandle<TAsset>), Log.PBBoxLoggerName);
             }
 #endif
-            onFinish?.Invoke(m_Asset);
-            return m_Asset;
+            onFinish?.Invoke(_asset);
+            return _asset;
 
         }
 
@@ -105,20 +105,20 @@ namespace PBBox
             if (IAssetManager.HasInstance())
             {
                 var manager = IAssetManager.InstanceRaw;
-                manager.ReleaseAsset(Key, ref m_Asset, (int)LoadType);
+                manager.ReleaseAsset(Key, ref _asset, (int)LoadType);
             }
-            m_Asset = null;
+            _asset = null;
         }
 
         public void Dispose()
         {
             Release();
-            m_Key = null;
+            _key = null;
         }
 
         public override string ToString()
         {
-            return $"AssetHandle<{nameof(TAsset)}>: Key='{Key}', LoadType='{LoadType}', Asset={(m_Asset != null ? m_Asset.ToString() : "null")}";
+            return $"AssetHandle<{nameof(TAsset)}>: Key='{Key}', LoadType='{LoadType}', Asset={(_asset != null ? _asset.ToString() : "null")}";
         }
     }
 }

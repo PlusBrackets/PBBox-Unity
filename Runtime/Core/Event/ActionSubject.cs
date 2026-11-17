@@ -9,7 +9,7 @@ using PBBox.Event;
 namespace PBBox
 {
     /// <summary>
-    /// 封装Action，方便使用EventSubscription，Publish用ActionSubject.Event?.Invoke().代替
+    /// 封装Delegate，方便使用EventSubscription，Publish用ActionSubject.Event?.Invoke()代替
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public sealed class ActionSubject<T> : IEventSubject where T : Delegate

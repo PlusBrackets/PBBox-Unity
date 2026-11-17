@@ -13,13 +13,15 @@ namespace PBBox
     /// <summary>
     /// 帧更新事件
     /// </summary>
-    public readonly partial struct UpdateFrameEvent
+    public readonly struct UpdateFrameEvent
     {
         public readonly float DeltaTime;
+        public readonly float UnscaledDeltaTime;
 
-        public UpdateFrameEvent(float deltaTime)
+        public UpdateFrameEvent(float deltaTime, float unscaledDeltaTime)
         {
             DeltaTime = deltaTime;
+            UnscaledDeltaTime = unscaledDeltaTime;
         }
     }
 }

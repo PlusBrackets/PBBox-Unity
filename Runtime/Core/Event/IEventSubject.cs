@@ -26,7 +26,7 @@ namespace PBBox.Event
         /// <param name="order">handler执行的顺序，值越小越先执行，需要和订阅时的order保持一致</param>
         void Unsubscribe(Delegate handler, int order = 0);
     }
-
+    
     /// <summary>
     /// 无参数事件主题接口，定义了订阅、取消订阅和发布无参数事件的方法
     /// </summary>
@@ -155,9 +155,14 @@ namespace PBBox.Event
     }
 
     /// <summary>
+    /// 事件发布者接口的基接口
+    /// </summary>
+    public interface IEventPublisher{}
+
+    /// <summary>
     /// 无参数事件发布者接口
     /// </summary>
-    public interface IEventPublisherNoParam
+    public interface IEventPublisherNoParam : IEventPublisher
     {
         /// <summary>
         /// 发布无参数事件
@@ -169,7 +174,7 @@ namespace PBBox.Event
     /// 泛型事件发布者接口，定义了针对特定事件类型的发布事件的方法
     /// </summary>
     /// <typeparam name="TEvent"></typeparam>
-    public interface IEventPublisher<TEvent>
+    public interface IEventPublisher<TEvent> : IEventPublisher
     {
         /// <summary>
         /// 发布事件，传入事件数据
@@ -188,7 +193,7 @@ namespace PBBox.Event
     /// <summary>
     /// 泛型事件发布者接口，定义了针对任意事件类型的发布事件的方法
     /// </summary>
-    public interface IEventPublisherGeneric
+    public interface IEventPublisherGeneric : IEventPublisher
     {
         /// <summary>
         /// 发布事件，传入事件数据
