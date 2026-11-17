@@ -11,14 +11,14 @@ using Unity.Scripting.LifecycleManagement;
 namespace PBBox
 {
     /// <summary>
-    /// 帧更新事件
+    /// 帧更新事件数据
     /// </summary>
-    public readonly struct UpdateFrameEvent
+    public readonly struct FrameUpdateEvent
     {
         public readonly float DeltaTime;
         public readonly float UnscaledDeltaTime;
 
-        public UpdateFrameEvent(float deltaTime, float unscaledDeltaTime)
+        public FrameUpdateEvent(float deltaTime, float unscaledDeltaTime)
         {
             DeltaTime = deltaTime;
             UnscaledDeltaTime = unscaledDeltaTime;

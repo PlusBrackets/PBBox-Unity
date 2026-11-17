@@ -192,7 +192,7 @@ namespace PBBox.Unity.UI
         }
 
         //void ILogicUpdateHandler<LogicUpdater.Default>.OnUpdate(float deltaTime)
-        private void OnUpdate(in UpdateFrameEvent ev)
+        private void OnUpdate(in FrameUpdateEvent ev)
         {
             if (m_CurEventData != null && m_DragInterruptChecker != null && !m_CurEventData.hovered.Contains(m_DragInterruptChecker.gameObject))
             {

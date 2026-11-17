@@ -211,7 +211,7 @@ namespace PBBox.AssetManagement
             return maxUnloadCount > 0 && _curUnloadedAssetCountOnFrame >= maxUnloadCount;
         }
 
-        private void OnUpdate(in UpdateFrameEvent ev)
+        private void OnUpdate(in FrameUpdateEvent ev)
         {
             var currentTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _curUnloadedAssetCountOnFrame = 0;

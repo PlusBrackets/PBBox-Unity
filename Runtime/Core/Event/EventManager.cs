@@ -39,7 +39,7 @@ namespace PBBox
             _updateFrameSubscription.Dispose();
         }
 
-        private void Update(in UpdateFrameEvent ev)
+        private void Update(in FrameUpdateEvent ev)
         {
             // publish later events;
             if (_pendingEvents != null && _pendingEvents.Count > 0)

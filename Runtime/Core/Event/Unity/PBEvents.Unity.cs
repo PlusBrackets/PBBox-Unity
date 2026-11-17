@@ -12,21 +12,21 @@ namespace PBBox
     public static partial class PBEvents
     {
         [AutoStaticsCleanup]
-        internal static EventSubject<UpdateFrameEvent> LateUpdateSubject { get; private set; } = null;
+        internal static EventSubject<FrameUpdateEvent> LateUpdateSubject { get; private set; } = null;
 
         [AutoStaticsCleanup]
-        internal static EventSubject<UpdateFrameEvent> FixedUpdateSubject { get; private set; } = null;
+        internal static EventSubject<FrameUpdateEvent> FixedUpdateSubject { get; private set; } = null;
         
         /// <summary>
         /// Unity的LateUpdate事件
         /// </summary>
-        public static IEventSubjectIn<UpdateFrameEvent> OnLateUpdate
+        public static IEventSubjectIn<FrameUpdateEvent> OnLateUpdate
         {
             get
             {
                 if (LateUpdateSubject == null)
                 {
-                    LateUpdateSubject = new EventSubject<UpdateFrameEvent>();
+                    LateUpdateSubject = new EventSubject<FrameUpdateEvent>();
                 }
                 return LateUpdateSubject;
             }
@@ -35,13 +35,13 @@ namespace PBBox
         /// <summary>
         /// Unity的FixedUpdate事件
         /// </summary>
-        public static IEventSubjectIn<UpdateFrameEvent> OnFixedUpdate
+        public static IEventSubjectIn<FrameUpdateEvent> OnFixedUpdate
         {
             get
             {
                 if (FixedUpdateSubject == null)
                 {
-                    FixedUpdateSubject = new EventSubject<UpdateFrameEvent>();
+                    FixedUpdateSubject = new EventSubject<FrameUpdateEvent>();
                 }
                 return FixedUpdateSubject;
             }

@@ -18,7 +18,7 @@ namespace PBBox
 #if UNITY_5_3_OR_NEWER
         [AutoStaticsCleanup]
 #endif
-        internal static EventSubject<UpdateFrameEvent> FrameUpdateSubject { get; private set; } = null;
+        internal static EventSubject<FrameUpdateEvent> FrameUpdateSubject { get; private set; } = null;
 #if UNITY_5_3_OR_NEWER
         [AutoStaticsCleanup]
 #endif
@@ -27,13 +27,13 @@ namespace PBBox
         /// <summary>
         /// 帧更新事件
         /// </summary>
-        public static IEventSubjectIn<UpdateFrameEvent> OnFrameUpdate
+        public static IEventSubjectIn<FrameUpdateEvent> OnFrameUpdate
         {
             get
             {
                 if (FrameUpdateSubject == null)
                 {
-                    FrameUpdateSubject = new EventSubject<UpdateFrameEvent>();
+                    FrameUpdateSubject = new EventSubject<FrameUpdateEvent>();
                 }
                 return FrameUpdateSubject;
             }
