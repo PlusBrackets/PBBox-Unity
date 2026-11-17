@@ -157,12 +157,12 @@ namespace PBBox.Event
     /// <summary>
     /// 事件发布者接口的基接口
     /// </summary>
-    public interface IEventPublisher{}
+    public interface IEventPublisherBase{}
 
     /// <summary>
     /// 无参数事件发布者接口
     /// </summary>
-    public interface IEventPublisherNoParam : IEventPublisher
+    public interface IEventPublisher : IEventPublisherBase
     {
         /// <summary>
         /// 发布无参数事件
@@ -174,7 +174,7 @@ namespace PBBox.Event
     /// 泛型事件发布者接口，定义了针对特定事件类型的发布事件的方法
     /// </summary>
     /// <typeparam name="TEvent"></typeparam>
-    public interface IEventPublisher<TEvent> : IEventPublisher
+    public interface IEventPublisher<TEvent> : IEventPublisherBase
     {
         /// <summary>
         /// 发布事件，传入事件数据
@@ -193,7 +193,7 @@ namespace PBBox.Event
     /// <summary>
     /// 泛型事件发布者接口，定义了针对任意事件类型的发布事件的方法
     /// </summary>
-    public interface IEventPublisherGeneric : IEventPublisher
+    public interface IEventPublisherGeneric : IEventPublisherBase
     {
         /// <summary>
         /// 发布事件，传入事件数据

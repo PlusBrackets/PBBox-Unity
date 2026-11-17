@@ -5,10 +5,8 @@
  --------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
-using PBBox.Event;
 
-namespace PBBox
+namespace PBBox.Event
 {
     /// <summary>
     /// <para>默认事件管理器，用于管理和调度各种事件的订阅和发布</para>

@@ -4,6 +4,7 @@
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
+using PBBox.Event;
 
 namespace PBBox
 {
@@ -13,7 +14,7 @@ namespace PBBox
     /// <typeparam name="T"></typeparam>
     /// <param name="eventData"></param>
     public delegate void ActionIn<T>(in T eventData);
-    
+
     /// <summary>
     /// 事件管理器接口，提供订阅、取消订阅和发布事件的方法
     /// </summary>
@@ -116,7 +117,7 @@ namespace PBBox
         /// <param name="isLater">是否为延迟事件，通常为下一帧或者该帧稍后执行</param>
         /// <returns>返回事件订阅对象</returns>
         EventSubscription Subscribe<TData>(int eventId, Action<TData> handler, int order = 0, bool isLater = false) => SubscribeGeneric(eventId, handler, order, isLater);
-        
+
         /// <summary>
         /// 订阅通用事件，通过事件ID进行订阅
         /// </summary>

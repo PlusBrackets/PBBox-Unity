@@ -5,9 +5,8 @@
  --------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
-using PBBox.Event;
 
-namespace PBBox
+namespace PBBox.Event
 {
     public sealed partial class EventManager
     {

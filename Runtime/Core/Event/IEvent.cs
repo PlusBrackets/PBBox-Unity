@@ -3,7 +3,7 @@
  *@update: 2026.11.10
  *@author: PlusBrackets
  --------------------------------------------------------*/
-namespace PBBox
+namespace PBBox.Event
 {
     /// <summary>
     /// 事件接口
