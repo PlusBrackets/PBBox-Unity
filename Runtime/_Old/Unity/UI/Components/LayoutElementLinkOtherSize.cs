@@ -50,7 +50,7 @@ namespace PBBox.Unity.UI
                 {
                     if (!m_TargetSizeChangeSubscription.IsValid)
                     {
-                        SubscribeTargetSizeChange();
+                        SubscribeTargetSizeChangedEvent();
                     }
                 }
                 if (m_LayoutElement != null && m_LayoutElement.IsActive())
@@ -72,16 +72,16 @@ namespace PBBox.Unity.UI
             }
             if (m_LinkTarget != null)
             {
-                SubscribeTargetSizeChange();
+                SubscribeTargetSizeChangedEvent();
             }
         }
 
-        private void SubscribeTargetSizeChange()
+        private void SubscribeTargetSizeChangedEvent()
         {
             if (m_LinkTarget != null)
             {
                 m_TargetSizeChangeSubscription.Dispose();
-                m_TargetSizeChangeSubscription = m_LinkTarget.OnRectDimensionsChangedEvent().Subscribe(OnTargetSizeChange);
+                m_TargetSizeChangeSubscription = m_LinkTarget.OnRectDimensionsChangedEvent().Subscribe(OnTargetSizeChange).AsWeak();
             }
         }
 

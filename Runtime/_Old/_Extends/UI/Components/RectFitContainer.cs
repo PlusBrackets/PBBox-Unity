@@ -154,7 +154,7 @@ namespace PBBox.UI
             if (m_IsObservedParent && !m_ParentSizeChangeSubscription.IsValid)
             {
                 var _parentRect = RectTransform.parent as RectTransform;
-                m_ParentSizeChangeSubscription = _parentRect.OnRectDimensionsChangedEvent().Subscribe(OnParentSizeChanged);
+                m_ParentSizeChangeSubscription = _parentRect.OnRectDimensionsChangedEvent().Subscribe(OnParentSizeChanged).AsWeak();
             }
             return _result;
         }
