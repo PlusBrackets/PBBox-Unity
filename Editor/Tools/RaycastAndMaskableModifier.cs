@@ -10,7 +10,9 @@ using UnityEngine.EventSystems;
 
 namespace PBBox.CEditor
 {
-
+    /// <summary>
+    /// 将所选UI的RaycastTarget和Maskable属性进行修改
+    /// </summary>
     public class RaycastAndMaskableModifier : ScriptableWizard
     {
         [MenuItem("Tools/PBBox/UI/Modify UI Raycast and Maskable")]
@@ -75,9 +77,9 @@ namespace PBBox.CEditor
             Log.Debug("Modify End, Selected interactable object, please check");
         }
 
-        private void ModifyTarget(GameObject target, bool hasMaskParent, string[] tags,string path)
+        private void ModifyTarget(GameObject target, bool hasMaskParent, string[] tags, string path)
         {
-            TraverseGameObject(target,Func);
+            TraverseGameObject(target, Func);
             void Func(GameObject target)
             {
                 Graphic[] gs = target.GetComponents<Graphic>();
