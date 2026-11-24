@@ -30,12 +30,12 @@ namespace PBBox.UI
         {
             get
             {
-                return timer != null ? timer.useUnscaleTime : m_UseUnscaleTime;
+                return timer != null ? timer.UseUnscaleTime : m_UseUnscaleTime;
             }
             set
             {
                 if (timer != null)
-                    timer.useUnscaleTime = value;
+                    timer.UseUnscaleTime = value;
                 m_UseUnscaleTime = value;
             }
         }

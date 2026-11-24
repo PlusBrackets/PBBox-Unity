@@ -99,8 +99,8 @@ namespace PBBox.SourceGenerate
                     //接口类型不可访问
                     codes.Add($"ISingleton.SetInstanceType(Type.GetType(\"{interfaceType.FullName}, {interfaceType.Assembly.GetName().Name}\"), Type.GetType(\"{instanceType.FullName}, {instanceType.Assembly.GetName().Name}\"));");
                 }
-                debugLogs.Add($"logs.AppendLine($\"{interfaceType.FullName}-- > {instanceType.FullName}，优先级：{priority}\");");
-                logs.AppendLine($"{interfaceType.FullName}-- > {instanceType.FullName}，优先级：{priority}, 接口可访问:{interfaceTypeAccessible}, 实例可访问:{instanceTypeAccessible}");
+                debugLogs.Add($"logs.AppendLine($\"{interfaceType.FullName} --> {instanceType.FullName}，优先级：{priority}\");");
+                logs.AppendLine($"{interfaceType.FullName} --> {instanceType.FullName}，优先级：{priority}, 接口可访问:{interfaceTypeAccessible}, 实例可访问:{instanceTypeAccessible}");
             }
 
             Log.Debug(logs.ToString(), nameof(CodeGenerator), Log.PBBoxLoggerName);

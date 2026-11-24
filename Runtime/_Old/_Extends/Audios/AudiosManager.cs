@@ -12,10 +12,12 @@ namespace PBBox
     /// 音频管理器
     /// </summary>
     [AddComponentMenu("")]
-    public class AudiosManager : SingleBehaviour<AudiosManager>
+    [MonoSingletonCreator]
+    [MonoSingletonDestroyer]
+    public class AudiosManager : MonoSingleton<AudiosManager>
     {
         const string DEFAULT_SOURCE_TEMPLATE_NAME = "AudioSource_Default";
-        Lazy<Dictionary<string, AudioSource>> __SourceTemplates;
+        Lazy<Dictionary<string, AudioSource>> __SourceTemplates = new Lazy<Dictionary<string, AudioSource>>();
         Dictionary<string, AudioSource> m_SourceTemplates => __SourceTemplates.Value;
         AudioSource m_DefaultSourceTemplate;
         public AudioSource defaultSourceTemplate
@@ -44,14 +46,8 @@ namespace PBBox
         /// <summary>
         /// 有哪些Template是从AssetManager中加载的
         /// </summary>
-        Lazy<HashSet<string>> m_TemplatesFromAssetManager;
+        Lazy<HashSet<string>> m_TemplatesFromAssetManager = new Lazy<HashSet<string>>();
 
-        protected override void InitAsInstance()
-        {
-            base.InitAsInstance();
-            __SourceTemplates = new Lazy<Dictionary<string, AudioSource>>();
-            m_TemplatesFromAssetManager = new Lazy<HashSet<string>>();
-        }
 
         public AudioSource GetTemplate(string name, bool returnIfNotExist = false, bool fromAssetManager = false)
         {

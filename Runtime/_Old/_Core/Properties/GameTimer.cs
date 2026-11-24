@@ -1,4 +1,3 @@
-using System;
 /*--------------------------------------------------------
  *Copyright (c) 2022 PlusBrackets
  *@update: 2022.03.29
@@ -6,6 +5,7 @@ using System;
  --------------------------------------------------------*/
 using System.Collections;
 using UnityEngine;
+using System;
 using System.Threading.Tasks;
 
 namespace PBBox
@@ -222,7 +222,7 @@ namespace PBBox
     {
         [SerializeField]
         private bool m_UseUnscaleTime = false;
-        public bool useUnscaleTime
+        public bool UseUnscaleTime
         {
             get => m_UseUnscaleTime;
             set
@@ -239,7 +239,7 @@ namespace PBBox
 
         public GameDualityTimer(bool useUnscaleTime = false) : base()
         {
-            this.useUnscaleTime = useUnscaleTime;
+            UseUnscaleTime = useUnscaleTime;
         }
 
         private void OnCurrentTimeStateChanged()
@@ -247,7 +247,7 @@ namespace PBBox
             if (!isStoped)
             {
                 float timeOffset = Time.unscaledTime - currentTime;
-                if (useUnscaleTime)
+                if (UseUnscaleTime)
                 {
                     startTime += timeOffset;
                     if (lastPauseTime >= 0)

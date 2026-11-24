@@ -8,7 +8,7 @@ using UnityEngine;
 namespace PBBox.Tools
 {
     [AddComponentMenu("PBBox/Tools/FPSViewer")]
-    public class FPSViewer : SingleBehaviour<FPSViewer>
+    public class FPSViewer : MonoBehaviour
     {
         public enum DisplayPosition
         {

@@ -39,7 +39,7 @@ namespace PBBox
             {
                 m_Source = GetComponent<AudioSource>();
                 delayInGameTime = false;
-                lifeTimer.useUnscaleTime = true;
+                lifeTimer.UseUnscaleTime = true;
                 recycleInDisable = true;
             }
         }

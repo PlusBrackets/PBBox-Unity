@@ -241,7 +241,7 @@ namespace PBBox
         {
             return Do(async () =>
             {
-                delayTimer.useUnscaleTime = useUnscaleTime;
+                delayTimer.UseUnscaleTime = useUnscaleTime;
                 delayTimer.Start(second);
                 await delayTimer.WaitForEnd();
                 // while (!delayTimer.IsOver())
@@ -282,7 +282,7 @@ namespace PBBox
         public ActionQueue Loop(Action action,Func<int,bool> canLoop,float loopInterval,bool useUnscaleTime = false){
             return Do(async ()=>{
                 int times =  0;
-                delayTimer.useUnscaleTime = useUnscaleTime;
+                delayTimer.UseUnscaleTime = useUnscaleTime;
                 while (canLoop(times) && isActing)
                 {
                     action?.Invoke();

@@ -274,11 +274,19 @@ namespace PBBox.Properties
             return (result, false);
         }
 
+        /// <summary>
+        /// 使用默认配置创建Float类型的ValueMod实例
+        /// </summary>
+        /// <returns></returns>
         public static ValueMod<float> CreateFloatDefault()
         {
             return new ValueMod<float>(DefaultFloatModBuildParam);
         }
 
+        /// <summary>
+        /// 使用默认配置创建Double类型的ValueMod实例
+        /// </summary>
+        /// <returns></returns>
         public static ValueMod<double> CreateDoubleDefault()
         {
             return new ValueMod<double>(DefaultDoubleModBuildParam);

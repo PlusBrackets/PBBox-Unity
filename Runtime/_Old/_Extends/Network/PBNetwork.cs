@@ -11,8 +11,9 @@ using UnityEngine.Networking;
 
 namespace PBBox.Network
 {
-
-    public class PBNetwork : SingleBehaviour<PBNetwork>
+    [MonoSingletonCreator]
+    [MonoSingletonDestroyer]
+    public class PBNetwork : MonoSingleton<PBNetwork>, ISingletonLifecycle
     {
 
 
@@ -49,7 +50,7 @@ namespace PBBox.Network
         public static long Post(string url, string postData, Action<string> onResult, Action<string> onError = null, int timeoutRetry = 1, Action<UnityWebRequest> modifyWebRequest = null, bool inQueue = false)
         {
             RequestInfo _requestInfo = new RequestInfo(url, postData, onResult, onError, timeoutRetry, modifyWebRequest);
-            SingleBehaviour<PBNetwork>.Instance.DoRequest(_requestInfo, inQueue);
+            Instance.DoRequest(_requestInfo, inQueue);
             return _requestInfo.ID;
         }
 
@@ -293,10 +294,17 @@ namespace PBBox.Network
         /// 队列是否正在请求中
         /// </summary>
         private bool m_IsQueueRequesting = false;
-        
-        protected override void InitAsInstance()
+
+        //protected override void InitAsInstance()
+        //{
+        //    base.InitAsInstance();
+        //    m_DictRequestInfo = new Dictionary<long, RequestInfo>();
+        //    m_ListRequestWaiting = new List<long>();
+        //    m_ListRequestSending = new List<long>();
+        //}
+
+        void ISingletonLifecycle.OnCreateAsSingleton()
         {
-            base.InitAsInstance();
             m_DictRequestInfo = new Dictionary<long, RequestInfo>();
             m_ListRequestWaiting = new List<long>();
             m_ListRequestSending = new List<long>();
@@ -405,6 +413,16 @@ namespace PBBox.Network
             }
             //完成请求后移除Request 
             m_DictRequestInfo.Remove(requestInfoID);
+        }
+
+        public void OnCreateAsSingleton()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnDestroyAsSingleton()
+        {
+            throw new NotImplementedException();
         }
     }
 }

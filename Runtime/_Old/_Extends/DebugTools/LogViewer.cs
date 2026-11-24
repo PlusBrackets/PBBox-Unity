@@ -11,7 +11,7 @@ using System.Text;
 namespace PBBox.Tools
 {
     [AddComponentMenu("PBBox/Tools/LogViewer")]
-    public class LogViewer : SingleBehaviour<LogViewer>
+    public class LogViewer : MonoBehaviour
     {
         private static List<string> m_Lines = new List<string>();
         private static List<string> m_WriteTxt = new List<string>();

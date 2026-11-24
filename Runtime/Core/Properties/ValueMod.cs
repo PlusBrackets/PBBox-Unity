@@ -36,27 +36,26 @@ namespace PBBox.Properties
         /// <summary>
         /// ValueMod的各部分组合后的结果缓存，用于计算最终值
         /// </summary>
-        protected readonly ValueModPart<TMod>[] _parts;
+        private readonly ValueModPart<TMod>[] _parts;
         /// <summary>
         /// ValueMod各部分的组合结果缓存，用于计算最终值
         /// </summary>
-        protected readonly TMod?[] _modPartResults;
+        private readonly TMod?[] _modPartResults;
         /// <summary>
         /// 计算最终值的函数
         /// </summary>
-        protected readonly ValueModComputeFunc<TValue, TMod> _computeValueFunc;
+        private readonly ValueModComputeFunc<TValue, TMod> _computeValueFunc;
         /// <summary>
         /// 获取指定名称的mod索引的函数
         /// </summary>
-        protected readonly Func<string, int> _getModifierIndexByName;
+        private readonly Func<string, int> _getModifierIndexByName;
         /// <summary>
         /// 是否需要重新计算最终值的标志
         /// </summary>
-        public bool IsDirty { get; protected set; }
+        public bool IsDirty { get; private set; }
         private readonly bool _isCacheComputedValue;
         private TValue? _cachedBaseValue = null;
-        protected TValue? _cachedComputedValue = null;
-
+        private TValue? _cachedComputedValue = null;
 
         public ValueMod(ValueModBuildParam<TValue, TMod> param)
         {
