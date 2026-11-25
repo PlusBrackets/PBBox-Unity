@@ -31,7 +31,7 @@ namespace PBBox.Properties
         /// <summary>
         /// 获取计时器的倒计时时间，未设置倒计时则返回null
         /// </summary>
-        public double? Countdown => _timer.Countdown;
+        public double Countdown => _timer.Countdown;
         public double Elapsed => _timer.Elapsed;
         /// <summary>
         /// 获取计时器从开始到当前的总经过时间，包含暂停的时间
@@ -41,6 +41,7 @@ namespace PBBox.Properties
         /// 获取计时器的剩余时间，未设置倒计时则返回-1
         /// </summary>
         public double Remaining => _timer.Remaining;
+        public bool HasCountdown => _timer.HasCountdown;
 
         /// <summary>
         /// 判断倒计时是否已经完成，若未设置倒计时则返回false
@@ -52,6 +53,8 @@ namespace PBBox.Properties
         /// 判断计时器是否正在运行，即已经启动且未暂停
         /// </summary>
         public bool IsRunning => IsStarted && !IsPaused;
+        public TimerSnapshot Snapshot => _timer.Snapshot;
+
 
         public Timer(IClock clock)
         {
@@ -104,7 +107,7 @@ namespace PBBox.Properties
             if (LastPausedTime.HasValue)
             {
                 var elapsed = LastPausedTime.Value - StartTime.Value - LastPausedTotalTime;
-                _timer = new TimerLite(IClock.Zero, -elapsed, countdown);
+                _timer = new TimerLite(Clocks.Zero, -elapsed, countdown);
             }
             else
             {
@@ -128,7 +131,7 @@ namespace PBBox.Properties
             if (isPaused)
             {
                 LastPausedTime = now;
-                _timer = new TimerLite(IClock.Zero, -elapsed, countdown);
+                _timer = new TimerLite(Clocks.Zero, -elapsed, countdown);
             }
             else
             {
@@ -151,7 +154,7 @@ namespace PBBox.Properties
             {
                 LastPausedTime = Clock.Now;
                 var elapsed = LastPausedTime.Value - _timer.StartTime;
-                _timer = new TimerLite(IClock.Zero, -elapsed, _timer.Countdown);
+                _timer = new TimerLite(Clocks.Zero, -elapsed, _timer.Countdown);
             }
         }
 
@@ -206,6 +209,23 @@ namespace PBBox.Properties
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public double ElapsedAt(double now)
+        {
+            return _timer.ElapsedAt(now);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsCompletedAt(double now)
+        {
+            return _timer.IsCompletedAt(now);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public double RemainingAt(double now)
+        {
+            return _timer.RemainingAt(now);
+        }
     }
 
 }

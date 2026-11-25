@@ -4,10 +4,45 @@
  *@author: PlusBrackets
  --------------------------------------------------------*/
 using System;
+#if UNITY_5_3_OR_NEWER
+using Unity.Scripting.LifecycleManagement;
+#endif
 
 namespace PBBox.Properties
 {
 
+    public interface IClock
+    {
+        double Now { get; }
+    }
+
+    /// <summary>
+    /// 基础的时钟，允许用户手动设置和推进时间。
+    /// </summary>
+    public class Clock : IClock
+    {
+        private double _now;
+        public double Now => _now;
+
+        public Clock(double initialTime = 0)
+        {
+            _now = initialTime;
+        }
+
+        public void SetTime(double time)
+        {
+            _now = time;
+        }
+
+        public void Advance(double delta)
+        {
+            _now += delta;
+        }
+    }
+    
+    /// <summary>
+    /// 一个Now始终为0的时钟
+    /// </summary>
     internal sealed class ZeroClock : IClock
     {
         public double Now => 0;
@@ -15,8 +50,11 @@ namespace PBBox.Properties
         internal ZeroClock() { }
     }
 
-    internal sealed class StopwatchClock : IClock
+    internal sealed partial class StopwatchClock : IClock
     {
+#if UNITY_5_3_OR_NEWER
+        [AutoStaticsCleanup]
+#endif
         private static System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         public double Now => _stopwatch.Elapsed.TotalSeconds;
@@ -24,46 +62,13 @@ namespace PBBox.Properties
         internal StopwatchClock() { }
     }
 
+    /// <summary>
+    /// 基于系统时间的时钟实例，返回当前的UTC时间。
+    /// </summary>
     internal sealed class SystemClock : IClock
     {
         public double Now => DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalSeconds;
 
         internal SystemClock() { }
     }
-
-    public class ManualClock : IClock
-    {
-        private double _now;
-
-        public double Now => _now;
-
-        public ManualClock(double initialTime = 0)
-        {
-            _now = initialTime;
-        }
-
-        public void Advance(double seconds)
-        {
-            _now += seconds;
-        }
-    }
-
-    public partial interface IClock
-    {
-        /// <summary>
-        /// 一个Now始终为0的时钟实例
-        /// </summary>
-        public static IClock Zero { get; private set; } = new ZeroClock();
-        /// <summary>
-        /// 一个基于计时器的时钟实例
-        /// </summary>
-        public static IClock Stopwatch { get; private set; } = new StopwatchClock();
-        /// <summary>
-        /// 一个基于系统时间的时钟实例
-        /// </summary>
-        public static IClock System { get; private set; } = new SystemClock();
-
-        double Now { get; }
-    }
-
 }

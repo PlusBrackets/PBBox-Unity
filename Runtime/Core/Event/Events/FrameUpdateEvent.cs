@@ -17,11 +17,15 @@ namespace PBBox
     {
         public readonly float DeltaTime;
         public readonly float UnscaledDeltaTime;
+        public readonly double TotalTime;
+        public readonly double UnscaledTotalTime;
 
-        public FrameUpdateEvent(float deltaTime, float unscaledDeltaTime)
+        public FrameUpdateEvent(float deltaTime, float unscaledDeltaTime, double totalTime, double unscaledTotalTime)
         {
             DeltaTime = deltaTime;
             UnscaledDeltaTime = unscaledDeltaTime;
+            TotalTime = totalTime;
+            UnscaledTotalTime = unscaledTotalTime;
         }
     }
 }

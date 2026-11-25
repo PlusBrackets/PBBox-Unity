@@ -141,7 +141,7 @@ namespace PBBox.Properties
         /// <summary>
         /// 刷新所有部分的计算结果
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RefreshPartResults()
         {
             IsDirty = false;
